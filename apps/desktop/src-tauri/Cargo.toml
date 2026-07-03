@@ -19,7 +19,6 @@ tauri-plugin-notification = "2"
 tauri-plugin-updater = "2"
 tauri-plugin-process = "2"
 tauri-plugin-single-instance = "2"
-window-vibrancy = "0.7"
 portable-pty = "0.9"
 notify = "8"
 serde = { version = "1", features = ["derive"] }

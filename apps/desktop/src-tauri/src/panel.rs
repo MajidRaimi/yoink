@@ -12,17 +12,6 @@ pub fn init(app: &AppHandle) {
         return;
     };
 
-    #[cfg(target_os = "macos")]
-    {
-        use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial, NSVisualEffectState};
-        let _ = apply_vibrancy(
-            &window,
-            NSVisualEffectMaterial::HudWindow,
-            Some(NSVisualEffectState::Active),
-            Some(14.0),
-        );
-    }
-
     let handle = app.clone();
     window.on_window_event(move |event| {
         if let tauri::WindowEvent::Focused(false) = event {

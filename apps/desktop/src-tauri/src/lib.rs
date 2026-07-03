@@ -54,6 +54,7 @@ pub fn register_hotkey(app: &AppHandle, accelerator: &str) -> Result<(), String>
 
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_nspanel::init())
         .plugin(tauri_plugin_single_instance::init(|app, _, _| {
             panel::show(app);
         }))

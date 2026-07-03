@@ -71,7 +71,8 @@ export const Hero = () => (
         className="rise mt-7 font-mono text-[13px] text-faint"
         style={{ animationDelay: "300ms" }}
       >
-        macOS <span className="text-hairline-strong">·</span> Keychain-native{" "}
+        macOS <span className="text-hairline-strong">·</span> Linux{" "}
+        <span className="text-hairline-strong">·</span> Windows{" "}
         <span className="text-hairline-strong">·</span> single binary
       </p>
       <div

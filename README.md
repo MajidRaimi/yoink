@@ -16,7 +16,7 @@ Ollama, or any Anthropic-compatible model through the same Claude Code harness. 
 <a href="https://www.npmjs.com/package/yoink-cli"><img src="https://img.shields.io/npm/dm/yoink-cli?color=facc15&labelColor=0a0908" alt="npm downloads" /></a>
 <a href="https://github.com/MajidRaimi/yoink/stargazers"><img src="https://img.shields.io/github/stars/MajidRaimi/yoink?color=facc15&labelColor=0a0908&logo=github&logoColor=white" alt="GitHub stars" /></a>
 <a href="https://github.com/MajidRaimi/yoink/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/MajidRaimi/yoink/ci.yml?branch=main&labelColor=0a0908&label=ci" alt="CI status" /></a>
-<img src="https://img.shields.io/badge/platform-macOS-0a0908?logo=apple&logoColor=white" alt="macOS" />
+<img src="https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-facc15?labelColor=0a0908" alt="macOS | Linux | Windows" />
 <a href="./LICENSE"><img src="https://img.shields.io/npm/l/yoink-cli?color=facc15&labelColor=0a0908" alt="MIT license" /></a>
 </p>
 
@@ -32,19 +32,25 @@ Ollama, or any Anthropic-compatible model through the same Claude Code harness. 
 
 ## Install
 
-macOS, one command:
+macOS / Linux:
 
 ```bash
 curl -fsSL https://yoink.codes/install.sh | bash
 ```
 
-Or with npm:
+Windows (PowerShell):
+
+```powershell
+powershell -c "irm https://yoink.codes/install.ps1 | iex"
+```
+
+Or on any OS with Node:
 
 ```bash
 npm install -g yoink-cli
 ```
 
-Both drop a single self-contained binary onto your PATH. Confirm it answers:
+Each drops a single self-contained binary onto your PATH. Confirm it answers:
 
 ```bash
 yoink version
@@ -92,8 +98,8 @@ Actions loop back to the list, so you can switch, add, and prune in one sitting,
 
 ## Features
 
-- **Instant switching.** Each profile stores the Keychain credential blob plus the `oauthAccount` identity, so a swap is a keystroke, not a browser round-trip.
-- **Never loses a token.** Every switch re-snapshots the active profile from the live Keychain first, so a background token refresh is never dropped.
+- **Instant switching.** Each profile stores the credential blob (macOS Keychain on macOS, `~/.claude/.credentials.json` on Linux/Windows) plus the `oauthAccount` identity, so a swap is a keystroke, not a browser round-trip.
+- **Never loses a token.** Every switch re-snapshots the active profile from the live credential store first, so a background token refresh is never dropped.
 - **External providers.** Register OpenRouter, Ollama, z.ai, DeepSeek, Moonshot, or any Anthropic-compatible endpoint as a switchable profile, with a searchable model picker.
 - **Per-project overrides.** Apply a provider globally, or scope it to one repo via `./.claude/settings.local.json`, which yoink adds to your `.gitignore` before writing.
 - **Nothing leaks.** yoink only ever touches seven managed `ANTHROPIC_*` / `CLAUDE_CODE_SUBAGENT_MODEL` keys, warns before writing a token into a git-tracked file, and writes every file atomically.
@@ -124,17 +130,17 @@ See [external providers](./docs/external-providers.md) for the full flow.
 
 ## How it works
 
-Claude Code keeps your login in the macOS Keychain under the service `Claude Code-credentials`. A profile pairs that credential blob with the `oauthAccount` identity from `~/.claude.json`. A switch:
+Claude Code keeps your login in the macOS Keychain under the service `Claude Code-credentials` on macOS, and in `~/.claude/.credentials.json` on Linux and Windows. A profile pairs that credential blob with the `oauthAccount` identity from `~/.claude.json`. A switch:
 
-1. Re-snapshots the currently active profile from the live Keychain.
-2. Writes the target profile's credential blob back into the Keychain.
+1. Re-snapshots the currently active profile from the live credential store.
+2. Writes the target profile's credential blob back (Keychain entry on macOS, `.credentials.json` elsewhere).
 3. Restores the target profile's account identity into `~/.claude.json`.
 
-Profiles live in `~/.config/yoink/profiles.json` (`chmod 600`). Full details in [how it works](./docs/how-it-works.md).
+Profiles live in `~/.config/yoink/profiles.json` on every OS (`chmod 600` on POSIX). Full details in [how it works](./docs/how-it-works.md).
 
-## Requirements
+## Supported platforms
 
-macOS only for now: yoink stores and swaps credentials through the login Keychain via the `security` CLI. The install script and npm package both ship a prebuilt universal binary, so nothing else is needed.
+macOS (Apple Silicon and Intel), Linux (x64 and arm64, glibc), and Windows (x64). Windows arm64 is not supported. On macOS, credentials are swapped through the login Keychain via the `security` CLI; on Linux and Windows, through `~/.claude/.credentials.json`, written atomically with the same protections Claude Code itself applies. The installers and npm package ship prebuilt binaries for every platform, so nothing else is needed.
 
 ## Documentation
 

@@ -1,4 +1,4 @@
-import { readClaudeCredentials } from "../../shared/keychain";
+import { readClaudeCredentials } from "../../shared/credentials";
 import { readOauthAccount } from "../../shared/claude-config";
 import { YoinkError } from "../../shared/errors";
 
@@ -18,12 +18,22 @@ export const defaultNameFromEmail = (email: string | null): string => {
   return local && local.length > 0 ? local : "account";
 };
 
+export const buildClaudeLoginCommand = (platform: NodeJS.Platform): string[] =>
+  platform === "win32"
+    ? ["cmd", "/c", "claude", "auth", "login", "--claudeai"]
+    : ["claude", "auth", "login", "--claudeai"];
+
 export const runClaudeLogin = async (): Promise<void> => {
-  const proc = Bun.spawn(["claude", "auth", "login", "--claudeai"], {
-    stdin: "inherit",
-    stdout: "inherit",
-    stderr: "inherit",
-  });
+  let proc: ReturnType<typeof Bun.spawn>;
+  try {
+    proc = Bun.spawn(buildClaudeLoginCommand(process.platform), {
+      stdin: "inherit",
+      stdout: "inherit",
+      stderr: "inherit",
+    });
+  } catch {
+    throw new YoinkError("Claude Code CLI not found on PATH. Install Claude Code first.");
+  }
   const exitCode = await proc.exited;
   if (exitCode !== 0) {
     throw new YoinkError("`claude auth login` did not complete successfully.");

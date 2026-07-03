@@ -1,23 +1,38 @@
 # Getting started
 
-yoink switches between Claude Code accounts from your terminal. It reads and writes the login that Claude Code keeps in the macOS Keychain, so you can keep a work account and a personal account side by side and move between them in one command.
+yoink switches between Claude Code accounts from your terminal. It reads and writes the login that Claude Code keeps on your machine (the macOS Keychain, or `~/.claude/.credentials.json` on Linux and Windows), so you can keep a work account and a personal account side by side and move between them in one command.
+
+## Supported platforms
+
+- **macOS** (Apple Silicon and Intel). Claude Code stores your login in the Keychain under the service `Claude Code-credentials`, and yoink reads and writes it through the `security` CLI.
+- **Linux** (x64 and arm64, glibc). Claude Code stores the same credential blob in a plaintext file at `~/.claude/.credentials.json`, and yoink reads and writes that file atomically with owner-only permissions (`0600`).
+- **Windows** (x64). Same as Linux: the credential lives at `~/.claude/.credentials.json`, and the file inherits the user profile's ACLs, the same protection Claude Code itself applies. Windows arm64 is not supported.
+
+If `CLAUDE_CONFIG_DIR` is set, yoink follows it for `.credentials.json`, `.claude.json`, and `settings.json`, matching Claude Code.
 
 ## Requirements
 
-- **macOS only.** yoink talks to the macOS Keychain (service `Claude Code-credentials`), which is where Claude Code stores your login. There is no equivalent path on other platforms, so yoink ships for macOS exclusively.
 - **Nothing else to install.** yoink is a single self-contained binary compiled with Bun. You do not need Bun, Node, or any runtime on your machine to run it (the npm package includes a small Node shim that execs the right-arch binary).
 
 ## Install
 
-Install with the hosted script:
+On macOS and Linux, install with the hosted script:
 
 ```bash
 curl -fsSL https://yoink.codes/install.sh | bash
 ```
 
-The script downloads the binary for your architecture (`darwin-arm64` or `darwin-x64`) from the latest GitHub Release, verifies its SHA-256 checksum, extracts it, and installs it to `/usr/local/bin` or `~/.local/bin`.
+The script downloads the binary for your OS and architecture from the latest GitHub Release, verifies its SHA-256 checksum, extracts it, and installs it to `/usr/local/bin` or `~/.local/bin`.
 
-Or install from npm:
+On Windows, install with PowerShell:
+
+```powershell
+powershell -c "irm https://yoink.codes/install.ps1 | iex"
+```
+
+The installer puts `yoink.exe` in `%LOCALAPPDATA%\Programs\yoink` and adds it to your user `PATH`.
+
+Or install from npm on any OS with Node:
 
 ```bash
 npm install -g yoink-cli
@@ -79,9 +94,9 @@ Or switch straight to a saved profile by name:
 yoink work
 ```
 
-**Restart Claude Code after switching.** yoink writes the new login into the Keychain and restores the account identity, but a running Claude Code session will not pick up the change until it restarts. If Claude Code is running when you switch, yoink warns you, because a live session can overwrite the token on its next refresh.
+**Restart Claude Code after switching.** yoink writes the new login (into the Keychain on macOS, into `~/.claude/.credentials.json` on Linux and Windows) and restores the account identity, but a running Claude Code session will not pick up the change until it restarts. If Claude Code is running when you switch, yoink warns you, because a live session can overwrite the token on its next refresh.
 
-**First-run Keychain prompt.** The first time yoink reads or writes the Keychain, macOS asks for permission. Choose **Always Allow** so you are not prompted on every switch.
+**First-run Keychain prompt.** On macOS, the first time yoink reads or writes the Keychain, macOS asks for permission. Choose **Always Allow** so you are not prompted on every switch. No such prompt exists on Linux or Windows.
 
 ## Confirm
 

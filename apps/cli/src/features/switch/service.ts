@@ -1,4 +1,4 @@
-import { readClaudeCredentials, writeClaudeCredentials } from "../../shared/keychain";
+import { readClaudeCredentials, writeClaudeCredentials } from "../../shared/credentials";
 import { readOauthAccount, writeOauthAccount } from "../../shared/claude-config";
 import { applyExternalEnv, clearExternalEnv, GLOBAL_SETTINGS_PATH } from "../../shared/claude-settings";
 import { YoinkError } from "../../shared/errors";

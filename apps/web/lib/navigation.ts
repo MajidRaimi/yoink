@@ -45,7 +45,7 @@ export const docsSections: DocSection[] = [
       {
         title: "How it works",
         href: "/docs/how-it-works",
-        description: "Keychain snapshots, identity swaps, and env overrides.",
+        description: "Credential snapshots, identity swaps, and env overrides.",
         icon: Workflow,
       },
     ],

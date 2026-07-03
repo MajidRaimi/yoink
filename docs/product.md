@@ -15,7 +15,7 @@ Both are terminal-native, technically fluent, and allergic to marketing fluff. T
 
 ## Product Purpose
 
-yoink is a macOS CLI (Bun, single compiled binary) that snapshots Claude Code logins (Keychain credential blob + `oauthAccount` identity) into named profiles and swaps them in a keystroke, and registers Anthropic-compatible external providers as switchable profiles via managed `settings.json` env blocks. The site (yoink.codes) exists to convince these two personas in under a minute that the mechanism is sound, then get them to the install command and docs. Success: visitor runs the install command.
+yoink is a cross-platform CLI (macOS, Linux, Windows) (Bun, single compiled binary) that snapshots Claude Code logins (credential blob + `oauthAccount` identity) into named profiles and swaps them in a keystroke, and registers Anthropic-compatible external providers as switchable profiles via managed `settings.json` env blocks. The site (yoink.codes) exists to convince these two personas in under a minute that the mechanism is sound, then get them to the install command and docs. Success: visitor runs the install command.
 
 ## Brand Personality
 

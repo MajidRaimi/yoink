@@ -1,4 +1,5 @@
 import { pageMetadata } from "@/lib/seo";
+import { site } from "@/lib/site";
 import { Download, ListChecks, Repeat, UserPlus } from "lucide-react";
 import { CodeBlock } from "@/components/custom/code-block";
 import { DocsPage, DocsSection } from "@/components/custom/docs-page";
@@ -17,15 +18,19 @@ const GettingStartedPage = () => (
   >
     <DocsSection heading="Requirements" icon={ListChecks}>
       <p>
-        yoink runs on <strong>macOS</strong> only for now: it stores and swaps credentials through
-        the login Keychain via the <code>security</code> CLI. The install below ships a single
+        yoink runs on <strong>macOS</strong> (Apple Silicon and Intel), <strong>Linux</strong>{" "}
+        (x64 and arm64, glibc), and <strong>Windows</strong> (x64). On macOS it stores and swaps
+        credentials through the login Keychain via the <code>security</code> CLI; on Linux and
+        Windows it works against Claude Code&apos;s credentials file. Every install ships a single
         self-contained binary, so nothing else is needed.
       </p>
     </DocsSection>
 
     <DocsSection heading="Install" icon={Download}>
-      <p>One command downloads the binary for your Mac and puts it on your PATH:</p>
-      <CodeBlock prompt code="curl -fsSL https://yoink.codes/install.sh | bash" />
+      <p>On macOS and Linux, one command downloads the right binary and puts it on your PATH:</p>
+      <CodeBlock prompt code={site.installCommand} />
+      <p>On Windows:</p>
+      <CodeBlock prompt code={site.installCommandWindows} />
       <p>
         Prefer npm? The <code>yoink-cli</code> package resolves the right binary for your
         architecture automatically:
@@ -58,8 +63,8 @@ const GettingStartedPage = () => (
 yoink work`}
       />
       <p>
-        Restart Claude Code after switching so it picks up the new credentials. The first time
-        yoink touches the Keychain, macOS asks for permission: choose{" "}
+        Restart Claude Code after switching so it picks up the new credentials. On macOS, the
+        first time yoink touches the Keychain the system asks for permission: choose{" "}
         <strong>Always Allow</strong>.
       </p>
     </DocsSection>

@@ -18,7 +18,9 @@
     "openrouter",
     "ollama",
     "anthropic",
-    "macos"
+    "macos",
+    "linux",
+    "windows"
   ],
   "bin": {
     "yoink": "bin/yoink.js"
@@ -27,7 +29,9 @@
     "bin"
   ],
   "os": [
-    "darwin"
+    "darwin",
+    "linux",
+    "win32"
   ],
   "scripts": {
     "dev": "bun run src/index.ts",

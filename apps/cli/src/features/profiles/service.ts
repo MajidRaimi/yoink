@@ -1,4 +1,4 @@
-import { readClaudeCredentials } from "../../shared/keychain";
+import { readClaudeCredentials } from "../../shared/credentials";
 import { readOauthAccount } from "../../shared/claude-config";
 import { YoinkError } from "../../shared/errors";
 import { loadStore, saveStore } from "./store";
@@ -9,7 +9,7 @@ const nowIso = (): string => new Date().toISOString();
 const snapshotLiveLogin = async (name: string): Promise<Profile> => {
   const keychain = await readClaudeCredentials();
   if (!keychain) {
-    throw new YoinkError("No Claude Code login found in your Keychain. Run `claude` and log in first.");
+    throw new YoinkError("No Claude Code login found on this machine. Run `claude` and log in first.");
   }
   const account = await readOauthAccount();
   return { type: "claude", name, keychain, account, updatedAt: nowIso() };

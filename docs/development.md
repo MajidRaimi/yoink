@@ -6,7 +6,7 @@ This page covers the yoink monorepo: how it is laid out, how to run and build it
 
 yoink is a Bun + Turborepo monorepo. There are two apps.
 
-- `apps/cli`: the yoink CLI, compiled to a single macOS binary with `bun build --compile`.
+- `apps/cli`: the yoink CLI, compiled to a single binary per platform (macOS, Linux, Windows) with `bun build --compile`.
 - `apps/web`: the [yoink.codes](https://yoink.codes) site, a Next.js static export deployed to GitHub Pages on push to `main`.
 
 ```
@@ -76,14 +76,14 @@ The script:
 3. Tags the commit `vX.Y.Z`.
 4. Pushes the commit and tag.
 
-Pushing the tag triggers `.github/workflows/release.yml`, which runs on `macos-latest` and:
+Pushing the tag triggers `.github/workflows/release.yml`, which:
 
 1. Verifies the pushed tag matches the CLI `package.json` version.
-2. Cross-compiles `darwin-arm64` and `darwin-x64` binaries with `bun build --compile`.
-3. Packages each as a `.tar.gz` and writes `checksums.txt` (sha256).
-4. Smoke-tests the built binaries.
+2. Cross-compiles all five targets on a macOS runner with `bun build --compile`: `darwin-arm64`, `darwin-x64`, `linux-x64`, `linux-arm64`, and `windows-x64`.
+3. Packages each as a `.tar.gz` (a `.zip` for Windows) and writes `checksums.txt` (sha256).
+4. Smoke-tests each binary on a native runner: `macos-latest`, `macos-15-intel`, `ubuntu-latest`, `ubuntu-24.04-arm`, and `windows-latest`.
 5. Creates the GitHub Release with the archives and checksums.
-6. Publishes three packages to npm with `--provenance`: `yoink-cli`, `yoink-cli-darwin-arm64`, and `yoink-cli-darwin-x64`.
+6. Publishes six packages to npm with `--provenance`: `yoink-cli`, `yoink-cli-darwin-arm64`, `yoink-cli-darwin-x64`, `yoink-cli-linux-x64`, `yoink-cli-linux-arm64`, and `yoink-cli-win32-x64`.
 
 ## CI and deploy
 
@@ -94,12 +94,12 @@ Two more workflows run outside the release path.
 
 ## Distribution architecture
 
-The published npm surface is one main package plus two platform packages.
+The published npm surface is one main package plus five platform packages.
 
-- `yoink-cli`: the main package, marked `os: darwin`, whose `bin` entry `yoink` points at `bin/yoink.js`, a tiny Node shim.
-- `yoink-cli-darwin-arm64` and `yoink-cli-darwin-x64`: optional dependencies, each carrying the raw compiled binary for its architecture.
+- `yoink-cli`: the main package, whose `bin` entry `yoink` points at `bin/yoink.js`, a tiny Node shim.
+- `yoink-cli-darwin-arm64`, `yoink-cli-darwin-x64`, `yoink-cli-linux-x64`, `yoink-cli-linux-arm64`, and `yoink-cli-win32-x64`: optional dependencies, each carrying the raw compiled binary for its platform and architecture.
 
-At runtime the shim resolves the platform package for the current architecture and execs its binary. Declaring the platform packages as `optionalDependencies` means only the matching architecture's binary needs to install.
+At runtime the shim resolves the platform package for the current platform and architecture and execs its binary. Declaring the platform packages as `optionalDependencies` means only the matching binary needs to install.
 
 The other install path is the script:
 

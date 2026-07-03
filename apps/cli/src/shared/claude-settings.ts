@@ -1,9 +1,9 @@
-import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 import { mkdir } from "node:fs/promises";
 import { writeFileAtomic } from "./atomic-write";
+import { claudeConfigDir } from "./paths";
 
-export const GLOBAL_SETTINGS_PATH = join(homedir(), ".claude", "settings.json");
+export const GLOBAL_SETTINGS_PATH = join(claudeConfigDir(), "settings.json");
 
 export const localSettingsPath = (cwd: string): string => join(cwd, ".claude", "settings.local.json");
 

@@ -1,17 +1,13 @@
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { chmodSync, copyFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { rawBinaryFile, targets } from "./targets";
 
 const cliDir = join(dirname(fileURLToPath(import.meta.url)), "..");
 const distDir = join(cliDir, "dist");
 const mainPkgPath = join(cliDir, "package.json");
 const mainPkg = JSON.parse(readFileSync(mainPkgPath, "utf8"));
 const version = mainPkg.version as string;
-
-const targets = [
-  { name: "darwin-arm64", cpu: "arm64" },
-  { name: "darwin-x64", cpu: "x64" },
-];
 
 const provenance = process.env.GITHUB_ACTIONS === "true" ? ["--provenance"] : [];
 
@@ -39,21 +35,21 @@ const publish = (name: string, cwd: string) => {
 };
 
 for (const target of targets) {
-  const name = `yoink-cli-${target.name}`;
-  const pkgDir = join(distDir, "npm", name);
+  const pkgDir = join(distDir, "npm", target.npmName);
   mkdirSync(pkgDir, { recursive: true });
 
   writeFileSync(
     join(pkgDir, "package.json"),
     `${JSON.stringify(
       {
-        name,
+        name: target.npmName,
         version,
         description: `yoink CLI binary for ${target.name}`,
         license: "MIT",
-        os: ["darwin"],
+        os: [target.npmOs],
         cpu: [target.cpu],
-        files: ["yoink"],
+        ...(target.npmOs === "linux" ? { libc: ["glibc"] } : {}),
+        files: [target.binaryName],
         repository: { type: "git", url: "git+https://github.com/MajidRaimi/yoink.git" },
       },
       null,
@@ -61,17 +57,16 @@ for (const target of targets) {
     )}\n`,
   );
 
-  const binary = join(pkgDir, "yoink");
-  copyFileSync(join(distDir, `yoink-${target.name}`), binary);
-  chmodSync(binary, 0o755);
-  publish(name, pkgDir);
+  const binary = join(pkgDir, target.binaryName);
+  copyFileSync(join(distDir, rawBinaryFile(target)), binary);
+  if (target.npmOs !== "win32") {
+    chmodSync(binary, 0o755);
+  }
+  publish(target.npmName, pkgDir);
 }
 
-mainPkg.optionalDependencies = {
-  "yoink-cli-darwin-arm64": version,
-  "yoink-cli-darwin-x64": version,
-};
+mainPkg.optionalDependencies = Object.fromEntries(targets.map((t) => [t.npmName, version]));
 writeFileSync(mainPkgPath, `${JSON.stringify(mainPkg, null, 2)}\n`);
 publish(mainPkg.name, cliDir);
 
-console.log(`published ${mainPkg.name}@${version} with 2 platform packages`);
+console.log(`published ${mainPkg.name}@${version} with ${targets.length} platform packages`);

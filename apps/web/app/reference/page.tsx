@@ -13,7 +13,8 @@ export const metadata = pageMetadata({
 
 const files = [
   { path: "~/.config/yoink/profiles.json", role: "profile store, chmod 600" },
-  { path: "Keychain · Claude Code-credentials", role: "the OAuth credential blob" },
+  { path: "Keychain · Claude Code-credentials", role: "the OAuth credential blob on macOS" },
+  { path: "~/.claude/.credentials.json", role: "the OAuth credential blob on Linux and Windows" },
   { path: "~/.claude.json", role: "oauthAccount identity block" },
   { path: "~/.claude/settings.json", role: "global env overrides (7 managed keys)" },
   { path: "./.claude/settings.local.json", role: "project-scoped env overrides" },

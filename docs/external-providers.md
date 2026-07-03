@@ -48,7 +48,7 @@ yoink only ever writes or strips these seven keys. It does not touch any other e
 
 ## Switching back to a Claude account
 
-When you switch to a Claude profile, yoink restores that account's Keychain login and strips the external env block it wrote. Your Claude Code sessions return to the standard Anthropic backend with no leftover provider configuration.
+When you switch to a Claude profile, yoink restores that account's Claude login and strips the external env block it wrote. Your Claude Code sessions return to the standard Anthropic backend with no leftover provider configuration.
 
 ## Editing a provider
 

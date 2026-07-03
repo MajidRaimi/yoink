@@ -7,11 +7,15 @@ BIN_NAME="yoink"
 info() { printf '\033[0;33m==>\033[0m %s\n' "$1"; }
 err() { printf '\033[0;31merror:\033[0m %s\n' "$1" >&2; exit 1; }
 
-[ "$(uname -s)" = "Darwin" ] || err "yoink runs on macOS only."
+case "$(uname -s)" in
+  Darwin) OS="darwin" ;;
+  Linux) OS="linux" ;;
+  *) err "unsupported platform: $(uname -s). on Windows, run: powershell -c \"irm https://yoink.codes/install.ps1 | iex\"" ;;
+esac
 
 case "$(uname -m)" in
-  arm64) ARCH="darwin-arm64" ;;
-  x86_64) ARCH="darwin-x64" ;;
+  arm64 | aarch64) ARCH="${OS}-arm64" ;;
+  x86_64 | amd64) ARCH="${OS}-x64" ;;
   *) err "unsupported architecture: $(uname -m)" ;;
 esac
 
@@ -32,9 +36,13 @@ curl -fL --progress-bar --retry 3 --retry-delay 2 --connect-timeout 30 "${BASE}/
   || err "download failed: ${BASE}/${ASSET}"
 
 if curl -fsSL "${BASE}/checksums.txt" -o "${TMP}/checksums.txt" 2>/dev/null; then
-  EXPECTED="$(grep " ${ASSET}\$" "${TMP}/checksums.txt" | awk '{print $1}')"
+  EXPECTED="$(grep " ${ASSET}\$" "${TMP}/checksums.txt" | awk '{print $1}' || true)"
   if [ -n "$EXPECTED" ]; then
-    ACTUAL="$(shasum -a 256 "${TMP}/${ASSET}" | awk '{print $1}')"
+    if command -v sha256sum >/dev/null 2>&1; then
+      ACTUAL="$(sha256sum "${TMP}/${ASSET}" | awk '{print $1}')"
+    else
+      ACTUAL="$(shasum -a 256 "${TMP}/${ASSET}" | awk '{print $1}')"
+    fi
     [ "$EXPECTED" = "$ACTUAL" ] || err "checksum mismatch for ${ASSET}"
     info "checksum verified"
   fi
@@ -56,7 +64,14 @@ info "installed to ${DEST}/${BIN_NAME}"
 
 case ":${PATH}:" in
   *":${DEST}:"*) ;;
-  *) info "add ${DEST} to your PATH:  echo 'export PATH=\"${DEST}:\$PATH\"' >> ~/.zshrc && source ~/.zshrc" ;;
+  *)
+    case "${SHELL:-}" in
+      */zsh) RC="~/.zshrc" ;;
+      */bash) RC="~/.bashrc" ;;
+      *) RC="your shell profile" ;;
+    esac
+    info "add ${DEST} to your PATH:  echo 'export PATH=\"${DEST}:\$PATH\"' >> ${RC}"
+    ;;
 esac
 
 info "run 'yoink add' to register your first account"

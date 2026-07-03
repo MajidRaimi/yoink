@@ -10,7 +10,7 @@
 <a href="https://www.npmjs.com/package/yoink-cli"><img src="https://img.shields.io/npm/v/yoink-cli?color=facc15&labelColor=0a0908&logo=npm&logoColor=white" alt="npm version" /></a>
 <a href="https://www.npmjs.com/package/yoink-cli"><img src="https://img.shields.io/npm/dm/yoink-cli?color=facc15&labelColor=0a0908" alt="npm downloads" /></a>
 <a href="https://github.com/MajidRaimi/yoink/stargazers"><img src="https://img.shields.io/github/stars/MajidRaimi/yoink?color=facc15&labelColor=0a0908&logo=github&logoColor=white" alt="GitHub stars" /></a>
-<img src="https://img.shields.io/badge/platform-macOS-0a0908?logo=apple&logoColor=white" alt="macOS" />
+<img src="https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-0a0908?logoColor=white" alt="macOS | Linux | Windows" />
 <a href="https://github.com/MajidRaimi/yoink/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/yoink-cli?color=facc15&labelColor=0a0908" alt="MIT license" /></a>
 </p>
 
@@ -24,17 +24,23 @@
 
 ---
 
-`yoink` snapshots the OAuth credentials Claude Code stores in your macOS Keychain (plus the matching account identity in `~/.claude.json`) into named profiles, then swaps them in and out in a keystroke. It also registers OpenRouter, Ollama, or any Anthropic-compatible provider as a switchable profile. No browser, no re-login.
+`yoink` snapshots the OAuth credentials Claude Code stores on your machine (the Keychain on macOS, the `~/.claude/.credentials.json` file on Linux and Windows, plus the matching account identity in `~/.claude.json`) into named profiles, then swaps them in and out in a keystroke. It also registers OpenRouter, Ollama, or any Anthropic-compatible provider as a switchable profile. No browser, no re-login.
 
 ## Install
 
-macOS, one command:
+macOS and Linux, one command:
 
 ```bash
 curl -fsSL https://yoink.codes/install.sh | bash
 ```
 
-Or with npm:
+Windows:
+
+```powershell
+powershell -c "irm https://yoink.codes/install.ps1 | iex"
+```
+
+Or with npm, on any OS with Node:
 
 ```bash
 npm install -g yoink-cli
@@ -77,7 +83,7 @@ Run `yoink` with no arguments for the interactive menu: arrow keys or `j`/`k` to
 
 ## Requirements
 
-macOS only for now: yoink stores and swaps credentials through the login Keychain via the `security` CLI. The package ships a prebuilt binary for Apple Silicon and Intel, so nothing else is needed.
+The package ships prebuilt binaries for macOS (arm64 and x64), Linux (x64 and arm64), and Windows (x64) via platform packages, so nothing else is needed.
 
 ## Documentation
 

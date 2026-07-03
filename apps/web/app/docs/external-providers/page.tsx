@@ -52,7 +52,7 @@ API key         sk-or-v1-…`}
     <DocsSection heading="Switching between kinds" icon={Shuffle}>
       <p>
         The menu treats both account types the same way. Picking an external account writes its env
-        block. Picking a Claude account restores the Keychain login <strong>and strips</strong> the
+        block. Picking a Claude account restores the Claude login <strong>and strips</strong> the
         seven managed env keys, so your subscription takes over again. Only those seven keys are
         ever written or removed; hooks, permissions, and the rest of your settings are untouched.
       </p>

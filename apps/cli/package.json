@@ -29,10 +29,6 @@
   "os": [
     "darwin"
   ],
-  "optionalDependencies": {
-    "yoink-cli-darwin-arm64": "0.5.1",
-    "yoink-cli-darwin-x64": "0.5.1"
-  },
   "scripts": {
     "dev": "bun run src/index.ts",
     "build": "bun build src/index.ts --compile --minify --outfile dist/yoink",

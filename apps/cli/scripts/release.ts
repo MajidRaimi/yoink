@@ -20,10 +20,6 @@ const git = (args: string[]) => {
 const cliPkgPath = join(cliDir, "package.json");
 const cliPkg = JSON.parse(readFileSync(cliPkgPath, "utf8"));
 cliPkg.version = version;
-cliPkg.optionalDependencies = {
-  "yoink-cli-darwin-arm64": version,
-  "yoink-cli-darwin-x64": version,
-};
 writeFileSync(cliPkgPath, `${JSON.stringify(cliPkg, null, 2)}\n`);
 
 const sitePath = join(repoRoot, "apps", "web", "lib", "site.ts");

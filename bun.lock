@@ -11,7 +11,7 @@
     },
     "apps/cli": {
       "name": "yoink-cli",
-      "version": "0.5.0",
+      "version": "0.5.1",
       "bin": {
         "yoink": "bin/yoink.js",
       },
@@ -23,10 +23,6 @@
       "devDependencies": {
         "@types/bun": "latest",
         "typescript": "^5.6.0",
-      },
-      "optionalDependencies": {
-        "yoink-cli-darwin-arm64": "0.5.0",
-        "yoink-cli-darwin-x64": "0.5.0",
       },
     },
     "apps/web": {

@@ -48,7 +48,7 @@ export const targets: Target[] = [
   {
     name: "windows-x64",
     bunTarget: "bun-windows-x64",
-    npmName: "yoink-cli-win32-x64",
+    npmName: "yoink-cli-windows-x64",
     npmOs: "win32",
     cpu: "x64",
     binaryName: "yoink.exe",

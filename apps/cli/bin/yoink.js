@@ -15,7 +15,8 @@ if (!supported.has(key)) {
   process.exit(1);
 }
 
-const target = `yoink-cli-${key}`;
+const npmPlatform = process.platform === "win32" ? "windows" : process.platform;
+const target = `yoink-cli-${npmPlatform}-${process.arch}`;
 const binaryName = process.platform === "win32" ? "yoink.exe" : "yoink";
 
 let binary;

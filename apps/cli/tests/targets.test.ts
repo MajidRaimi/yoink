@@ -22,6 +22,11 @@ test("shim supported set size matches target count", () => {
 
 test("every target npm name follows the platform package convention", () => {
   for (const t of targets) {
-    expect(t.npmName).toBe(`yoink-cli-${t.npmOs}-${t.cpu}`);
+    const npmPlatform = t.npmOs === "win32" ? "windows" : t.npmOs;
+    expect(t.npmName).toBe(`yoink-cli-${npmPlatform}-${t.cpu}`);
   }
+});
+
+test("the shim maps win32 to the windows package name", () => {
+  expect(shimSource).toContain('process.platform === "win32" ? "windows"');
 });

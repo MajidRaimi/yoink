@@ -15,10 +15,10 @@ const providers = [
 ] as const;
 
 export const Hero = () => (
-  <section className="relative overflow-hidden pt-36 pb-20 sm:pt-44">
+  <section className="relative flex min-h-[100dvh] flex-col overflow-hidden pt-36 pb-10 sm:pt-44">
     <div className="glow absolute inset-0" aria-hidden />
     <ParticleWaves />
-    <div className="relative mx-auto flex max-w-6xl flex-col items-center px-5 text-center">
+    <div className="relative mx-auto flex w-full max-w-6xl flex-1 flex-col items-center px-5 text-center">
       <Link
         href="/docs/how-it-works"
         className="rise group inline-flex items-center gap-2 rounded-full border border-hairline-strong bg-surface py-1 pl-1 pr-3 backdrop-blur-sm transition-colors hover:border-brand"
@@ -76,7 +76,7 @@ export const Hero = () => (
         <span className="text-hairline-strong">·</span> single binary
       </p>
       <div
-        className="rise mt-[15rem] w-full max-w-4xl sm:mt-[18rem]"
+        className="rise mt-auto w-full max-w-4xl pt-24"
         style={{ animationDelay: "420ms" }}
       >
         <p className="mb-6 font-mono text-[13px] text-faint">

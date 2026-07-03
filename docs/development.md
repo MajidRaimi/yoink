@@ -83,7 +83,7 @@ Pushing the tag triggers `.github/workflows/release.yml`, which:
 3. Packages each as a `.tar.gz` (a `.zip` for Windows) and writes `checksums.txt` (sha256).
 4. Smoke-tests each binary on a native runner: `macos-latest`, `macos-15-intel`, `ubuntu-latest`, `ubuntu-24.04-arm`, and `windows-latest`.
 5. Creates the GitHub Release with the archives and checksums.
-6. Publishes six packages to npm with `--provenance`: `yoink-cli`, `yoink-cli-darwin-arm64`, `yoink-cli-darwin-x64`, `yoink-cli-linux-x64`, `yoink-cli-linux-arm64`, and `yoink-cli-win32-x64`.
+6. Publishes six packages to npm with `--provenance`: `yoink-cli`, `yoink-cli-darwin-arm64`, `yoink-cli-darwin-x64`, `yoink-cli-linux-x64`, `yoink-cli-linux-arm64`, and `yoink-cli-windows-x64`.
 
 ## CI and deploy
 
@@ -97,7 +97,7 @@ Two more workflows run outside the release path.
 The published npm surface is one main package plus five platform packages.
 
 - `yoink-cli`: the main package, whose `bin` entry `yoink` points at `bin/yoink.js`, a tiny Node shim.
-- `yoink-cli-darwin-arm64`, `yoink-cli-darwin-x64`, `yoink-cli-linux-x64`, `yoink-cli-linux-arm64`, and `yoink-cli-win32-x64`: optional dependencies, each carrying the raw compiled binary for its platform and architecture.
+- `yoink-cli-darwin-arm64`, `yoink-cli-darwin-x64`, `yoink-cli-linux-x64`, `yoink-cli-linux-arm64`, and `yoink-cli-windows-x64`: optional dependencies, each carrying the raw compiled binary for its platform and architecture.
 
 At runtime the shim resolves the platform package for the current platform and architecture and execs its binary. Declaring the platform packages as `optionalDependencies` means only the matching binary needs to install.
 

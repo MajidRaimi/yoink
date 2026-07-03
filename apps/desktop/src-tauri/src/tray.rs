@@ -6,14 +6,6 @@ use tauri_plugin_autostart::ManagerExt as AutostartManagerExt;
 
 pub const TRAY_ID: &str = "main";
 
-pub fn truncate_title(name: &str) -> String {
-    if name.chars().count() <= 16 {
-        return name.to_string();
-    }
-    let head: String = name.chars().take(15).collect();
-    format!("{head}\u{2026}")
-}
-
 pub fn init(app: &AppHandle) -> tauri::Result<()> {
     let autostart_item = MenuItemBuilder::with_id("autostart", "Launch at login")
         .build(app)?;
@@ -54,11 +46,4 @@ pub fn init(app: &AppHandle) -> tauri::Result<()> {
         .build(app)?;
 
     Ok(())
-}
-
-pub fn set_title(app: &AppHandle, current: Option<&str>) {
-    if let Some(tray) = app.tray_by_id(TRAY_ID) {
-        let title = current.map(truncate_title);
-        let _ = tray.set_title(title);
-    }
 }

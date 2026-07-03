@@ -30,7 +30,6 @@ fn inherit_login_shell_path() {
 
 pub fn refresh(app: &AppHandle) {
     let store = store::load_store();
-    tray::set_title(app, store.current.as_deref());
     let _ = app.emit("profiles:changed", store);
 }
 

@@ -39,16 +39,16 @@ jobs:
           echo "$OUTPUT"
           echo "$OUTPUT" | grep -q "${GITHUB_REF_NAME#v}"
 
-      - name: Create GitHub release
+      - name: Create or update GitHub release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create "$GITHUB_REF_NAME" \
-            apps/cli/dist/yoink-darwin-arm64 \
-            apps/cli/dist/yoink-darwin-x64 \
-            apps/cli/dist/checksums.txt \
-            --title "$GITHUB_REF_NAME" \
-            --generate-notes
+          ASSETS="apps/cli/dist/yoink-darwin-arm64 apps/cli/dist/yoink-darwin-x64 apps/cli/dist/checksums.txt"
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" $ASSETS --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" $ASSETS --title "$GITHUB_REF_NAME" --generate-notes
+          fi
 
       - name: Publish to npm
         env:

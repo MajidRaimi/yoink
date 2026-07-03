@@ -1,0 +1,51 @@
+{
+  "name": "yoink-cli",
+  "version": "0.5.0",
+  "description": "Switch between Claude Code accounts from your terminal, fast.",
+  "type": "module",
+  "license": "MIT",
+  "author": "Majid Raimi",
+  "homepage": "https://yoink.codes",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MajidRaimi/yoink.git"
+  },
+  "keywords": [
+    "claude-code",
+    "claude",
+    "cli",
+    "account-switcher",
+    "openrouter",
+    "ollama",
+    "anthropic",
+    "macos"
+  ],
+  "bin": {
+    "yoink": "bin/yoink.js"
+  },
+  "files": [
+    "bin"
+  ],
+  "os": [
+    "darwin"
+  ],
+  "optionalDependencies": {
+    "yoink-cli-darwin-arm64": "0.5.0",
+    "yoink-cli-darwin-x64": "0.5.0"
+  },
+  "scripts": {
+    "dev": "bun run src/index.ts",
+    "build": "bun build src/index.ts --compile --minify --outfile dist/yoink",
+    "typecheck": "tsc --noEmit",
+    "test": "bun test tests/"
+  },
+  "dependencies": {
+    "@clack/core": "^0.5.0",
+    "@clack/prompts": "^0.11.0",
+    "picocolors": "^1.1.1"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5.6.0"
+  }
+}

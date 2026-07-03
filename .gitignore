@@ -1,0 +1,17 @@
+node_modules
+dist
+build
+.next
+out
+.svelte-kit
+.turbo
+.vercel
+.output
+*.tsbuildinfo
+
+.env
+.env.*
+!.env.example
+
+.DS_Store
+*.log

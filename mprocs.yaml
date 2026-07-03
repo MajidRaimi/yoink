@@ -1,0 +1,5 @@
+procs:
+  web:
+    shell: "cd apps/web && bun run dev"
+  cli:
+    shell: "cd apps/cli && bun test --watch"

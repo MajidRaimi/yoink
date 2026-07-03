@@ -45,21 +45,23 @@ jobs:
           APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
           APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
           APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
-          APPLE_API_KEY_PATH: ${{ secrets.APPLE_API_KEY_PATH }}
+          APPLE_API_KEY_BASE64: ${{ secrets.APPLE_API_KEY_BASE64 }}
         run: |
-          if [ -n "$APPLE_CERTIFICATE" ]; then
-            {
-              echo "APPLE_CERTIFICATE=$APPLE_CERTIFICATE"
-              echo "APPLE_CERTIFICATE_PASSWORD=$APPLE_CERTIFICATE_PASSWORD"
-              echo "APPLE_SIGNING_IDENTITY=$APPLE_SIGNING_IDENTITY"
-              echo "APPLE_API_ISSUER=$APPLE_API_ISSUER"
-              echo "APPLE_API_KEY=$APPLE_API_KEY"
-              echo "APPLE_API_KEY_PATH=$APPLE_API_KEY_PATH"
-            } >> "$GITHUB_ENV"
-            echo "signing enabled"
-          else
+          if [ -z "$APPLE_CERTIFICATE" ]; then
             echo "no certificate secret, building unsigned"
+            exit 0
           fi
+          KEYFILE="$RUNNER_TEMP/asc_api_key.p8"
+          echo "$APPLE_API_KEY_BASE64" | base64 --decode > "$KEYFILE"
+          {
+            echo "APPLE_CERTIFICATE=$APPLE_CERTIFICATE"
+            echo "APPLE_CERTIFICATE_PASSWORD=$APPLE_CERTIFICATE_PASSWORD"
+            echo "APPLE_SIGNING_IDENTITY=$APPLE_SIGNING_IDENTITY"
+            echo "APPLE_API_ISSUER=$APPLE_API_ISSUER"
+            echo "APPLE_API_KEY=$APPLE_API_KEY"
+            echo "APPLE_API_KEY_PATH=$KEYFILE"
+          } >> "$GITHUB_ENV"
+          echo "signing enabled"
 
       - uses: tauri-apps/tauri-action@v0
         env:

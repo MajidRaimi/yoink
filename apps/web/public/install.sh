@@ -27,8 +27,8 @@ BASE="https://github.com/${REPO}/releases/download/${VERSION}"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
-info "downloading yoink ${VERSION} (${ARCH})"
-curl -fsSL "${BASE}/${ASSET}" -o "${TMP}/${BIN_NAME}" || err "download failed: ${BASE}/${ASSET}"
+info "downloading yoink ${VERSION} (${ARCH}, ~60MB self-contained binary)"
+curl -fL --progress-bar --retry 3 --retry-delay 2 --connect-timeout 30 "${BASE}/${ASSET}" -o "${TMP}/${BIN_NAME}" || err "download failed: ${BASE}/${ASSET}"
 
 if curl -fsSL "${BASE}/checksums.txt" -o "${TMP}/checksums.txt" 2>/dev/null; then
   EXPECTED="$(grep " ${ASSET}\$" "${TMP}/checksums.txt" | awk '{print $1}')"

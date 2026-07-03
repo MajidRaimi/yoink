@@ -23,7 +23,7 @@ export const run = async (argv: string[]): Promise<void> => {
         break;
       case "add":
       case "login":
-        await handleAdd();
+        await handleAdd(rest);
         break;
       case "edit":
         await handleEdit(rest);

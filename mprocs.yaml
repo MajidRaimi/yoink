@@ -3,3 +3,6 @@ procs:
     shell: "cd apps/web && bun run dev"
   cli:
     shell: "cd apps/cli && bun test --watch"
+  desktop:
+    shell: "cd apps/desktop && bun run dev"
+    autostart: false

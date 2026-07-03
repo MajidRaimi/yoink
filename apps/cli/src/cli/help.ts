@@ -16,5 +16,10 @@ ${pc.bold("USAGE")}
   yoink rename ${theme.accent("<a> <b>")}  Rename a profile
   yoink remove ${theme.accent("<name>")}   Delete a profile
   yoink help            Show this help
-  yoink version         Show the version`);
+  yoink version         Show the version
+
+${pc.bold("NON-INTERACTIVE (external providers)")}
+  yoink add --external --name ${theme.accent("<n>")} --provider ${theme.accent("<p>")} --base-url ${theme.accent("<u>")} --model ${theme.accent("<m>")} --token-stdin
+  yoink edit ${theme.accent("<name>")} [--name ${theme.accent("<n>")}] [--provider ${theme.accent("<p>")}] [--base-url ${theme.accent("<u>")}] [--model ${theme.accent("<m>")}] [--token-stdin]
+  ${pc.dim("--token-stdin reads the API key from stdin, e.g. `echo $KEY | yoink add --external ... --token-stdin`")}`);
 };

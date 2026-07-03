@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "@yoink/tokens/tokens.css";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -19,38 +20,6 @@
   --color-brand-soft: var(--brand-soft);
   --color-brand-text: var(--brand-text);
   --color-on-brand: var(--on-brand);
-}
-
-:root {
-  --background: #faf9f7;
-  --foreground: #131110;
-  --muted: rgb(19 17 16 / 0.68);
-  --faint: rgb(19 17 16 / 0.62);
-  --surface: rgb(19 17 16 / 0.03);
-  --surface-2: rgb(19 17 16 / 0.06);
-  --surface-3: rgb(19 17 16 / 0.1);
-  --hairline: rgb(19 17 16 / 0.08);
-  --hairline-strong: rgb(19 17 16 / 0.14);
-  --brand: #facc15;
-  --brand-soft: #fde68a;
-  --brand-text: #a16207;
-  --on-brand: #0a0908;
-}
-
-.dark {
-  --background: #0a0908;
-  --foreground: #f5f4f2;
-  --muted: rgb(245 244 242 / 0.68);
-  --faint: rgb(245 244 242 / 0.5);
-  --surface: rgb(255 255 255 / 0.03);
-  --surface-2: rgb(255 255 255 / 0.08);
-  --surface-3: rgb(255 255 255 / 0.14);
-  --hairline: rgb(255 255 255 / 0.06);
-  --hairline-strong: rgb(255 255 255 / 0.1);
-  --brand: #facc15;
-  --brand-soft: #fde68a;
-  --brand-text: #facc15;
-  --on-brand: #0a0908;
 }
 
 html {

@@ -19,7 +19,8 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "tailwind-merge": "^3.3.0",
-    "three": "^0.180.0"
+    "three": "^0.180.0",
+    "@yoink/tokens": "workspace:*"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.2",

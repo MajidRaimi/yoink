@@ -1,7 +1,7 @@
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { createHash } from "node:crypto";
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { chmodSync, copyFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 
 const cliDir = join(dirname(fileURLToPath(import.meta.url)), "..");
 const distDir = join(cliDir, "dist");
@@ -12,31 +12,34 @@ const targets = [
   { name: "darwin-x64", bunTarget: "bun-darwin-x64" },
 ];
 
+const run = (cmd: string[], cwd: string) => {
+  const result = Bun.spawnSync(cmd, { cwd, stdout: "inherit", stderr: "inherit" });
+  if (result.exitCode !== 0) {
+    throw new Error(`command failed: ${cmd.join(" ")}`);
+  }
+};
+
 const checksums: string[] = [];
 
 for (const target of targets) {
-  const asset = `yoink-${target.name}`;
-  const outfile = join(distDir, asset);
-  const result = Bun.spawnSync(
-    [
-      "bun",
-      "build",
-      "src/index.ts",
-      "--compile",
-      "--minify",
-      `--target=${target.bunTarget}`,
-      `--outfile=${outfile}`,
-    ],
-    { cwd: cliDir, stdout: "inherit", stderr: "inherit" },
+  const rawBinary = join(distDir, `yoink-${target.name}`);
+  run(
+    ["bun", "build", "src/index.ts", "--compile", "--minify", `--target=${target.bunTarget}`, `--outfile=${rawBinary}`],
+    cliDir,
   );
 
-  if (result.exitCode !== 0) {
-    throw new Error(`build failed for ${target.name}`);
-  }
+  const stageDir = join(distDir, `stage-${target.name}`);
+  mkdirSync(stageDir, { recursive: true });
+  const stagedBinary = join(stageDir, "yoink");
+  copyFileSync(rawBinary, stagedBinary);
+  chmodSync(stagedBinary, 0o755);
 
-  const digest = createHash("sha256").update(readFileSync(outfile)).digest("hex");
-  checksums.push(`${digest}  ${asset}`);
+  const tarball = `yoink-${target.name}.tar.gz`;
+  run(["tar", "-czf", join(distDir, tarball), "-C", stageDir, "yoink"], cliDir);
+
+  const digest = createHash("sha256").update(readFileSync(join(distDir, tarball))).digest("hex");
+  checksums.push(`${digest}  ${tarball}`);
 }
 
 writeFileSync(join(distDir, "checksums.txt"), `${checksums.join("\n")}\n`);
-console.log(`built ${targets.length} binaries into ${distDir}`);
+console.log(`built ${targets.length} binaries + tarballs into ${distDir}`);

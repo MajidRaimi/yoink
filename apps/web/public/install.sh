@@ -17,28 +17,31 @@ esac
 
 VERSION="${YOINK_VERSION:-}"
 if [ -z "$VERSION" ]; then
-  VERSION="$(curl -fsSL "https://api.github.com/repos/${REPO}/releases/latest" | grep '"tag_name"' | head -1 | cut -d'"' -f4)"
+  VERSION="$(curl -fsSL "https://api.github.com/repos/${REPO}/releases/latest" | grep '"tag_name"' | head -1 | cut -d'"' -f4 || true)"
 fi
 [ -n "$VERSION" ] || err "could not resolve the latest yoink version."
 
-ASSET="yoink-${ARCH}"
+ASSET="yoink-${ARCH}.tar.gz"
 BASE="https://github.com/${REPO}/releases/download/${VERSION}"
 
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
-info "downloading yoink ${VERSION} (${ARCH}, ~60MB self-contained binary)"
-curl -fL --progress-bar --retry 3 --retry-delay 2 --connect-timeout 30 "${BASE}/${ASSET}" -o "${TMP}/${BIN_NAME}" || err "download failed: ${BASE}/${ASSET}"
+info "downloading yoink ${VERSION} (${ARCH})"
+curl -fL --progress-bar --retry 3 --retry-delay 2 --connect-timeout 30 "${BASE}/${ASSET}" -o "${TMP}/${ASSET}" \
+  || err "download failed: ${BASE}/${ASSET}"
 
 if curl -fsSL "${BASE}/checksums.txt" -o "${TMP}/checksums.txt" 2>/dev/null; then
   EXPECTED="$(grep " ${ASSET}\$" "${TMP}/checksums.txt" | awk '{print $1}')"
   if [ -n "$EXPECTED" ]; then
-    ACTUAL="$(shasum -a 256 "${TMP}/${BIN_NAME}" | awk '{print $1}')"
+    ACTUAL="$(shasum -a 256 "${TMP}/${ASSET}" | awk '{print $1}')"
     [ "$EXPECTED" = "$ACTUAL" ] || err "checksum mismatch for ${ASSET}"
     info "checksum verified"
   fi
 fi
 
+tar -xzf "${TMP}/${ASSET}" -C "${TMP}"
+[ -f "${TMP}/${BIN_NAME}" ] || err "archive did not contain ${BIN_NAME}"
 chmod +x "${TMP}/${BIN_NAME}"
 
 if [ -w "/usr/local/bin" ]; then

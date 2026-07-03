@@ -15,7 +15,7 @@ const providers = [
 ] as const;
 
 export const Hero = () => (
-  <section className="relative flex min-h-[100dvh] flex-col overflow-hidden pt-36 pb-10 sm:pt-44">
+  <section className="relative flex min-h-[100svh] flex-col overflow-hidden pt-36 pb-10 sm:pt-44">
     <div className="glow absolute inset-0" aria-hidden />
     <ParticleWaves />
     <div className="relative mx-auto flex w-full max-w-6xl flex-1 flex-col items-center px-5 text-center">

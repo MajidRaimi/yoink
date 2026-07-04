@@ -2,13 +2,14 @@
 
 <img src="https://raw.githubusercontent.com/MajidRaimi/yoink/main/docs/assets/banner.png" alt="yoink" width="820" />
 
-<h1>yoink</h1>
+<h1>Yoink</h1>
 
-<p><strong>Switch between Claude Code accounts from your terminal, fast.</strong></p>
+<p><strong>Switch between Claude Code accounts from your macOS menu bar or terminal, fast.</strong></p>
 
 <p>
-Snapshot each login into a named profile, swap them in a single keystroke, and run OpenRouter,
-Ollama, or any Anthropic-compatible model through the same Claude Code harness. No browser, no re-login.
+Snapshot each login into a named profile, swap them in a single keystroke from the menu bar app or the
+CLI, and run OpenRouter, Ollama, or any Anthropic-compatible model through the same Claude Code harness.
+No browser, no re-login.
 </p>
 
 <p>
@@ -22,6 +23,7 @@ Ollama, or any Anthropic-compatible model through the same Claude Code harness. 
 
 <p>
 <a href="https://yoink.codes"><strong>Website</strong></a> &nbsp;·&nbsp;
+<a href="https://yoink.codes/download/"><strong>Download</strong></a> &nbsp;·&nbsp;
 <a href="https://yoink.codes/docs/getting-started/"><strong>Docs</strong></a> &nbsp;·&nbsp;
 <a href="https://www.npmjs.com/package/yoink-cli"><strong>npm</strong></a>
 </p>
@@ -31,6 +33,12 @@ Ollama, or any Anthropic-compatible model through the same Claude Code harness. 
 ---
 
 ## Install
+
+### macOS menu bar app
+
+Download the notarized **Yoink** app for Apple Silicon or Intel from the [download page](https://yoink.codes/download/), then drag it to Applications. It lives in the menu bar, so switching accounts is one click with no terminal.
+
+### CLI
 
 macOS / Linux:
 

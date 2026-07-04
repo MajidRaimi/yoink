@@ -66,7 +66,7 @@ export const FinalCta = () => (
           </p>
         </StaggerItem>
         <StaggerItem className="w-full pt-2">
-          <div className="grid w-full items-start gap-4 text-left md:grid-cols-2">
+          <div className="grid w-full gap-4 text-left md:grid-cols-2">
             <Panel
               icon={<PanelTop className="size-4" strokeWidth={2} />}
               label="Menu bar app"

@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 388" width="760" height="388" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" role="img" aria-label="Yoink interactive menu switching between Claude Code accounts">
+  <style>
+    .win { fill: #0a0908; }
+    .edge { fill: none; stroke: #ffffff14; stroke-width: 1; }
+    .bar { fill: #12100e; }
+    .tt { fill: #6b6a67; font-size: 13px; }
+    .row { font-size: 15px; fill: #e9e7e2; }
+    .sub { font-size: 15px; fill: #6b6a67; }
+    .brand { fill: #facc15; }
+    .ring { fill: none; stroke: #4a4844; stroke-width: 1.6; }
+    .hint { fill: #56544f; font-size: 12.5px; }
+    .cur { fill: #facc15; font-size: 15px; }
+
+    .hl { transform: translateY(0); animation: move 9s ease-in-out infinite; }
+    @keyframes move {
+      0%,28%   { transform: translateY(0); }
+      33%,61%  { transform: translateY(42px); }
+      66%,94%  { transform: translateY(84px); }
+      100%     { transform: translateY(0); }
+    }
+    .cursor { transform: translateY(0); animation: move 9s ease-in-out infinite; }
+
+    .d0 { animation: a 9s steps(1) infinite; }
+    .d1 { animation: b 9s steps(1) infinite; }
+    .d2 { animation: c 9s steps(1) infinite; }
+    @keyframes a { 0%{opacity:1} 31%{opacity:1} 33%{opacity:0} 97%{opacity:0} 100%{opacity:1} }
+    @keyframes b { 0%{opacity:0} 33%{opacity:1} 64%{opacity:1} 66%{opacity:0} 100%{opacity:0} }
+    @keyframes c { 0%{opacity:0} 66%{opacity:1} 97%{opacity:1} 100%{opacity:0} }
+
+    .caret { animation: blink 1.05s steps(1) infinite; }
+    @keyframes blink { 0%,50%{opacity:1} 51%,100%{opacity:0} }
+  </style>
+
+  <rect x="0.5" y="0.5" width="759" height="387" rx="14" class="win" />
+  <rect x="0.5" y="0.5" width="759" height="387" rx="14" class="edge" />
+  <rect x="1" y="1" width="758" height="44" rx="14" class="bar" />
+  <rect x="1" y="30" width="758" height="15" class="bar" />
+  <circle cx="26" cy="23" r="6" fill="#ff5f57" />
+  <circle cx="46" cy="23" r="6" fill="#febc2e" />
+  <circle cx="66" cy="23" r="6" fill="#28c840" />
+  <text x="380" y="28" text-anchor="middle" class="tt">yoink — switch Claude accounts</text>
+
+  <g transform="translate(0,78)">
+    <rect class="hl" x="24" y="0" width="712" height="34" rx="8" fill="#facc1518" />
+    <rect class="hl" x="24" y="0" width="3" height="34" rx="2" fill="#facc15" />
+    <text class="cur cursor" x="40" y="22">›</text>
+
+    <g transform="translate(64,0)">
+      <circle class="ring" cx="8" cy="17" r="6" />
+      <circle class="brand d0" cx="8" cy="17" r="6" opacity="1" />
+      <text class="row" x="28" y="22">work</text>
+      <text class="sub" x="150" y="22">work@company.com</text>
+    </g>
+    <g transform="translate(64,42)">
+      <circle class="ring" cx="8" cy="17" r="6" />
+      <circle class="brand d1" cx="8" cy="17" r="6" opacity="0" />
+      <text class="row" x="28" y="22">personal</text>
+      <text class="sub" x="150" y="22">me@personal.dev</text>
+    </g>
+    <g transform="translate(64,84)">
+      <circle class="ring" cx="8" cy="17" r="6" />
+      <circle class="brand d2" cx="8" cy="17" r="6" opacity="0" />
+      <text class="row" x="28" y="22">openrouter</text>
+      <text class="sub" x="150" y="22">z-ai/glm-4.7</text>
+    </g>
+  </g>
+
+  <line x1="24" y1="212" x2="736" y2="212" stroke="#ffffff10" stroke-width="1" />
+  <text x="40" y="240" class="hint">↑↓ move   ↵ switch   n new   e edit   s save   d delete   q quit</text>
+
+  <text x="40" y="290" class="row" fill="#6b6a67">$ <tspan fill="#e9e7e2">yoink personal</tspan></text>
+  <text x="40" y="316" class="row"><tspan class="brand">✓</tspan> switched to <tspan class="brand">personal</tspan>  ·  restart Claude Code to pick it up</text>
+  <text x="40" y="348" class="row" fill="#6b6a67">$ <tspan class="caret" fill="#facc15">▋</tspan></text>
+</svg>

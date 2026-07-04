@@ -28,6 +28,10 @@ No browser, no re-login.
 <a href="https://www.npmjs.com/package/yoink-cli"><strong>npm</strong></a>
 </p>
 
+<br />
+
+<img src="https://raw.githubusercontent.com/MajidRaimi/yoink/main/docs/assets/demo.svg" alt="Yoink switching between Claude Code accounts" width="720" />
+
 </div>
 
 ---

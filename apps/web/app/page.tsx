@@ -21,11 +21,11 @@ const HomePage = () => (
     <JsonLd data={webSiteLd()} />
     <JsonLd data={organizationLd()} />
     <Hero />
-    <DesktopDownload />
     <Personas />
     <HowItWorks />
     <FeaturesBento />
     <EnvOverride />
+    <DesktopDownload />
     <FinalCta />
   </>
 );

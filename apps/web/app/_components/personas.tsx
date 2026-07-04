@@ -15,7 +15,7 @@ const personas: Persona[] = [
   {
     tag: "the rate-limited",
     title: "You hit the usage cap mid-session.",
-    body: "So you keep a second subscription for exactly that moment. yoink re-snapshots the live token before each switch (Claude Code refreshes it silently), turning a browser round-trip into a two-second command.",
+    body: "So you keep a second subscription for exactly that moment. Yoink re-snapshots the live token before each switch (Claude Code refreshes it silently), turning a browser round-trip into a two-second command.",
     artifact: <PersonaSwitchTerminal />,
   },
   {
@@ -24,7 +24,7 @@ const personas: Persona[] = [
     reversed: true,
     body: (
       <>
-        yoink registers any Anthropic-compatible endpoint as a profile: it validates the key against{" "}
+        Yoink registers any Anthropic-compatible endpoint as a profile: it validates the key against{" "}
         <code className="font-mono text-[0.92em] text-brand-text">/v1/models</code>, hands you a
         searchable catalog, and manages the env overrides Claude Code reads.
       </>

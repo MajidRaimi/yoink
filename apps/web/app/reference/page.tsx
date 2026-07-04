@@ -7,7 +7,7 @@ import { CommandTable } from "./_components/command-table";
 
 export const metadata = pageMetadata({
   title: "CLI reference",
-  description: "Every yoink command, alias, argument, and the menu keymap.",
+  description: "Every Yoink command, alias, argument, and the menu keymap.",
   path: "/reference/",
 });
 
@@ -21,7 +21,7 @@ const files = [
 ];
 
 const ReferencePage = () => (
-  <DocsPage title="CLI reference" description="The complete surface of the yoink binary." path="/reference/">
+  <DocsPage title="CLI reference" description="The complete surface of the Yoink binary." path="/reference/">
     <DocsSection heading="Commands" icon={Terminal}>
       <CommandTable />
       <p>
@@ -59,7 +59,7 @@ const ReferencePage = () => (
       </p>
     </DocsSection>
 
-    <DocsSection heading="Files yoink touches" icon={Files}>
+    <DocsSection heading="Files Yoink touches" icon={Files}>
       <div className="overflow-hidden rounded-xl border border-hairline">
         <table className="w-full text-sm">
           <tbody>

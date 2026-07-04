@@ -64,7 +64,7 @@ const Header = () => {
     <header className="flex shrink-0 items-center justify-between border-b border-hairline py-2 pr-2.5 pl-3.5">
       <div className="flex items-center gap-2">
         <YoinkGlyph size={16} className="text-brand" />
-        <span className="font-mono text-[13px] text-foreground">yoink</span>
+        <span className="font-mono text-[13px] text-foreground">Yoink</span>
       </div>
       <div className="flex items-center gap-0.5">
         <AddMenu />

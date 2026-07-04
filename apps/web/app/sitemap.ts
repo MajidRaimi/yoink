@@ -11,6 +11,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   const routes = [
     { path: "/", priority: 1 },
+    { path: "/download/", priority: 0.8 },
     { path: "/docs/", priority: 0.7 },
     ...docsFlat.map((doc) => ({
       path: withTrailingSlash(doc.href),

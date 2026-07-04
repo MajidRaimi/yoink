@@ -8,7 +8,7 @@ const steps = [
     op: "read",
     title: "Re-snapshot the live login",
     surface: "credential store",
-    body: "Claude Code refreshes tokens in the background. yoink folds the live one back in first, so nothing is lost.",
+    body: "Claude Code refreshes tokens in the background. Yoink folds the live one back in first, so nothing is lost.",
     command: 'Keychain on macOS · ~/.claude/.credentials.json elsewhere',
   },
   {

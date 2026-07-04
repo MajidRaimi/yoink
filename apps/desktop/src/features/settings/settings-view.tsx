@@ -1,5 +1,6 @@
 import { useViewStore } from "@/shared/view-store";
 import { useSettings } from "./use-settings";
+import { useAppVersion } from "./use-app-version";
 
 const rowDelay = (index: number) => ({ animationDelay: `${Math.min(index * 25, 200)}ms` });
 
@@ -44,6 +45,7 @@ const Toggle = ({ checked, onToggle }: { checked: boolean; onToggle: () => void 
 export const SettingsView = () => {
   const setView = useViewStore((state) => state.setView);
   const { settings, error, recording, startRecording, setAutostart } = useSettings();
+  const version = useAppVersion();
 
   return (
     <div className="rise flex h-full flex-col p-3">
@@ -70,7 +72,7 @@ export const SettingsView = () => {
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-[13px] text-foreground">Global shortcut</p>
-                <p className="mt-0.5 text-[11px] text-faint">Toggle the yoink panel from anywhere</p>
+                <p className="mt-0.5 text-[11px] text-faint">Toggle the Yoink panel from anywhere</p>
               </div>
               <div className="flex items-center gap-2">
                 <HotkeyChips hotkey={settings.hotkey} />
@@ -98,15 +100,15 @@ export const SettingsView = () => {
           >
             <div>
               <p className="text-[13px] text-foreground">Launch at login</p>
-              <p className="mt-0.5 text-[11px] text-faint">Start yoink when you log in to your Mac</p>
+              <p className="mt-0.5 text-[11px] text-faint">Start Yoink when you log in to your Mac</p>
             </div>
             <Toggle checked={settings.autostart} onToggle={() => void setAutostart(!settings.autostart)} />
           </section>
 
           <section style={rowDelay(2)} className="rise mt-auto rounded-lg border border-hairline bg-surface p-3">
             <div className="flex items-baseline justify-between">
-              <p className="font-mono text-[13px] text-foreground">yoink</p>
-              <p className="font-mono text-[11px] text-faint">0.1.0</p>
+              <p className="font-mono text-[13px] text-foreground">Yoink</p>
+              <p className="font-mono text-[11px] text-faint">{version}</p>
             </div>
             <p className="mt-1 text-[11px] text-faint">Updates install automatically from GitHub releases</p>
             <a

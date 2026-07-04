@@ -21,7 +21,7 @@ esac
 
 VERSION="${YOINK_VERSION:-}"
 if [ -z "$VERSION" ]; then
-  VERSION="$(curl -fsSL "https://api.github.com/repos/${REPO}/releases/latest" | grep '"tag_name"' | head -1 | cut -d'"' -f4 || true)"
+  VERSION="$(curl -fsSL "https://api.github.com/repos/${REPO}/releases" | grep '"tag_name"' | cut -d'"' -f4 | grep -v '^desktop-' | grep -E '^v[0-9]' | head -1 || true)"
 fi
 [ -n "$VERSION" ] || err "could not resolve the latest yoink version."
 

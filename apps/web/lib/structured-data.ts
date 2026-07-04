@@ -8,14 +8,14 @@ const author = {
 
 const publisher = {
   "@type": "Organization",
-  name: site.name,
+  name: "Yoink",
   url: site.url,
 };
 
 export const softwareApplicationLd = () => ({
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
-  name: site.name,
+  name: "Yoink",
   description: site.description,
   url: site.url,
   applicationCategory: "DeveloperApplication",
@@ -29,7 +29,7 @@ export const softwareApplicationLd = () => ({
 export const webSiteLd = () => ({
   "@context": "https://schema.org",
   "@type": "WebSite",
-  name: site.name,
+  name: "Yoink",
   url: site.url,
   description: site.description,
 });
@@ -37,7 +37,7 @@ export const webSiteLd = () => ({
 export const organizationLd = () => ({
   "@context": "https://schema.org",
   "@type": "Organization",
-  name: site.name,
+  name: "Yoink",
   url: site.url,
   logo: `${site.url}/icon-512.png`,
   sameAs: [site.repo],

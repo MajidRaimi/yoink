@@ -1,5 +1,5 @@
 export const site = {
-  name: "yoink",
+  name: "Yoink",
   version: "0.6.0",
   url: "https://yoink.codes",
   description:
@@ -8,4 +8,9 @@ export const site = {
   installCommand: "curl -fsSL https://yoink.codes/install.sh | bash",
   installCommandWindows: 'powershell -c "irm https://yoink.codes/install.ps1 | iex"',
   npmPackage: "yoink-cli",
+  desktopVersion: "0.1.5",
+  releasesUrl: "https://github.com/MajidRaimi/yoink/releases",
 } as const;
+
+export const desktopDmgUrl = (arch: "aarch64" | "x64") =>
+  `https://github.com/MajidRaimi/yoink/releases/download/desktop-v${site.desktopVersion}/Yoink_${site.desktopVersion}_${arch}.dmg`;

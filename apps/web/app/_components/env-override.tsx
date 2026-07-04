@@ -7,7 +7,7 @@ export const EnvOverride = () => (
       <FadeUp>
         <h2 className="display text-[clamp(1.8rem,4vw,2.75rem)]">One harness, any backend</h2>
         <p className="mt-5 max-w-[48ch] leading-relaxed text-muted">
-          yoink points Claude Code at any Anthropic-compatible endpoint, OpenRouter, Ollama, GLM,
+          Yoink points Claude Code at any Anthropic-compatible endpoint, OpenRouter, Ollama, GLM,
           anything that answers{" "}
           <code className="font-mono text-[0.92em] text-brand-text">/v1/models</code>.
         </p>

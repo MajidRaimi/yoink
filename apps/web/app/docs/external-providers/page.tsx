@@ -17,7 +17,7 @@ const ExternalProvidersPage = () => (
   >
     <DocsSection heading="Adding a provider" icon={PlugZap}>
       <p>
-        Run <code>yoink add</code> and choose <strong>External provider</strong>. yoink asks for
+        Run <code>yoink add</code> and choose <strong>External provider</strong>. Yoink asks for
         three things:
       </p>
       <CodeBlock
@@ -35,11 +35,11 @@ API key         sk-or-v1-…`}
     </DocsSection>
 
     <DocsSection heading="Global or project scope" icon={Globe}>
-      <p>Then yoink asks where the provider should apply:</p>
+      <p>Then Yoink asks where the provider should apply:</p>
       <p>
         <strong>Globally</strong> writes the env block into <code>~/.claude/settings.json</code>,
         which makes the provider a switchable profile in the menu like any other account. If that
-        file happens to be tracked in a git repo, yoink warns you before a token lands in it.
+        file happens to be tracked in a git repo, Yoink warns you before a token lands in it.
       </p>
       <p>
         <strong>This project only</strong> writes <code>./.claude/settings.local.json</code>{" "}

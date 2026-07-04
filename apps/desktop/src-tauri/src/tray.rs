@@ -14,7 +14,7 @@ pub fn init(app: &AppHandle) -> tauri::Result<()> {
         .separator()
         .text("updates", "Check for updates")
         .separator()
-        .text("quit", "Quit yoink")
+        .text("quit", "Quit Yoink")
         .build()?;
 
     TrayIconBuilder::with_id(TRAY_ID)

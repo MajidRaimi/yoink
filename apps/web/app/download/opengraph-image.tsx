@@ -2,11 +2,11 @@ import { createOgImage, contentType, size } from "@/lib/og";
 
 export { contentType, size };
 export const dynamic = "force-static";
-export const alt = "Yoink · Usage";
+export const alt = "Download Yoink for macOS";
 
 export default function Image() {
   return createOgImage({
-    title: "Usage",
-    subtitle: "The command set and how the daily workflows fit together.",
+    title: "Download Yoink",
+    subtitle: "The menu bar app for Claude Code accounts",
   });
 }

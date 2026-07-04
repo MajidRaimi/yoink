@@ -83,7 +83,7 @@ export const createOgImage = ({ title, subtitle }: OgImageInput) =>
           <div style={{ display: "flex", alignItems: "center", gap: 15 }}>
             <img width={52} height={52} src={wordmark} />
             <div style={{ display: "flex", fontSize: 33, fontWeight: 700, color: brand, letterSpacing: -0.5 }}>
-              yoink
+              Yoink
             </div>
           </div>
 

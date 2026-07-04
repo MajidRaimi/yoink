@@ -21,11 +21,11 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
   title: {
-    default: `${site.name} · switch Claude Code accounts, fast`,
-    template: `%s · ${site.name}`,
+    default: `Yoink · switch Claude Code accounts, fast`,
+    template: `%s · Yoink`,
   },
   description: site.description,
-  applicationName: site.name,
+  applicationName: "Yoink",
   authors: [{ name: "Majid Raimi", url: site.repo }],
   creator: "Majid Raimi",
   publisher: "Majid Raimi",
@@ -46,16 +46,16 @@ export const metadata: Metadata = {
     apple: "/apple-icon.png",
   },
   openGraph: {
-    title: site.name,
+    title: "Yoink",
     description: site.description,
     url: site.url,
-    siteName: site.name,
+    siteName: "Yoink",
     locale: "en_US",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: site.name,
+    title: "Yoink",
     description: site.description,
   },
   robots: {

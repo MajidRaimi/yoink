@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "yoink",
-  "version": "0.1.4",
+  "productName": "Yoink",
+  "version": "0.1.5",
   "identifier": "codes.yoink.desktop",
   "build": {
     "beforeDevCommand": "bun run scripts/build-sidecar.ts host && bun run vite:dev",
@@ -14,7 +14,7 @@
     "windows": [
       {
         "label": "panel",
-        "title": "yoink",
+        "title": "Yoink",
         "width": 380,
         "height": 520,
         "transparent": true,
@@ -56,7 +56,13 @@
     ],
     "macOS": {
       "minimumSystemVersion": "12.0",
-      "entitlements": "./Entitlements.plist"
+      "entitlements": "./Entitlements.plist",
+      "dmg": {
+        "background": "./dmg/background.png",
+        "windowSize": { "width": 660, "height": 400 },
+        "appPosition": { "x": 180, "y": 200 },
+        "applicationFolderPosition": { "x": 480, "y": 200 }
+      }
     }
   },
   "plugins": {

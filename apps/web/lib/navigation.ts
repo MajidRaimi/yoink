@@ -21,7 +21,7 @@ export const docsSections: DocSection[] = [
       {
         title: "Getting started",
         href: "/docs/getting-started",
-        description: "Install yoink and switch your first account.",
+        description: "Install Yoink and switch your first account.",
         icon: Rocket,
       },
       {

@@ -21,8 +21,8 @@ const HowItWorksPage = () => (
         <code>Claude Code-credentials</code>. On Linux and Windows, the same credential blob lives
         in a plaintext file at <code>~/.claude/.credentials.json</code>. On every platform, your
         account identity (email, organization) sits in the <code>oauthAccount</code> block of{" "}
-        <code>~/.claude.json</code>. A yoink profile is a snapshot of both. If{" "}
-        <code>CLAUDE_CONFIG_DIR</code> is set, yoink follows it for these files, matching Claude
+        <code>~/.claude.json</code>. A Yoink profile is a snapshot of both. If{" "}
+        <code>CLAUDE_CONFIG_DIR</code> is set, Yoink follows it for these files, matching Claude
         Code.
       </p>
       <CodeBlock
@@ -34,7 +34,7 @@ const HowItWorksPage = () => (
     <DocsSection heading="What a switch does" icon={Workflow}>
       <p>
         <strong>1. Re-snapshot.</strong> Claude Code refreshes tokens silently in the background,
-        so yoink first reads the live credential and folds it back into the profile that is
+        so Yoink first reads the live credential and folds it back into the profile that is
         currently active. A token refreshed five minutes ago is preserved, not clobbered.
       </p>
       <p>
@@ -57,7 +57,7 @@ const HowItWorksPage = () => (
         keeps owner-only permissions too: <code>0600</code> on Linux, and on Windows it inherits
         your user profile&apos;s ACLs, the same protection Claude Code itself applies. On macOS the
         credential never touches a file: it stays in the Keychain.
-        Every write in yoink, the profile store, the credentials file, <code>~/.claude.json</code>,
+        Every write in Yoink, the profile store, the credentials file, <code>~/.claude.json</code>,
         and both settings files, is atomic: content goes to a temp file first, then a{" "}
         <code>rename</code> replaces the original, so a crash mid-write can never leave a
         truncated file.
@@ -67,7 +67,7 @@ const HowItWorksPage = () => (
     <DocsSection heading="Why a restart is needed" icon={RotateCcw}>
       <p>
         A running Claude Code session holds its token in memory and may write it back to the
-        credential store on its next refresh, overwriting what yoink just placed there. yoink
+        credential store on its next refresh, overwriting what Yoink just placed there. Yoink
         detects a running session (<code>pgrep</code> on macOS and Linux, <code>tasklist</code> on
         Windows) and asks before switching. Restart Claude Code after a switch and it boots from
         the new credentials.

@@ -17,8 +17,8 @@ export const Navbar = () => {
       <nav className="w-full max-w-6xl rounded-2xl border border-hairline bg-surface backdrop-blur-xl transition-all duration-500">
         <div className="relative flex h-14 items-center justify-between px-3">
           <Link href="/" className="relative z-10 flex shrink-0 items-center gap-2.5" onClick={() => setOpen(false)}>
-            <Image src="/icon.svg" alt="yoink" width={28} height={28} className="rounded-lg" />
-            <span className="display text-[15px]">yoink</span>
+            <Image src="/icon.svg" alt="Yoink" width={28} height={28} className="rounded-lg" />
+            <span className="display text-[15px]">Yoink</span>
           </Link>
 
           <div className="pointer-events-none absolute inset-0 hidden items-center justify-center gap-1 md:flex">
@@ -32,6 +32,12 @@ export const Navbar = () => {
                   {link.label}
                 </Link>
               ))}
+              <Link
+                href="/download"
+                className="rounded-lg px-4 py-1.5 font-mono text-[13px] text-faint transition-colors hover:text-foreground"
+              >
+                Download
+              </Link>
               <a
                 href={site.repo}
                 target="_blank"
@@ -99,6 +105,13 @@ export const Navbar = () => {
                 {link.label}
               </Link>
             ))}
+            <Link
+              href="/download"
+              onClick={() => setOpen(false)}
+              className="block rounded-xl px-4 py-3 font-mono text-sm text-faint transition-colors hover:text-foreground"
+            >
+              Download
+            </Link>
             <a
               href={site.repo}
               target="_blank"

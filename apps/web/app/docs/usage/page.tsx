@@ -64,7 +64,7 @@ yoink current`}
         Claude Code refreshes its OAuth token silently while you work. Every switch re-snapshots
         the live credential into the active profile before writing the target one, so the
         profile store always holds the newest token for each account. If a Claude Code session is
-        running during a switch, yoink warns you first: a live session can overwrite the token on
+        running during a switch, Yoink warns you first: a live session can overwrite the token on
         its next refresh.
       </p>
     </DocsSection>

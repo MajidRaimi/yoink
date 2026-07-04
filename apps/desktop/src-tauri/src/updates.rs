@@ -13,7 +13,7 @@ pub fn check_in_background(app: AppHandle) {
                 } else {
                     "Update download failed."
                 };
-                let _ = app.notification().builder().title("yoink").body(body).show();
+                let _ = app.notification().builder().title("Yoink").body(body).show();
                 if downloaded.is_ok() {
                     app.restart();
                 }
@@ -22,7 +22,7 @@ pub fn check_in_background(app: AppHandle) {
                 let _ = app
                     .notification()
                     .builder()
-                    .title("yoink")
+                    .title("Yoink")
                     .body("You are on the latest version.")
                     .show();
             }
@@ -30,7 +30,7 @@ pub fn check_in_background(app: AppHandle) {
                 let _ = app
                     .notification()
                     .builder()
-                    .title("yoink")
+                    .title("Yoink")
                     .body("Could not check for updates.")
                     .show();
             }

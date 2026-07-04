@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1320" height="800" viewBox="0 0 1320 800">
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="18%" r="55%">
+      <stop offset="0%" stop-color="#facc15" stop-opacity="0.18" />
+      <stop offset="45%" stop-color="#facc15" stop-opacity="0.06" />
+      <stop offset="100%" stop-color="#facc15" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="arrow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#facc15" stop-opacity="0.15" />
+      <stop offset="100%" stop-color="#facc15" stop-opacity="0.55" />
+    </linearGradient>
+  </defs>
+
+  <rect width="1320" height="800" fill="#0a0908" />
+  <rect width="1320" height="800" fill="url(#glow)" />
+
+  <g transform="translate(474 120)">
+    <rect width="120" height="120" rx="30" fill="#facc15" />
+    <path transform="scale(3.75) matrix(0.0126 0 0 -0.0126 7.8277 24.3614)" fill="#0a0908" d="M424 0V422L-26 1327H408L867 391V0ZM895 484 680 920 898 1327H1323Z" />
+  </g>
+
+  <text x="630" y="212" font-family="system-ui, -apple-system, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="104" font-weight="700" fill="#f5f4f2" letter-spacing="-2">Yoink</text>
+
+  <text x="660" y="290" text-anchor="middle" font-family="system-ui, -apple-system, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="32" font-weight="500" fill="#8a8580" letter-spacing="0.5">Drag Yoink to Applications to install</text>
+
+  <g transform="translate(0 400)" opacity="0.85">
+    <line x1="560" y1="0" x2="742" y2="0" stroke="url(#arrow)" stroke-width="10" stroke-linecap="round" />
+    <path d="M726 -22 L760 0 L726 22" fill="none" stroke="#facc15" stroke-opacity="0.55" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" />
+  </g>
+</svg>

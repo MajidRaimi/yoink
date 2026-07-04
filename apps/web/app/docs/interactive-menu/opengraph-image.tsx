@@ -2,7 +2,7 @@ import { createOgImage, contentType, size } from "@/lib/og";
 
 export { contentType, size };
 export const dynamic = "force-static";
-export const alt = "yoink · Interactive menu";
+export const alt = "Yoink · Interactive menu";
 
 export default function Image() {
   return createOgImage({

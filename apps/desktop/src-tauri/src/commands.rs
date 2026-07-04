@@ -45,7 +45,7 @@ pub async fn switch_profile(app: AppHandle, name: String) -> Result<(), String> 
     let _ = app
         .notification()
         .builder()
-        .title("yoink")
+        .title("Yoink")
         .body(format!("Switched to {name}. Restart Claude Code to pick it up."))
         .show();
     Ok(())

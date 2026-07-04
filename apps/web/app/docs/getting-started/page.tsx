@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { pageMetadata } from "@/lib/seo";
 import { site } from "@/lib/site";
 import { Download, ListChecks, Repeat, UserPlus } from "lucide-react";
@@ -27,22 +28,17 @@ const GettingStartedPage = () => (
     </DocsSection>
 
     <DocsSection heading="Install" icon={Download}>
-      <p>On macOS and Linux, one command downloads the right binary and puts it on your PATH:</p>
-      <CodeBlock prompt code={site.installCommand} />
-      <p>On Windows:</p>
-      <CodeBlock prompt code={site.installCommandWindows} />
       <p>
-        Prefer npm? The <code>yoink-cli</code> package resolves the right binary for your
-        architecture automatically:
+        Grab Yoink from the{" "}
+        <Link href="/download" className="text-brand-text underline-offset-2 hover:underline">
+          download page
+        </Link>
+        : the macOS menu bar app, or the CLI one-liner for macOS, Linux, and Windows. The short
+        version on macOS and Linux:
       </p>
-      <CodeBlock prompt code="npm install -g yoink-cli" />
+      <CodeBlock prompt code={site.installCommand} />
       <p>Confirm it answers:</p>
       <CodeBlock prompt code="yoink version" />
-      <p>
-        Building from source instead: clone the repo, run <code>bun install</code>, then{" "}
-        <code>cd apps/cli &amp;&amp; bun run build</code> and link{" "}
-        <code>dist/yoink</code> onto your PATH.
-      </p>
     </DocsSection>
 
     <DocsSection heading="Add your accounts" icon={UserPlus}>

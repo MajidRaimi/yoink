@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Hero } from "./_components/hero";
-import { DesktopDownload } from "./_components/desktop-download";
 import { Personas } from "./_components/personas";
 import { HowItWorks } from "./_components/how-it-works";
 import { FeaturesBento } from "./_components/features-bento";
@@ -25,7 +24,6 @@ const HomePage = () => (
     <HowItWorks />
     <FeaturesBento />
     <EnvOverride />
-    <DesktopDownload />
     <FinalCta />
   </>
 );

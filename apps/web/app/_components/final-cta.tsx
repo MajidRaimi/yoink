@@ -48,7 +48,7 @@ export const FinalCta = () => (
         className="pointer-events-none absolute inset-0 bg-gradient-to-b from-background/20 via-transparent to-background/70"
         aria-hidden
       />
-      <Stagger className="relative flex flex-col items-center gap-5 px-6 py-14 text-center sm:py-16">
+      <Stagger className="relative flex flex-col items-center gap-5 px-6 py-6 text-center sm:py-7">
         <StaggerItem>
           <span className="font-mono text-[10px] uppercase tracking-[0.28em] text-faint">
             Get Yoink

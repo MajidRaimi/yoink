@@ -8,9 +8,25 @@ mod tray;
 mod updates;
 mod watcher;
 
+use std::sync::atomic::{AtomicBool, Ordering};
 use tauri::{AppHandle, Emitter, Manager};
 use tauri_plugin_autostart::MacosLauncher;
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut, ShortcutState};
+
+static EXPLICIT_QUIT: AtomicBool = AtomicBool::new(false);
+
+pub fn quit(app: &AppHandle) {
+    EXPLICIT_QUIT.store(true, Ordering::SeqCst);
+    app.exit(0);
+}
+
+#[cfg(target_os = "macos")]
+fn prevent_system_termination() {
+    use objc2_foundation::{NSProcessInfo, NSString};
+    let info = NSProcessInfo::processInfo();
+    info.disableSuddenTermination();
+    info.disableAutomaticTermination(&NSString::from_str("yoink runs as a menu bar app"));
+}
 
 #[cfg(target_os = "macos")]
 fn inherit_login_shell_path() {
@@ -87,6 +103,7 @@ pub fn run() {
             #[cfg(target_os = "macos")]
             {
                 app.set_activation_policy(tauri::ActivationPolicy::Accessory);
+                prevent_system_termination();
                 inherit_login_shell_path();
             }
 
@@ -112,9 +129,13 @@ pub fn run() {
         .build(tauri::generate_context!())
         .expect("error while building yoink desktop")
         .run(|app, event| {
-            if let tauri::RunEvent::ExitRequested { .. } = event {
-                let state: tauri::State<'_, pty::PtyState> = app.state();
-                pty::close(&state);
+            if let tauri::RunEvent::ExitRequested { api, .. } = event {
+                if EXPLICIT_QUIT.load(Ordering::SeqCst) {
+                    let state: tauri::State<'_, pty::PtyState> = app.state();
+                    pty::close(&state);
+                } else {
+                    api.prevent_exit();
+                }
             }
         });
 }

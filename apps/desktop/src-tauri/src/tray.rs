@@ -23,7 +23,7 @@ pub fn init(app: &AppHandle) -> tauri::Result<()> {
         .show_menu_on_left_click(false)
         .menu(&menu)
         .on_menu_event(|app, event| match event.id().as_ref() {
-            "quit" => app.exit(0),
+            "quit" => crate::quit(app),
             "autostart" => {
                 let manager = app.autolaunch();
                 let enabled = manager.is_enabled().unwrap_or(false);

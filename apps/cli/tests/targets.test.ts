@@ -16,14 +16,17 @@ test("every target platform key appears in the shim source", () => {
   }
 });
 
-test("shim supported set size matches target count", () => {
-  expect(supportedSetEntries().length).toBe(targets.length);
+test("shim supported set covers exactly every target platform key", () => {
+  const keys = new Set(targets.map((t) => `${t.npmOs}-${t.cpu}`));
+  const entries = new Set(supportedSetEntries().map((e) => e.replace(/"/g, "")));
+  expect(entries).toEqual(keys);
 });
 
 test("every target npm name follows the platform package convention", () => {
   for (const t of targets) {
     const npmPlatform = t.npmOs === "win32" ? "windows" : t.npmOs;
-    expect(t.npmName).toBe(`yoink-cli-${npmPlatform}-${t.cpu}`);
+    const suffix = t.libc === "musl" ? "-musl" : "";
+    expect(t.npmName).toBe(`yoink-cli-${npmPlatform}-${t.cpu}${suffix}`);
   }
 });
 

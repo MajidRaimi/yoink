@@ -19,6 +19,12 @@ case "$(uname -m)" in
   *) err "unsupported architecture: $(uname -m)" ;;
 esac
 
+if [ "$OS" = "linux" ]; then
+  if [ -e /lib/ld-musl-x86_64.so.1 ] || [ -e /lib/ld-musl-aarch64.so.1 ] || (command -v ldd >/dev/null 2>&1 && ldd --version 2>&1 | grep -qi musl); then
+    ARCH="${ARCH}-musl"
+  fi
+fi
+
 VERSION="${YOINK_VERSION:-}"
 if [ -z "$VERSION" ]; then
   VERSION="$(curl -fsSL "https://api.github.com/repos/${REPO}/releases" | grep '"tag_name"' | cut -d'"' -f4 | grep -v '^desktop-' | grep -E '^v[0-9]' | head -1 || true)"

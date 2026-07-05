@@ -48,7 +48,7 @@ for (const target of targets) {
         license: "MIT",
         os: [target.npmOs],
         cpu: [target.cpu],
-        ...(target.npmOs === "linux" ? { libc: ["glibc"] } : {}),
+        ...(target.libc ? { libc: [target.libc] } : {}),
         files: [target.binaryName],
         repository: { type: "git", url: "git+https://github.com/MajidRaimi/yoink.git" },
       },

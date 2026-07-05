@@ -7,12 +7,17 @@ function Write-Info {
 }
 
 $arch = if ($env:PROCESSOR_ARCHITEW6432) { $env:PROCESSOR_ARCHITEW6432 } else { $env:PROCESSOR_ARCHITECTURE }
-if ($arch -ne "AMD64") {
-  throw "yoink for Windows is x64 only (detected $arch)."
+$target = switch ($arch) {
+  "AMD64" { "windows-x64" }
+  "ARM64" { "windows-arm64" }
+  default { $null }
+}
+if (-not $target) {
+  throw "yoink for Windows supports x64 and arm64 (detected $arch)."
 }
 
 $repo = "MajidRaimi/yoink"
-$asset = "yoink-windows-x64.zip"
+$asset = "yoink-$target.zip"
 
 $version = $env:YOINK_VERSION
 if (-not $version) {
@@ -28,7 +33,7 @@ $base = "https://github.com/$repo/releases/download/$version"
 $tmp = New-Item -ItemType Directory -Path (Join-Path $env:TEMP "yoink-install-$([Guid]::NewGuid().ToString('N'))")
 
 try {
-  Write-Info "downloading yoink $version (windows-x64)"
+  Write-Info "downloading yoink $version ($target)"
   $zip = Join-Path $tmp.FullName $asset
   Invoke-WebRequest -Uri "$base/$asset" -OutFile $zip
 

@@ -1,6 +1,6 @@
 export const site = {
   name: "Yoink",
-  version: "0.6.1",
+  version: "0.6.2",
   url: "https://yoink.codes",
   description:
     "Switch between Claude Code accounts from your terminal, fast. Snapshot logins into named profiles, swap them in a keystroke, and run open models through the same harness.",

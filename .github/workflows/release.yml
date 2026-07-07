@@ -118,7 +118,7 @@ jobs:
           tar -xzf "dist/${{ matrix.asset }}" -C dist
           chmod +x dist/yoink
           EXPECTED="$(node -p "require('./apps/cli/package.json').version")"
-          ACTUAL="$(docker run --rm -v "$PWD/dist:/w" alpine:3.20 /w/yoink version)"
+          ACTUAL="$(docker run --rm -v "$PWD/dist:/w" alpine:3.20 sh -c "apk add --no-cache libstdc++ libgcc 1>&2 && /w/yoink version")"
           echo "expected: $EXPECTED"
           echo "actual: $ACTUAL"
           echo "$ACTUAL" | grep -qF "$EXPECTED"

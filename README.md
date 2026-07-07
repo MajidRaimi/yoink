@@ -152,7 +152,7 @@ Profiles live in `~/.config/yoink/profiles.json` on every OS (`chmod 600` on POS
 
 ## Supported platforms
 
-macOS (Apple Silicon and Intel), Linux (x64 and arm64, both glibc and musl/Alpine), and Windows (x64 and arm64). On macOS, credentials are swapped through the login Keychain via the `security` CLI; on Linux and Windows, through `~/.claude/.credentials.json`, written atomically with the same protections Claude Code itself applies. The installers and npm package ship prebuilt binaries for every platform, so nothing else is needed.
+macOS (Apple Silicon and Intel), Linux (x64 and arm64, both glibc and musl/Alpine), and Windows (x64 and arm64). On macOS, credentials are swapped through the login Keychain via the `security` CLI; on Linux and Windows, through `~/.claude/.credentials.json`, written atomically with the same protections Claude Code itself applies. The installers and npm package ship prebuilt binaries for every platform, so nothing else is needed. On bare Alpine, run `apk add libstdc++ libgcc` once (the same runtime libraries Node needs there).
 
 ## Documentation
 

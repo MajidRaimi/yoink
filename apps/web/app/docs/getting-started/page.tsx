@@ -23,7 +23,8 @@ const GettingStartedPage = () => (
         (x64 and arm64, glibc and musl/Alpine), and <strong>Windows</strong> (x64 and arm64). On macOS it stores and swaps
         credentials through the login Keychain via the <code>security</code> CLI; on Linux and
         Windows it works against Claude Code&apos;s credentials file. Every install ships a single
-        self-contained binary, so nothing else is needed.
+        self-contained binary, so nothing else is needed. On bare <strong>Alpine</strong>, run{" "}
+        <code>apk add libstdc++ libgcc</code> once, the same runtime libraries Node needs there.
       </p>
     </DocsSection>
 

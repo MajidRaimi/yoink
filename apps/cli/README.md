@@ -83,7 +83,7 @@ Run `yoink` with no arguments for the interactive menu: arrow keys or `j`/`k` to
 
 ## Requirements
 
-The package ships prebuilt binaries for macOS (arm64 and x64), Linux (x64 and arm64, glibc and musl/Alpine), and Windows (x64 and arm64) via platform packages, so nothing else is needed.
+The package ships prebuilt binaries for macOS (arm64 and x64), Linux (x64 and arm64, glibc and musl/Alpine), and Windows (x64 and arm64) via platform packages, so nothing else is needed. On bare Alpine, run `apk add libstdc++ libgcc` once (the same runtime libraries Node needs there).
 
 ## Documentation
 

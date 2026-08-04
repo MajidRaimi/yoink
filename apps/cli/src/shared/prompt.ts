@@ -3,6 +3,7 @@ import { confirm, isCancel, type Option, password, select, text } from "@clack/p
 type TextOptions = Parameters<typeof text>[0];
 type PasswordOptions = Parameters<typeof password>[0];
 type ConfirmOptions = Parameters<typeof confirm>[0];
+type Validator = NonNullable<TextOptions["validate"]>;
 
 type PromptSelectOptions<T extends string> = {
   message: string;
@@ -11,14 +12,19 @@ type PromptSelectOptions<T extends string> = {
   maxItems?: number;
 };
 
+export const normalizePromptValue = (value: string | undefined): string => value?.trim() ?? "";
+
+const withNormalizedInput = (validate: Validator | undefined): Validator | undefined =>
+  validate && ((value) => validate(normalizePromptValue(value)));
+
 export const promptText = async (options: TextOptions): Promise<string | null> => {
-  const value = await text(options);
-  return isCancel(value) ? null : value.trim();
+  const value = await text({ ...options, validate: withNormalizedInput(options.validate) });
+  return isCancel(value) ? null : normalizePromptValue(value);
 };
 
 export const promptPassword = async (options: PasswordOptions): Promise<string | null> => {
-  const value = await password(options);
-  return isCancel(value) ? null : value.trim();
+  const value = await password({ ...options, validate: withNormalizedInput(options.validate) });
+  return isCancel(value) ? null : normalizePromptValue(value);
 };
 
 export const promptConfirm = async (options: ConfirmOptions): Promise<boolean | null> => {

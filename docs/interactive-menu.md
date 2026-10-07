@@ -20,7 +20,7 @@ The active profile is marked with a green dot. Highlighting a row and pressing `
 | --- | --- |
 | `↑` / `↓` or `j` / `k` | Move the highlight (wraps at the top and bottom) |
 | `Enter` | Switch to the highlighted profile |
-| `n` | Add a new account (Claude sign-in or an external provider) |
+| `n` | Add a new account (Claude sign-in or an API-key provider) |
 | `e` | Edit the highlighted profile |
 | `s` | Save the current live login as a new profile |
 | `d` | Delete the highlighted profile (after a confirmation) |
@@ -33,6 +33,6 @@ Switching from the menu behaves the same as [`yoink use`](./usage.md): it warns 
 Pressing `e` opens an editor that adapts to the highlighted profile's type:
 
 - **Claude account:** the only editable field is the profile name, so `e` goes straight to a rename prompt. The stored Claude login and `oauthAccount` identity are not touched.
-- **External provider:** `e` shows a field picker. You can change the name, provider, base URL, API key, or model. Editing the model reruns the searchable model picker. When you edit the profile that is currently active, the changes are re-applied to the live settings immediately (the managed env block is rewritten), so you do not need a separate switch.
+- **Provider:** `e` shows a field picker: **Harnesses** (connect or disconnect pi, omp, opencode, codex, and Claude Code), **Models** (reruns the searchable model picker), **Profile id**, **Display name**, **API key**, and **Endpoints** (re-probes a base URL). Every change is re-synced into the harnesses the provider is connected to, so you do not need a separate switch or connect.
 
-This mirrors the standalone [`yoink edit`](./usage.md) command. For how external providers are configured and applied, see [External providers](./external-providers.md).
+This mirrors the standalone [`yoink edit`](./usage.md) command. For how providers are configured and applied, see [Providers](./providers.md) and [Harnesses](./harnesses.md).

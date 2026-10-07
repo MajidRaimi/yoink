@@ -18,6 +18,11 @@ const files = [
   { path: "~/.claude.json", role: "oauthAccount identity block" },
   { path: "~/.claude/settings.json", role: "global env overrides (7 managed keys)" },
   { path: "./.claude/settings.local.json", role: "project-scoped env overrides" },
+  { path: "~/.pi/agent/models.json", role: "pi providers (settings.json holds the default)" },
+  { path: "~/.omp/agent/models.yml", role: "omp providers (config.yml holds the default)" },
+  { path: "~/.config/opencode/opencode.json", role: "opencode providers and default model" },
+  { path: "~/.codex/config.toml", role: "codex model providers and default model" },
+  { path: "<harness config>.yoink.bak", role: "one-time backup before the first change" },
 ];
 
 const ReferencePage = () => (
@@ -78,8 +83,9 @@ const ReferencePage = () => (
         </table>
       </div>
       <p>
-        Every write is atomic (temp file + rename). Only the seven managed env keys are ever added
-        to or removed from a settings file.
+        Every write is atomic (temp file + rename), and harness configs are written{" "}
+        <code>0600</code>. Only the seven managed env keys are ever added to or removed from a
+        Claude Code settings file.
       </p>
     </DocsSection>
   </DocsPage>

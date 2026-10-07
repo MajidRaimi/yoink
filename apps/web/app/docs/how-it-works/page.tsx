@@ -46,7 +46,7 @@ const HowItWorksPage = () => (
       <p>
         <strong>3. Reconcile the env block.</strong> For a Claude account, the seven managed{" "}
         <code>ANTHROPIC_*</code> keys are stripped from <code>~/.claude/settings.json</code> so
-        OAuth wins. For an external provider, they are written. Nothing else in the file changes.
+        OAuth wins. For a provider, they are written. Nothing else in the file changes.
       </p>
     </DocsSection>
 

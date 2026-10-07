@@ -1,6 +1,7 @@
 import { pageMetadata } from "@/lib/seo";
 import { CodeBlock } from "@/components/custom/code-block";
-import { Eye, RefreshCw, Settings2, SquareTerminal } from "lucide-react";
+import Link from "next/link";
+import { Eye, Layers, RefreshCw, Settings2, SquareTerminal } from "lucide-react";
 import { DocsPage, DocsSection } from "@/components/custom/docs-page";
 
 export const metadata = pageMetadata({
@@ -12,7 +13,7 @@ export const metadata = pageMetadata({
 const UsagePage = () => (
   <DocsPage
     title="Usage"
-    description="Ten commands, most of which you will never need because the menu covers them."
+    description="Account switching, plus provider commands that work with or without a terminal UI."
     path="/docs/usage/"
   >
     <DocsSection heading="The two you will actually type" icon={SquareTerminal}>
@@ -38,11 +39,42 @@ yoink rename work humain
 yoink remove old-account`}
       />
       <p>
-        <code>add</code> runs a fresh Claude sign-in or registers an external provider.{" "}
+        <code>add</code> runs a fresh Claude sign-in or registers an API-key provider.{" "}
         <code>save</code> snapshots whatever login is currently live under a name you choose.{" "}
-        <code>edit</code> renames a Claude profile, or changes any field of an external one (name,
-        provider, base URL, API key, model). <code>remove</code> deletes the snapshot only, never
-        your live login.
+        <code>edit</code> renames a Claude profile, or changes a provider&apos;s harnesses, models,
+        id, display name, API key, or endpoints. <code>remove</code> deletes the snapshot only,
+        never your live login; a provider is disconnected from every harness first.
+      </p>
+    </DocsSection>
+
+    <DocsSection heading="Providers across harnesses" icon={Layers}>
+      <CodeBlock
+        prompt
+        code={`yoink connect fuse --to pi,opencode --default claude-sonnet-4-5
+yoink disconnect fuse --from opencode
+yoink models fuse --set claude-sonnet-4-5,gpt-5.2
+yoink harnesses
+yoink import`}
+      />
+      <p>
+        <code>connect</code> writes a provider into pi, omp, opencode, codex, or Claude Code, and{" "}
+        <code>disconnect</code> takes it out. <code>models</code> changes which models it exposes
+        and re-syncs every connected harness. <code>harnesses</code> shows what is installed and
+        where its config lives, and <code>import</code> adopts providers you set up by hand. Each
+        opens a picker when you leave its flag off. Adding a Claude account needs an interactive
+        terminal, but providers can be added from a script with the key on stdin:
+      </p>
+      <CodeBlock
+        prompt
+        code={`echo "$KEY" | yoink add --external --name fuse --base-url https://api.fuse.example/v1 \\
+  --models claude-sonnet-4-5 --connect pi,omp --token-stdin`}
+      />
+      <p>
+        Every flag is listed under{" "}
+        <Link href="/docs/providers" className="text-brand-text underline-offset-2 hover:underline">
+          Providers
+        </Link>
+        .
       </p>
     </DocsSection>
 

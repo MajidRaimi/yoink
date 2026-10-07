@@ -38,7 +38,7 @@ Pick **Custom** for anything else (a gateway like Fuse, a self-hosted proxy, a v
 2. It sends a one-token `ping` to `/v1/messages` (Anthropic Messages), `/chat/completions` (OpenAI Chat, only when a model list came back), and `/responses` (OpenAI Responses), trying up to three chat models from the list.
 3. Every protocol that answers is saved as an endpoint. yoink strips trailing paths like `/chat/completions` and normalizes `/v1`, so you can paste whichever URL the provider's docs show.
 
-If every probe fails with 401 or 403, yoink says the key was rejected. If nothing answers, it asks you to check the base URL. The endpoints a provider supports decide which harnesses it can connect to: codex needs `openai-responses`, Claude Code needs `anthropic-messages`, and pi, omp, and opencode accept any of the three.
+If every probe fails with 401 or 403, yoink says the key was rejected. If nothing answers, it asks you to check the base URL. The endpoints a provider supports decide which harnesses it can connect to: codex needs `openai-responses`, Claude Code and Claude Desktop need `anthropic-messages`, Crush, Goose, and Continue take `openai-chat` or `anthropic-messages`, and pi, omp, opencode, Qwen Code, Kilo Code, Droid, and Zed accept any of the three. See [Harnesses](harnesses.md#supported-harnesses) for every harness's protocols.
 
 ## Model selection and models.dev
 
@@ -55,13 +55,13 @@ Either way, every connected harness is re-synced with the new list.
 
 ## Where keys live
 
-yoink stores the API key in `~/.config/yoink/profiles.json` (`chmod 600`) and writes it as a literal value into each connected harness config. Every harness file yoink writes is written atomically with owner-only permissions (`0600`), inside a `0700` directory when yoink has to create one. The first time yoink changes an existing harness config it saves the original next to it as `<file>.yoink.bak`.
+yoink stores the API key in `~/.config/yoink/profiles.json` (`chmod 600`) and writes it as a literal value into each connected harness config. Every harness file yoink writes is written atomically with owner-only permissions (`0600`), inside a `0700` directory when yoink has to create one. The first time yoink changes an existing harness config it saves the original next to it as `<file>.yoink.bak`. The per-provider Goose and Claude Desktop files are the exception: yoink owns them, overwrites them without a backup, and deletes them on disconnect.
 
 Keys are never printed. When you add a provider non-interactively, pass the key on stdin with `--token-stdin` so it stays out of your shell history and the process list.
 
 ## Editing and re-sync
 
-`yoink edit <name>` on a provider opens a field picker: **Harnesses**, **Models**, **Profile id**, **Display name**, **API key**, and **Endpoints** (re-probes a base URL). Saving any change re-writes the provider into every harness it is connected to, so a rotated key or a new model reaches pi, omp, opencode, and codex in one step. Renaming the profile id removes the old entry from each harness before writing the new one. A harness default model is kept as long as that model is still selected.
+`yoink edit <name>` on a provider opens a field picker: **Harnesses**, **Models**, **Profile id**, **Display name**, **API key**, and **Endpoints** (re-probes a base URL). Saving any change re-writes the provider into every harness it is connected to, so a rotated key or a new model reaches every connected harness in one step. Renaming the profile id removes the old entry from each harness before writing the new one. A harness default model is kept as long as that model is still selected.
 
 `yoink rename <a> <b>` re-syncs the same way, and `yoink remove <name>` disconnects the provider from every harness first and only deletes the profile when every harness update succeeds.
 
@@ -107,15 +107,16 @@ echo "$FUSE_API_KEY" | yoink add --external --name fuse --provider Fuse \
 | --- | --- |
 | `--name <id>` | Profile id, also used as the provider id in harness configs. Required. |
 | `--preset <id>` | Use a preset's endpoints. One of `openai`, `kimi-code`, `moonshot`, `openrouter`, `deepseek`, `zai`, `ollama`. |
-| `--base-url <url>` | Custom provider URL. Required unless `--preset` is given. |
+| `--base-url <url>` | Custom provider URL. Required unless `--preset` or `--endpoint` is given. |
 | `--protocol <p,...>` | Skip probing and use these protocols at `--base-url`: `openai-chat`, `openai-responses`, `anthropic-messages`. |
+| `--endpoint <p>=<url>,...` | Skip probing and save each protocol at its own exact URL, for example `openai-chat=https://api.example/v1,anthropic-messages=https://api.example`. Cannot be combined with `--preset` or `--protocol`. |
 | `--provider <label>` | Display name. Defaults to the preset label or the profile id. |
 | `--models <m,...>` | Models to expose. Required. Metadata comes from models.dev. |
-| `--connect <h,...>` | Harnesses to connect right away: `pi`, `omp`, `opencode`, `codex`, `claude-code`. |
+| `--connect <h,...>` | Harnesses to connect right away, by [harness id](harnesses.md#supported-harnesses): `pi`, `omp`, `opencode`, `codex`, `claude-code`, `qwen`, `kilo`, `droid`, `crush`, `goose`, `zed`, `continue`, `claude-desktop`. |
 | `--default <m>` | Default model to set in the connected harnesses. |
 | `--token-stdin` | Read the API key from stdin. Required. |
 
-Without `--protocol`, a custom `--base-url` is probed exactly like the interactive flow. A preset is never probed.
+Without `--protocol` or `--endpoint`, a custom `--base-url` is probed exactly like the interactive flow. A preset is never probed, and neither are `--endpoint` URLs.
 
 ### Legacy Claude Code form
 

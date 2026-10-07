@@ -68,7 +68,7 @@ Each of these writes only the entries it owns, so disconnecting removes yoink's 
 
 **Goose** (`goose`, experimental). yoink writes `custom_providers/custom_<provider>.json` with engine `openai` or `anthropic` and `api_key_env: "CUSTOM_<PROVIDER>_API_KEY"`, so the key is never in that file. The default is `GOOSE_PROVIDER: custom_<provider>` and `GOOSE_MODEL` in `config.yaml`. Where the key goes depends on how Goose stores secrets:
 
-- When `config.yaml` sets `GOOSE_DISABLE_KEYRING` to a truthy value, yoink merges the key into `secrets.yaml` (`0600`) and there is nothing else to do.
+- When `GOOSE_DISABLE_KEYRING` is truthy in your environment or in `config.yaml`, yoink merges the key into `secrets.yaml` (`0600`) and there is nothing else to do.
 - Otherwise Goose keeps secrets in the OS keyring, which yoink does not touch. Notice: export `CUSTOM_<PROVIDER>_API_KEY` in your shell, or enter the key once in Goose.
 
 **Zed** (`zed`, experimental). yoink adds the provider to `language_models` in `settings.json`, editing in place so your comments survive: `openai_compatible` for Chat Completions, `openai_compatible` with `capabilities.chat_completions: false` for Responses, and `anthropic_compatible` (base URL without `/v1`) for Anthropic Messages. The default is `agent.default_model: { provider, model }`. Zed never reads a key from `settings.json`, so yoink does not write one.
@@ -92,6 +92,8 @@ Claude Code holds one backend at a time, so connecting a provider to it switches
 ## Backups
 
 The first time yoink changes an existing config file in any harness other than Claude Code, it copies the original to `<file>.yoink.bak` (for example `~/.codex/config.toml.yoink.bak`). The backup is made once and never overwritten, so it always holds the config from before yoink touched it. Every write after that is atomic and owner-only (`0600`).
+
+Two kinds of file are owned by yoink instead and get no backup: Goose's `custom_providers/custom_<provider>.json` and Claude Desktop's `Claude-3p/configLibrary/yoink-<provider>.json`. yoink overwrites them on connect and deletes them on disconnect, so do not keep a hand-made file at either path.
 
 ## Commands
 

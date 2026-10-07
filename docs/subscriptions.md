@@ -45,7 +45,7 @@ yoink list --json
 3. **Restore the target.** Files are written atomically with owner-only (`0600`) permissions, then any keyring entry. If anything fails, yoink puts the previous live login back.
 4. **Mark it active.** The profile becomes the current one for that tool. Other tools, and Claude Code, are left alone.
 
-Snapshots live in `~/.config/yoink/profiles.json` (`0600`), alongside your Claude profiles.
+Snapshots live in `~/.config/yoink/subscriptions.json` (`0600`), next to `profiles.json`. They are kept in their own file so older versions of the menu bar app, which only understand Claude and provider profiles, keep reading `profiles.json` without trouble.
 
 ## Per-tool notes
 

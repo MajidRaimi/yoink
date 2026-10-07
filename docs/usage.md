@@ -17,8 +17,11 @@
 | `yoink models <name>` | | Choose which models a provider exposes, then re-sync its harnesses (`--set a,b` skips the picker). |
 | `yoink harnesses` | | Show detected harnesses, their config paths, and their providers (`--json` for scripts). |
 | `yoink import` | | Import providers already configured in your harnesses (`--yes` skips the prompt). |
-| `yoink list` | `ls` | List all saved profiles grouped by tool, marking the active one in each group (`--json` for scripts). |
-| `yoink current` | `who` | Show the active profile for Claude Code and each subscription tool (`--tool <tool>` for one). |
+| `yoink status <name>` | | Show each harness for a provider: installed, compatible, and connected (`--json` for scripts). |
+| `yoink presets` | | List the built-in provider presets (`--json` for scripts). |
+| `yoink probe` | | Detect a provider's endpoints and models from `--base-url <u>` or `--preset <p>`, with the API key on stdin (`--token-stdin`, `--json`). |
+| `yoink list` | `ls`, `accounts` | List all saved profiles grouped by tool, marking the active one in each group (`--json` for scripts). |
+| `yoink current` | `who` | Show the active profile for Claude Code and each subscription tool (`--tool <tool>` for one, `--json` for scripts). |
 | `yoink rename <a> <b>` | | Rename a profile (a provider is renamed in every harness too). |
 | `yoink remove <name>` | `rm` | Delete a profile (a provider is disconnected from every harness first). |
 | `yoink version` | `-v`, `--version` | Print the version. |
@@ -32,7 +35,7 @@ Adding a Claude account always needs an interactive terminal, because it runs th
 
 | Command | Non-interactive form |
 | --- | --- |
-| `yoink add` | `yoink add --external --name <id> (--preset <p> \| --base-url <u> [--protocol <p,...>]) --models <m,...> [--connect <h,...>] [--default <m>] --token-stdin` |
+| `yoink add` | `yoink add --external --name <id> (--preset <p> \| --base-url <u> [--protocol <p,...>] \| --endpoint <p>=<url>,...) --models <m,...> [--connect <h,...>] [--default <m>] --token-stdin` |
 | `yoink add` (legacy Claude Code provider) | `yoink add --external --name <n> --provider <p> --base-url <u> --model <m> --token-stdin` |
 | `yoink edit <name>` | `yoink edit <name> [--name <n>] [--provider <p>] [--base-url <u>] [--model <m>] [--token-stdin]` |
 | `yoink connect <name>` | `yoink connect <name> --to <h,...> [--default <m>]` |
@@ -42,6 +45,10 @@ Adding a Claude account always needs an interactive terminal, because it runs th
 | `yoink save` (subscription) | `yoink save <name> --tool <tool>` |
 | `yoink use` (tool running) | `yoink use <name> --force` |
 | `yoink list` | `yoink list --json` |
+| `yoink current` | `yoink current [--tool <tool>] --json` |
+| `yoink status <name>` | `yoink status <name> --json` |
+| `yoink presets` | `yoink presets --json` |
+| `yoink probe` | `yoink probe (--base-url <u> \| --preset <p>) --token-stdin --json` |
 
 `--token-stdin` reads the API key from stdin, so it never lands in your shell history. Harness ids are `pi`, `omp`, `opencode`, `codex`, `claude-code`, `qwen`, `kilo`, `droid`, `crush`, `goose`, `zed`, `continue`, and `claude-desktop` (`goose`, `zed`, and `claude-desktop` are experimental). Every flag is described in [Providers](./providers.md#non-interactive-add) and [Harnesses](./harnesses.md#commands).
 
@@ -86,7 +93,13 @@ echo "$FUSE_API_KEY" | yoink add --external --name fuse --provider Fuse \
   --base-url https://api.fuse.example/v1 --models claude-sonnet-4-5,gpt-5.2 \
   --connect pi,opencode --default claude-sonnet-4-5 --token-stdin
 
+yoink presets
+
+echo "$FUSE_API_KEY" | yoink probe --base-url https://api.fuse.example/v1 --token-stdin --json
+
 yoink harnesses
+
+yoink status fuse
 
 yoink connect fuse --to omp
 

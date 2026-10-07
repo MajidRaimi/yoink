@@ -39,6 +39,7 @@ Profiles are stored in `~/.config/yoink/profiles.json`. yoink sets this file to 
 | Path | Role |
 | --- | --- |
 | `~/.config/yoink/profiles.json` | Profile store (credential blobs + identities), `chmod 600` on POSIX, same path on every OS |
+| `~/.config/yoink/subscriptions.json` | ChatGPT, Kimi Code, Gemini and Copilot login snapshots plus the active one per tool, `chmod 600` on POSIX |
 | macOS Keychain service `Claude Code-credentials` | The live Claude Code login token (macOS) |
 | `~/.claude/.credentials.json` | The live Claude Code login token (Linux and Windows), written atomically with owner-only permissions |
 | `~/.claude.json` | Holds the `oauthAccount` identity block |
@@ -49,7 +50,7 @@ Profiles are stored in `~/.config/yoink/profiles.json`. yoink sets this file to 
 | `~/.omp/agent/models.yml`, `~/.omp/agent/config.yml` | omp providers and default model role |
 | `~/.config/opencode/opencode.json` (or `.jsonc`) | opencode providers and default model |
 | `~/.codex/config.toml` | codex model providers and default model |
-| `<harness config>.yoink.bak` | One-time backup of each harness config, made before yoink first changes it |
+| `<harness config>.yoink.bak` | One-time backup of each harness config, made before yoink first changes it (not the per-provider Goose and Claude Desktop files, which yoink owns) |
 | `~/.config/yoink/cache/models-dev.json` | Cached [models.dev](https://models.dev) catalog for model limits, refreshed daily |
 
 The harness paths follow `PI_CODING_AGENT_DIR`, `XDG_CONFIG_HOME`, and `CODEX_HOME` when they are set. See [Harnesses](./harnesses.md) for exactly what each entry contains.

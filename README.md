@@ -118,7 +118,7 @@ Actions loop back to the list, so you can switch, add, and prune in one sitting,
 - **Real model metadata.** Pick as many models as you like from the provider's live list; context windows, output limits, reasoning, and image support come from [models.dev](https://models.dev).
 - **Import what you already have.** `yoink import` finds providers you set up by hand in your harness configs and brings them under management.
 - **Per-project overrides.** Apply a provider to Claude Code globally, or scope it to one repo via `./.claude/settings.local.json`, which yoink offers to add to your `.gitignore` before writing.
-- **Nothing leaks.** Harness configs are written atomically with owner-only permissions and backed up once to `<file>.yoink.bak`. In Claude Code, yoink only ever touches seven managed `ANTHROPIC_*` / `CLAUDE_CODE_SUBAGENT_MODEL` keys and warns before writing a key into a git-tracked file.
+- **Nothing leaks.** Harness configs are written atomically with owner-only permissions and backed up once to `<file>.yoink.bak` (except the per-provider Goose and Claude Desktop files, which yoink owns and deletes on disconnect). In Claude Code, yoink only ever touches seven managed `ANTHROPIC_*` / `CLAUDE_CODE_SUBAGENT_MODEL` keys and warns before writing a key into a git-tracked file.
 - **One binary.** `bun build --compile` bakes the CLI, its deps, and the runtime into a single file. No Node, no runtime to install.
 
 ## Commands

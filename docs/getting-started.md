@@ -74,7 +74,7 @@ A common setup is one profile for work and one for personal use:
 yoink add
 ```
 
-Sign in to your work account, name the profile `work`, then when yoink asks, add another and sign in to your personal account as `personal`. You can also add an API-key provider (OpenAI, Kimi Code, Moonshot, OpenRouter, DeepSeek, Z.ai, Ollama, or any OpenAI- or Anthropic-compatible API) from the same menu and connect it to pi, omp, opencode, codex, or Claude Code. See [Providers](./providers.md) and [Harnesses](./harnesses.md).
+Sign in to your work account, name the profile `work`, then when yoink asks, add another and sign in to your personal account as `personal`. You can also add an API-key provider (OpenAI, Kimi Code, Moonshot, OpenRouter, DeepSeek, Z.ai, Ollama, or any OpenAI- or Anthropic-compatible API) from the same menu and connect it to any of the 13 supported harnesses. See [Providers](./providers.md) and [Harnesses](./harnesses.md).
 
 List what you have saved at any time:
 

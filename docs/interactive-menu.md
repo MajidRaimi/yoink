@@ -35,6 +35,6 @@ Switching from the menu behaves the same as [`yoink use`](./usage.md): it warns 
 Pressing `e` opens an editor that adapts to the highlighted profile's type:
 
 - **Claude account:** the only editable field is the profile name, so `e` goes straight to a rename prompt. The stored Claude login and `oauthAccount` identity are not touched.
-- **Provider:** `e` shows a field picker: **Harnesses** (connect or disconnect pi, omp, opencode, codex, and Claude Code), **Models** (reruns the searchable model picker), **Profile id**, **Display name**, **API key**, and **Endpoints** (re-probes a base URL). Every change is re-synced into the harnesses the provider is connected to, so you do not need a separate switch or connect.
+- **Provider:** `e` shows a field picker: **Harnesses** (connect or disconnect any of the 13 supported [harnesses](./harnesses.md)), **Models** (reruns the searchable model picker), **Profile id**, **Display name**, **API key**, and **Endpoints** (re-probes a base URL). Every change is re-synced into the harnesses the provider is connected to, so you do not need a separate switch or connect.
 
 This mirrors the standalone [`yoink edit`](./usage.md) command. For how providers are configured and applied, see [Providers](./providers.md) and [Harnesses](./harnesses.md).

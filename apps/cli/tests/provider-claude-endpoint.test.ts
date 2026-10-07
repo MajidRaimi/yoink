@@ -3,7 +3,7 @@ import { writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { makeTempDir, readText, removeTempDir } from "./support/provider-fixture";
-import { CLI_TEST_TIMEOUT_MS, runCli } from "./support/run-cli";
+import { CLI_TEST_TIMEOUT_MS, runCli, scratchHomeEnv } from "./support/run-cli";
 
 setDefaultTimeout(CLI_TEST_TIMEOUT_MS);
 
@@ -66,7 +66,7 @@ const updateEndpointsInHome = async (endpoints: readonly StoredEndpoint[]): Prom
     }
   `;
   const child = Bun.spawn([process.execPath, "-e", script], {
-    env: { PATH: process.env.PATH ?? "", HOME: home, NO_COLOR: "1" },
+    env: scratchHomeEnv(home),
     stdout: "pipe",
     stderr: "pipe",
   });

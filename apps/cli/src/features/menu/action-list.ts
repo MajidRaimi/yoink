@@ -83,7 +83,7 @@ const renderFrame = (self: ActionListPrompt): string => {
   return lines.join("\n");
 };
 
-class ActionListPrompt extends Prompt {
+class ActionListPrompt extends Prompt<ListResult> {
   options: ListOption[];
   cursor: number;
 
@@ -153,5 +153,7 @@ class ActionListPrompt extends Prompt {
   }
 }
 
-export const actionList = async (opts: ActionListOptions): Promise<ListResult | symbol> =>
-  (await new ActionListPrompt(opts).prompt()) as ListResult | symbol;
+export const actionList = async (opts: ActionListOptions): Promise<ListResult | symbol> => {
+  const result = await new ActionListPrompt(opts).prompt();
+  return result ?? { action: "add" };
+};

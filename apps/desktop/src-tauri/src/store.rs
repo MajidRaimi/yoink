@@ -13,25 +13,32 @@ struct RawAccount {
 enum RawProfile {
     Claude {
         name: String,
+        #[serde(default)]
         account: Option<RawAccount>,
-        #[serde(rename = "updatedAt")]
+        #[serde(rename = "updatedAt", default)]
         updated_at: String,
     },
     External {
         name: String,
+        #[serde(default)]
         provider: String,
-        #[serde(rename = "baseUrl")]
+        #[serde(rename = "baseUrl", default)]
         base_url: String,
+        #[serde(default)]
         model: String,
-        #[serde(rename = "updatedAt")]
+        #[serde(rename = "updatedAt", default)]
         updated_at: String,
     },
+    #[serde(other)]
+    Unknown,
 }
 
 #[derive(Deserialize)]
 struct RawStore {
+    #[serde(default)]
     current: Option<String>,
-    profiles: HashMap<String, RawProfile>,
+    #[serde(default)]
+    profiles: HashMap<String, serde_json::Value>,
 }
 
 #[derive(Serialize, Clone)]
@@ -78,28 +85,61 @@ pub fn profiles_path() -> PathBuf {
     yoink_dir().join("profiles.json")
 }
 
-pub fn load_store() -> StoreDto {
-    let raw = std::fs::read_to_string(profiles_path())
-        .ok()
-        .and_then(|text| serde_json::from_str::<RawStore>(&text).ok());
+fn with_default_type(mut value: serde_json::Value) -> serde_json::Value {
+    if let Some(object) = value.as_object_mut() {
+        object
+            .entry("type")
+            .or_insert_with(|| serde_json::Value::String("claude".to_string()));
+    }
+    value
+}
 
-    let Some(raw) = raw else {
+fn to_profile_dto(key: &str, value: serde_json::Value) -> Option<ProfileDto> {
+    match serde_json::from_value::<RawProfile>(with_default_type(value)) {
+        Ok(RawProfile::Claude { name, account, updated_at }) => Some(ProfileDto::Claude {
+            name,
+            email: account.and_then(|a| a.email_address),
+            updated_at,
+        }),
+        Ok(RawProfile::External { name, provider, base_url, model, updated_at }) => {
+            Some(ProfileDto::External { name, provider, base_url, model, updated_at })
+        }
+        Ok(RawProfile::Unknown) => None,
+        Err(error) => {
+            eprintln!("yoink: skipping profile \"{key}\" in {}: {error}", profiles_path().display());
+            None
+        }
+    }
+}
+
+fn read_raw_store() -> Option<RawStore> {
+    let path = profiles_path();
+    let text = match std::fs::read_to_string(&path) {
+        Ok(text) => text,
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => return None,
+        Err(error) => {
+            eprintln!("yoink: could not read {}: {error}", path.display());
+            return None;
+        }
+    };
+    match serde_json::from_str::<RawStore>(&text) {
+        Ok(raw) => Some(raw),
+        Err(error) => {
+            eprintln!("yoink: could not parse {}: {error}", path.display());
+            None
+        }
+    }
+}
+
+pub fn load_store() -> StoreDto {
+    let Some(raw) = read_raw_store() else {
         return StoreDto { current: None, profiles: Vec::new() };
     };
 
     let mut profiles: Vec<ProfileDto> = raw
         .profiles
-        .into_values()
-        .map(|profile| match profile {
-            RawProfile::Claude { name, account, updated_at } => ProfileDto::Claude {
-                name,
-                email: account.and_then(|a| a.email_address),
-                updated_at,
-            },
-            RawProfile::External { name, provider, base_url, model, updated_at } => {
-                ProfileDto::External { name, provider, base_url, model, updated_at }
-            }
-        })
+        .into_iter()
+        .filter_map(|(key, value)| to_profile_dto(&key, value))
         .collect();
     profiles.sort_by(|a, b| a.name().to_lowercase().cmp(&b.name().to_lowercase()));
 

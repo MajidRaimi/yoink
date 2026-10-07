@@ -1,4 +1,4 @@
-import { cancel, isCancel, outro, spinner } from "@clack/prompts";
+import { cancel, outro, spinner } from "@clack/prompts";
 import pc from "picocolors";
 import { theme } from "../../shared/theme";
 import { assertNever } from "../../shared/assert-never";
@@ -15,6 +15,9 @@ import { addAccountMenu } from "./flows/add-account-menu";
 import { editProfileFlow } from "./flows/edit-flow";
 import { confirmAndRemove } from "./flows/remove-flow";
 import { saveCurrentLogin } from "./flows/save-login-flow";
+import { manageProviderHarnesses } from "./flows/harness-flow";
+import { offerImport } from "./flows/import-flow";
+import { wasImportOffered } from "../profiles/import-flag";
 
 const toListOptions = (current: string | null, profiles: Profile[]): ListOption[] =>
   profiles.map((profile) => ({
@@ -62,10 +65,18 @@ const runRemove = async (name: string): Promise<void> => {
   await confirmAndRemove(name);
 };
 
-const dispatch = async (result: ListResult, current: string | null): Promise<void> => {
+const runProviderHarnesses = async (name: string): Promise<void> => {
+  introBanner("connect a provider");
+  await manageProviderHarnesses(name);
+};
+
+const dispatch = async (result: ListResult, current: string | null, profiles: Profile[]): Promise<void> => {
   switch (result.action) {
-    case "switch":
+    case "switch": {
+      const target = profiles.find((profile) => profile.name === result.name);
+      if (target?.type === "external") return runProviderHarnesses(result.name);
       return runSwitch(result.name, current);
+    }
     case "add":
       return runAdd();
     case "edit":
@@ -86,13 +97,18 @@ export const runMenu = async (): Promise<void> => {
     return;
   }
 
+  if (!(await wasImportOffered())) {
+    introBanner("import providers");
+    await offerImport();
+  }
+
   for (;;) {
     const { current, profiles } = await listProfiles();
     const result = await actionList({
       options: toListOptions(current, profiles),
       initialName: current ?? undefined,
     });
-    if (isCancel(result)) return;
-    await dispatch(result, current);
+    if (typeof result === "symbol") return;
+    await dispatch(result, current, profiles);
   }
 };

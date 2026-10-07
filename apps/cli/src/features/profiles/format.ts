@@ -1,9 +1,17 @@
 import pc from "picocolors";
 import { theme } from "../../shared/theme";
-import type { Profile } from "./types";
+import type { ExternalProfile, Profile } from "./types";
+
+const externalLabel = (profile: ExternalProfile): string => {
+  const models = profile.models ?? [];
+  if (models.length <= 1) return `${profile.provider} · ${models[0]?.id ?? profile.model}`;
+  const harnesses = Object.keys(profile.connections ?? {});
+  const linked = harnesses.length > 0 ? ` · ${harnesses.join(", ")}` : "";
+  return `${profile.provider} · ${models.length} models${linked}`;
+};
 
 export const accountLabel = (profile: Profile): string => {
-  if (profile.type === "external") return `${profile.provider} · ${profile.model}`;
+  if (profile.type === "external") return externalLabel(profile);
   return profile.account?.emailAddress ?? "unknown account";
 };
 

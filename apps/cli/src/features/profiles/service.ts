@@ -1,10 +1,11 @@
 import { readClaudeCredentials } from "../../shared/credentials";
 import { readOauthAccount } from "../../shared/claude-config";
 import { YoinkError } from "../../shared/errors";
+import { nowIso } from "../../shared/time";
+import { resyncProvider } from "../harnesses/sync";
+import { createRenameProfile, type RenameProfile } from "./rename";
 import { loadStore, saveStore } from "./store";
 import type { Profile } from "./types";
-
-const nowIso = (): string => new Date().toISOString();
 
 const snapshotLiveLogin = async (name: string): Promise<Profile> => {
   const keychain = await readClaudeCredentials();
@@ -63,14 +64,7 @@ export const removeProfile = async (name: string): Promise<void> => {
   await saveStore(store);
 };
 
-export const renameProfile = async (from: string, to: string): Promise<void> => {
-  const store = await loadStore();
-  const profile = store.profiles[from];
-  if (!profile) throw new YoinkError(`No profile named "${from}".`);
-  if (store.profiles[to]) throw new YoinkError(`A profile named "${to}" already exists.`);
-  profile.name = to;
-  store.profiles[to] = profile;
-  delete store.profiles[from];
-  if (store.current === from) store.current = to;
-  await saveStore(store);
-};
+export const renameProfile: RenameProfile = createRenameProfile({
+  store: { loadStore, saveStore },
+  resync: resyncProvider,
+});

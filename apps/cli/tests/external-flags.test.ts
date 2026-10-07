@@ -5,6 +5,7 @@ import {
   parseExternalAddArgs,
   parseExternalEditArgs,
 } from "../src/cli/external-flags";
+import { parseProviderAddArgs } from "../src/cli/provider-flags";
 import { YoinkError } from "../src/shared/errors";
 
 const fullAddArgs = [
@@ -98,4 +99,39 @@ test("hasExternalEditFlags detects any non-interactive edit flag", () => {
   expect(hasExternalEditFlags(["--token-stdin"])).toBe(true);
   expect(hasExternalEditFlags([])).toBe(false);
   expect(hasExternalEditFlags(["extra"])).toBe(false);
+});
+
+test("parseExternalAddArgs trims flag values", () => {
+  const args = ["--external", "--name", "  work  ", "--provider", " P ", "--base-url", " https://x.example/ ", "--model", " m "];
+  expect(parseExternalAddArgs(args)).toEqual({
+    name: "work",
+    provider: "P",
+    baseUrl: "https://x.example",
+    model: "m",
+    tokenFromStdin: false,
+  });
+});
+
+test("parseExternalEditArgs rejects a blank value", () => {
+  expect(() => parseExternalEditArgs(["--model", "   "])).toThrow("Flag --model needs a value.");
+});
+
+test("external and provider parsers share unknown flag and missing value errors", () => {
+  const malformed = [
+    ["--name", "work", "--wat"],
+    ["--name"],
+    ["--name", "--model", "m"],
+  ];
+  for (const args of malformed) {
+    const providerError = (() => {
+      try {
+        parseProviderAddArgs(args);
+        return undefined;
+      } catch (error) {
+        return error instanceof Error ? error.message : undefined;
+      }
+    })();
+    expect(providerError).toBeDefined();
+    expect(() => parseExternalAddArgs(["--external", ...args])).toThrow(providerError);
+  }
 });

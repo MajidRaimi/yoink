@@ -1,6 +1,7 @@
 import { dirname, join } from "node:path";
 import { mkdir } from "node:fs/promises";
-import { writeFileAtomic } from "./atomic-write";
+import { writeFileAtomic, writeSecretFileAtomic } from "./atomic-write";
+import { readJsonFile } from "./json-file";
 import { claudeConfigDir } from "./paths";
 
 export const GLOBAL_SETTINGS_PATH = join(claudeConfigDir(), "settings.json");
@@ -25,11 +26,7 @@ const MANAGED_ENV_KEYS = [
 
 type Settings = { env?: Record<string, string> } & Record<string, unknown>;
 
-const readSettings = async (path: string): Promise<Settings> => {
-  const file = Bun.file(path);
-  if (!(await file.exists())) return {};
-  return (await file.json()) as Settings;
-};
+const readSettings = async (path: string): Promise<Settings> => (await readJsonFile<Settings>(path)) ?? {};
 
 const managedEnv = (input: ExternalEnvInput): Record<string, string> => ({
   ANTHROPIC_BASE_URL: input.baseUrl,
@@ -50,14 +47,12 @@ export const applyExternalEnv = async (path: string, input: ExternalEnvInput): P
   const settings = await readSettings(path);
   settings.env = { ...(settings.env ?? {}), ...managedEnv(input) };
   await mkdir(dirname(path), { recursive: true });
-  await writeFileAtomic(path, `${JSON.stringify(settings, null, 2)}\n`);
+  await writeSecretFileAtomic(path, `${JSON.stringify(settings, null, 2)}\n`);
 };
 
 export const clearExternalEnv = async (path: string): Promise<void> => {
-  const file = Bun.file(path);
-  if (!(await file.exists())) return;
-  const settings = (await file.json()) as Settings;
-  if (!settings.env) return;
+  const settings = await readJsonFile<Settings>(path);
+  if (!settings?.env) return;
   for (const key of MANAGED_ENV_KEYS) delete settings.env[key];
   if (Object.keys(settings.env).length === 0) delete settings.env;
   await writeFileAtomic(path, `${JSON.stringify(settings, null, 2)}\n`);

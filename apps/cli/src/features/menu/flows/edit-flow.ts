@@ -1,4 +1,5 @@
 import { cancel, outro } from "@clack/prompts";
+import { errorMessage } from "../../../shared/errors";
 import { theme } from "../../../shared/theme";
 import { assertNever } from "../../../shared/assert-never";
 import { listProfiles, updateProfile } from "../../profiles/service";
@@ -19,14 +20,14 @@ const editClaudeProfile = async (profile: ClaudeProfile): Promise<void> => {
   try {
     await updateProfile(profile.name, { ...profile, name: newName });
   } catch (error) {
-    cancel(error instanceof Error ? error.message : "Could not rename.");
+    cancel(errorMessage(error, "Could not rename."));
     return;
   }
   outro(`${theme.success("✔")} Renamed to ${theme.accent(newName)}`);
 };
 
 export const editProfileFlow = async (name: string): Promise<void> => {
-  const { current, profiles } = await listProfiles();
+  const { profiles } = await listProfiles();
   const profile = profiles.find((candidate) => candidate.name === name);
   if (!profile) {
     cancel(`No profile named "${name}".`);
@@ -35,7 +36,7 @@ export const editProfileFlow = async (name: string): Promise<void> => {
 
   switch (profile.type) {
     case "external":
-      await editExternalProfile(profile, current === profile.name);
+      await editExternalProfile(profile);
       return;
     case "claude":
       await editClaudeProfile(profile);

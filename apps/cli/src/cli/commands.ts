@@ -1,18 +1,20 @@
 import pc from "picocolors";
 import { YoinkError } from "../shared/errors";
 import { theme } from "../shared/theme";
+import { nowIso } from "../shared/time";
 import {
   currentProfile,
   listProfiles,
-  removeProfile,
   renameProfile,
   saveProfile,
-  updateProfile,
   upsertProfile,
 } from "../features/profiles/service";
 import type { ExternalProfile } from "../features/profiles/types";
-import { switchTo } from "../features/switch/service";
-import { applyExternalEnv, GLOBAL_SETTINGS_PATH } from "../shared/claude-settings";
+import { deleteProfile } from "../features/providers/removal";
+import { countFailures } from "../features/harnesses/outcomes";
+import { validateProviderId } from "../shared/validators";
+import { editProviderFields } from "../features/providers/field-edit";
+import { assertSwitchable, switchTo } from "../features/switch/service";
 import { confirmIfClaudeRunning } from "../features/switch/confirm-running";
 import { accountLabel, profileLine, switchedLine } from "../features/profiles/format";
 import { introBanner } from "../features/menu/banner";
@@ -24,20 +26,19 @@ import {
   parseExternalAddArgs,
   parseExternalEditArgs,
 } from "./external-flags";
+import { renderFailedOutcomes } from "./render-outcomes";
+import { readTokenFromStdin } from "./stdin-token";
+import { isProviderAddInvocation } from "./provider-flags";
+import { handleProviderAdd } from "./provider-commands";
 
-const nowIso = (): string => new Date().toISOString();
-
-const readTokenFromStdin = async (): Promise<string> => {
-  if (process.stdin.isTTY) {
-    throw new YoinkError("--token-stdin requires the API key piped on stdin, e.g. echo $KEY | yoink add ...");
-  }
-  const token = (await Bun.stdin.text()).trim();
-  if (!token) throw new YoinkError("No token received on stdin. Pipe the API key when using --token-stdin.");
-  return token;
+const assertValidProviderName = (name: string): void => {
+  const error = validateProviderId(name);
+  if (error) throw new YoinkError(`Invalid provider name "${name}": ${error}.`);
 };
 
 const handleExternalAdd = async (args: string[]): Promise<void> => {
   const parsed = parseExternalAddArgs(args);
+  assertValidProviderName(parsed.name);
   if (!parsed.tokenFromStdin) {
     throw new YoinkError("An API key is required. Pipe it on stdin with --token-stdin.");
   }
@@ -61,35 +62,23 @@ const handleExternalAdd = async (args: string[]): Promise<void> => {
 
 const handleExternalEdit = async (name: string, args: string[]): Promise<void> => {
   const parsed = parseExternalEditArgs(args);
-  const { profiles } = await listProfiles();
-  const profile = profiles.find((candidate) => candidate.name === name);
-  if (!profile) throw new YoinkError(`No profile named "${name}".`);
-  if (profile.type !== "external") {
-    throw new YoinkError(`"${name}" is a Claude profile. Flag edits only apply to external profiles.`);
-  }
-  const token = parsed.tokenFromStdin ? await readTokenFromStdin() : profile.token;
-  const next: ExternalProfile = {
-    ...profile,
-    name: parsed.name ?? profile.name,
-    provider: parsed.provider ?? profile.provider,
-    baseUrl: parsed.baseUrl ?? profile.baseUrl,
-    model: parsed.model ?? profile.model,
+  const token = parsed.tokenFromStdin ? await readTokenFromStdin() : undefined;
+  const { provider, outcomes } = await editProviderFields(name, {
+    name: parsed.name,
+    displayName: parsed.provider,
     token,
-    updatedAt: nowIso(),
-  };
-  await updateProfile(name, next);
-  const { current } = await listProfiles();
-  if (current === next.name) {
-    await applyExternalEnv(GLOBAL_SETTINGS_PATH, {
-      baseUrl: next.baseUrl,
-      token: next.token,
-      model: next.model,
-    });
-  }
-  console.log(`${theme.success("✔")} Updated ${theme.accent(pc.bold(next.name))} ${pc.dim(`(${accountLabel(next)})`)}`);
+    baseUrl: parsed.baseUrl,
+    model: parsed.model,
+  });
+  renderFailedOutcomes(outcomes, "Synced");
+  console.log(`${theme.success("✔")} Updated ${theme.accent(pc.bold(provider.name))} ${pc.dim(`(${accountLabel(provider)})`)}`);
 };
 
 export const handleAdd = async (args: string[]): Promise<void> => {
+  if (isProviderAddInvocation(args)) {
+    await handleProviderAdd(args);
+    return;
+  }
   if (isExternalAddInvocation(args)) {
     await handleExternalAdd(args);
     return;
@@ -130,6 +119,7 @@ export const handleUse = async (args: string[]): Promise<void> => {
     console.log(`${theme.active("●")} Already on ${theme.accent(name)}.`);
     return;
   }
+  await assertSwitchable(name);
   if (!(await confirmIfClaudeRunning())) {
     console.log(pc.dim("Switch cancelled."));
     return;
@@ -162,13 +152,20 @@ export const handleRename = async (args: string[]): Promise<void> => {
   const from = args[0]?.trim();
   const to = args[1]?.trim();
   if (!from || !to) throw new YoinkError("Usage: yoink rename <from> <to>");
-  await renameProfile(from, to);
+  renderFailedOutcomes(await renameProfile(from, to), "Synced");
   console.log(`${theme.success("✔")} Renamed ${theme.accent(from)} to ${theme.accent(to)}`);
 };
 
 export const handleRemove = async (args: string[]): Promise<void> => {
   const name = args[0]?.trim();
   if (!name) throw new YoinkError("Usage: yoink remove <name>");
-  await removeProfile(name);
+  const outcomes = await deleteProfile(name);
+  renderFailedOutcomes(outcomes, "Disconnected");
+  const failed = countFailures(outcomes);
+  if (failed > 0) {
+    throw new YoinkError(
+      `Kept "${name}" because ${failed} harness(es) could not be disconnected. Fix the errors above and run \`yoink remove ${name}\` again.`,
+    );
+  }
   console.log(`${theme.success("✔")} Removed ${theme.accent(name)}`);
 };

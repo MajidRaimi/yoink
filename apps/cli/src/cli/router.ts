@@ -13,6 +13,7 @@ import {
   handleSave,
   handleUse,
 } from "./commands";
+import { handleConnect, handleDisconnect, handleHarnesses, handleImport, handleModels } from "./provider-commands";
 
 export const run = async (argv: string[]): Promise<void> => {
   const [command, ...rest] = argv;
@@ -49,6 +50,21 @@ export const run = async (argv: string[]): Promise<void> => {
       case "remove":
       case "rm":
         await handleRemove(rest);
+        break;
+      case "connect":
+        await handleConnect(rest);
+        break;
+      case "disconnect":
+        await handleDisconnect(rest);
+        break;
+      case "harnesses":
+        await handleHarnesses(rest);
+        break;
+      case "models":
+        await handleModels(rest);
+        break;
+      case "import":
+        await handleImport(rest);
         break;
       case "help":
       case "-h":

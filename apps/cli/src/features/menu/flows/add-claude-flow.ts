@@ -1,5 +1,6 @@
 import { cancel, note, outro, spinner } from "@clack/prompts";
 import pc from "picocolors";
+import { errorMessage } from "../../../shared/errors";
 import { theme } from "../../../shared/theme";
 import { promptConfirm } from "../../../shared/prompt";
 import { syncCurrentProfile } from "../../switch/service";
@@ -22,7 +23,7 @@ const preserveCurrentLogin = async (before: LiveLogin, profiles: Profile[]): Pro
   loader.start("Saving your current login first");
   const saved = await saveProfile(uniqueName(profiles, defaultNameFromEmail(before.email)));
   loader.stop(
-    `Saved current login as ${theme.accent(saved.name)} ${pc.dim(`(${accountLabel(saved)})`)} — rename it anytime with \`yoink rename\`.`,
+    `Saved current login as ${theme.accent(saved.name)} ${pc.dim(`(${accountLabel(saved)})`)}. Rename it anytime with \`yoink rename\`.`,
   );
 };
 
@@ -37,7 +38,7 @@ export const addAccountFlow = async (): Promise<void> => {
     try {
       await runClaudeLogin();
     } catch (error) {
-      cancel(error instanceof Error ? error.message : "Login failed.");
+      cancel(errorMessage(error, "Login failed."));
       return;
     }
 

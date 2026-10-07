@@ -26,14 +26,12 @@ const read = async (): Promise<string | null> => {
 
 const spawnWrite = async (plan: KeychainWritePlan): Promise<{ errorOutput: string; exitCode: number }> => {
   const proc = Bun.spawn(plan.argv, {
-    stdin: plan.kind === "interactive" ? "pipe" : "ignore",
+    stdin: "pipe",
     stdout: "ignore",
     stderr: "pipe",
   });
-  if (plan.kind === "interactive" && proc.stdin) {
-    proc.stdin.write(plan.stdin);
-    await proc.stdin.end();
-  }
+  proc.stdin.write(plan.stdin);
+  await proc.stdin.end();
   const [errorOutput, exitCode] = await Promise.all([
     new Response(proc.stderr).text(),
     proc.exited,

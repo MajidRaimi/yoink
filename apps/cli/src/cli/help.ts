@@ -2,15 +2,15 @@ import pc from "picocolors";
 import { theme } from "../shared/theme";
 
 export const printHelp = (): void => {
-  console.log(`${pc.bold("yoink")} ${pc.dim("· switch Claude Code accounts")}
+  console.log(`${pc.bold("yoink")} ${pc.dim("· switch AI accounts and providers")}
 
 ${pc.bold("USAGE")}
   yoink                 Open the interactive account menu
   yoink ${theme.accent("<name>")}          Switch straight to a saved profile
-  yoink add             Add a Claude account or an API-key provider (OpenAI, Kimi, Fuse...)
+  yoink add             Add a Claude, ChatGPT (Codex), Kimi Code, Gemini or Copilot login, or an API-key provider
   yoink edit ${theme.accent("<name>")}     Edit a profile (name, or provider/URL/key/model)
-  yoink save ${theme.accent("<name>")}     Snapshot your current login as a profile
-  yoink use ${theme.accent("<name>")}      Switch Claude Code to a saved profile
+  yoink save ${theme.accent("<name>")}     Snapshot your current login as a profile (--tool ${theme.accent("<tool>")} for other CLIs)
+  yoink use ${theme.accent("<name>")}      Switch to a saved profile inside its own tool (--force skips the running check)
   yoink connect ${theme.accent("<name>")}  Connect a provider to harnesses (pi, opencode, omp, codex, claude-code)
   yoink disconnect ${theme.accent("<name>")} Remove a provider from harnesses
   yoink models ${theme.accent("<name>")}   Choose which models a provider exposes, then re-sync
@@ -19,12 +19,16 @@ ${pc.bold("USAGE")}
   yoink status ${theme.accent("<name>")}   Show each harness for a provider: installed, compatible, connected
   yoink presets         List built-in provider presets
   yoink probe           Detect a provider's endpoints and models (--base-url or --preset, key on stdin)
-  yoink list            List all saved profiles
-  yoink current         Show the active profile
+  yoink list            List all saved profiles, grouped by tool (--json)
+  yoink current         Show the active profiles (--tool ${theme.accent("<tool>")}, --json)
   yoink rename ${theme.accent("<a> <b>")}  Rename a profile
   yoink remove ${theme.accent("<name>")}   Delete a profile
   yoink help            Show this help
   yoink version         Show the version
+
+${pc.bold("TOOLS")}
+  claude, codex (ChatGPT), kimi (Kimi Code), gemini, copilot (GitHub Copilot)
+  yoink save ${theme.accent("<name>")} --tool ${theme.accent("<tool>")}   yoink current --tool ${theme.accent("<tool>")}   yoink accounts --json
 
 ${pc.bold("NON-INTERACTIVE (providers)")}
   yoink add --external --name ${theme.accent("<id>")} (--preset ${theme.accent("<p>")} | --base-url ${theme.accent("<u>")} [--protocol ${theme.accent("<p,...>")}] | --endpoint ${theme.accent("<p>=<url>,...")}) --models ${theme.accent("<m,...>")} [--connect ${theme.accent("<h,...>")}] [--default ${theme.accent("<m>")}] --token-stdin

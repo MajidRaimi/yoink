@@ -15,6 +15,7 @@ import { accountLabel } from "../../profiles/format";
 import { findClaudeProfileByEmail, hasProfileForEmail } from "../../profiles/lookup";
 import { uniqueName } from "../../profiles/naming";
 import type { Profile } from "../../profiles/types";
+import { preservedLoginNote } from "./preserved-login-note";
 import { promptProfileName } from "./prompt-name";
 
 const preserveCurrentLogin = async (before: LiveLogin, profiles: Profile[]): Promise<void> => {
@@ -22,9 +23,7 @@ const preserveCurrentLogin = async (before: LiveLogin, profiles: Profile[]): Pro
   const loader = spinner();
   loader.start("Saving your current login first");
   const saved = await saveProfile(uniqueName(profiles, defaultNameFromEmail(before.email)));
-  loader.stop(
-    `Saved current login as ${theme.accent(saved.name)} ${pc.dim(`(${accountLabel(saved)})`)}. Rename it anytime with \`yoink rename\`.`,
-  );
+  loader.stop(preservedLoginNote(saved));
 };
 
 export const addAccountFlow = async (): Promise<void> => {

@@ -191,3 +191,18 @@ test("switching Claude accounts updates credentials, account and current profile
   expect(live.env).toBeNull();
   expect((await repository.loadStore()).current).toBe("b");
 });
+
+test("the Claude Code switch refuses a subscription login without touching anything", async () => {
+  await repository.saveStore({
+    current: "a",
+    profiles: {
+      a: claudeProfile("a", "blob-a", accountA),
+      codex: { type: "codex", name: "codex", snapshot: { files: {} }, identity: { label: "x" }, updatedAt: "t" },
+    },
+  });
+  const service = createSwitchService(deps());
+  await expect(service.switchTo("codex")).rejects.toThrow("not a Claude Code account");
+  await expect(service.assertSwitchable("codex")).rejects.toThrow("not a Claude Code account");
+  expect(live.keychain).toBe("blob-a");
+  expect((await repository.loadStore()).current).toBe("a");
+});

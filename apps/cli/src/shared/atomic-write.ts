@@ -1,5 +1,6 @@
 import { chmod, lstat, mkdir, readlink, realpath, rename, rm, stat, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
+import { errorCode, isMissingFileError } from "./fs-errors";
 
 const RETRYABLE_CODES = new Set(["EPERM", "EBUSY"]);
 const RENAME_ATTEMPTS = 3;
@@ -8,8 +9,6 @@ const SECRET_FILE_MODE = 0o600;
 const OWNER_ONLY_MASK = 0o700;
 const MAX_SYMLINK_HOPS = 40;
 
-const errorCode = (error: unknown): string | undefined =>
-  error instanceof Error ? (error as NodeJS.ErrnoException).code : undefined;
 
 const isRetryable = (error: unknown): boolean => RETRYABLE_CODES.has(errorCode(error) ?? "");
 
@@ -29,7 +28,7 @@ const isSymlink = async (path: string): Promise<boolean> => {
   try {
     return (await lstat(path)).isSymbolicLink();
   } catch (error) {
-    if (errorCode(error) === "ENOENT" || errorCode(error) === "ENOTDIR") return false;
+    if (isMissingFileError(error)) return false;
     throw error;
   }
 };

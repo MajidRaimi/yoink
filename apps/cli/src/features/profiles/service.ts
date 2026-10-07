@@ -5,7 +5,8 @@ import { nowIso } from "../../shared/time";
 import { resyncProvider } from "../harnesses/sync";
 import { createRenameProfile, type RenameProfile } from "./rename";
 import { loadStore, saveStore } from "./store";
-import type { Profile } from "./types";
+import { isSubscriptionProfile, releaseFromCurrentByTool, renameInCurrentByTool } from "./subscription-profile";
+import type { Profile, ProfileStore } from "./types";
 
 const snapshotLiveLogin = async (name: string): Promise<Profile> => {
   const keychain = await readClaudeCredentials();
@@ -33,11 +34,20 @@ export const updateProfile = async (oldName: string, next: Profile): Promise<voi
   delete store.profiles[oldName];
   store.profiles[next.name] = next;
   if (store.current === oldName) store.current = next.name;
+  renameInCurrentByTool(store, oldName, next.name);
   await saveStore(store);
+};
+
+export const assertClaudeSaveTarget = (store: ProfileStore, name: string): void => {
+  const existing = store.profiles[name];
+  if (existing && isSubscriptionProfile(existing)) {
+    throw new YoinkError(`A profile named "${name}" already exists for something else. Pick another name.`);
+  }
 };
 
 export const saveProfile = async (name: string): Promise<Profile> => {
   const store = await loadStore();
+  assertClaudeSaveTarget(store, name);
   const profile = await snapshotLiveLogin(name);
   store.profiles[name] = profile;
   store.current = name;
@@ -61,6 +71,7 @@ export const removeProfile = async (name: string): Promise<void> => {
   if (!store.profiles[name]) throw new YoinkError(`No profile named "${name}".`);
   delete store.profiles[name];
   if (store.current === name) store.current = null;
+  releaseFromCurrentByTool(store, name);
   await saveStore(store);
 };
 

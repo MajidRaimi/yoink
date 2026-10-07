@@ -16,7 +16,10 @@ export type ListOption = {
   label: string;
   hint: string;
   isCurrent: boolean;
+  group?: string;
 };
+
+type ListEntry = { kind: "header"; title: string } | { kind: "option"; option: ListOption; index: number };
 
 export type ListResult =
   | { action: "switch"; name: string }
@@ -43,39 +46,53 @@ const helpLine = (): string => {
   return parts.join(pc.dim("   "));
 };
 
-const windowOptions = (options: ListOption[], cursor: number) => {
+const toEntries = (options: ListOption[]): ListEntry[] =>
+  options.flatMap((option, index): ListEntry[] => {
+    const entry: ListEntry = { kind: "option", option, index };
+    const startsGroup = option.group !== undefined && option.group !== options[index - 1]?.group;
+    return startsGroup && option.group !== undefined ? [{ kind: "header", title: option.group }, entry] : [entry];
+  });
+
+const cursorEntryIndex = (entries: ListEntry[], cursor: number): number =>
+  Math.max(0, entries.findIndex((entry) => entry.kind === "option" && entry.index === cursor));
+
+const windowEntries = (entries: ListEntry[], cursor: number) => {
   const rows = process.stdout.rows || 24;
   const budget = Math.max(3, rows - 8);
-  if (options.length <= budget) {
-    return { slice: options, start: 0, hasAbove: false, hasBelow: false };
+  if (entries.length <= budget) {
+    return { slice: entries, hasAbove: false, hasBelow: false };
   }
-  const start = Math.min(Math.max(0, cursor - Math.floor(budget / 2)), options.length - budget);
+  const focus = cursorEntryIndex(entries, cursor);
+  const start = Math.min(Math.max(0, focus - Math.floor(budget / 2)), entries.length - budget);
   return {
-    slice: options.slice(start, start + budget),
-    start,
+    slice: entries.slice(start, start + budget),
     hasAbove: start > 0,
-    hasBelow: start + budget < options.length,
+    hasBelow: start + budget < entries.length,
   };
+};
+
+const renderEntry = (entry: ListEntry, cursor: number): string => {
+  if (entry.kind === "header") return `${BAR}  ${pc.bold(entry.title)}`;
+  const { option } = entry;
+  const isCursor = entry.index === cursor;
+  const radio = isCursor ? theme.accent("●") : pc.dim("○");
+  const body = isCursor ? `${option.label} ${pc.dim(`(${option.hint})`)}` : pc.dim(option.label);
+  return `${BAR}  ${radio} ${body}`;
 };
 
 const renderFrame = (self: ActionListPrompt): string => {
   if (self.state === "submit" || self.state === "cancel") return "";
 
-  const lines = [`${BAR_START}  ${banner} ${pc.dim("switch Claude accounts")}`, BAR];
+  const lines = [`${BAR_START}  ${banner} ${pc.dim("switch accounts")}`, BAR];
 
   if (self.options.length === 0) {
     lines.push(
       `${BAR}  ${pc.dim("No profiles yet. Press ")}${theme.accent("n")}${pc.dim(" to add an account or ")}${theme.accent("s")}${pc.dim(" to save your current login.")}`,
     );
   } else {
-    const { slice, start, hasAbove, hasBelow } = windowOptions(self.options, self.cursor);
+    const { slice, hasAbove, hasBelow } = windowEntries(toEntries(self.options), self.cursor);
     if (hasAbove) lines.push(`${BAR}  ${pc.dim("↑ …")}`);
-    slice.forEach((option, index) => {
-      const isCursor = start + index === self.cursor;
-      const radio = isCursor ? theme.accent("●") : pc.dim("○");
-      const body = isCursor ? `${option.label} ${pc.dim(`(${option.hint})`)}` : pc.dim(option.label);
-      lines.push(`${BAR}  ${radio} ${body}`);
-    });
+    for (const entry of slice) lines.push(renderEntry(entry, self.cursor));
     if (hasBelow) lines.push(`${BAR}  ${pc.dim("↓ …")}`);
   }
 

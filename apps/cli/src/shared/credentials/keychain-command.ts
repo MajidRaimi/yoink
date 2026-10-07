@@ -6,9 +6,16 @@ export const SECURITY_INTERACTIVE_LINE_LIMIT = 4000;
 const LINE_BREAKS = /[\r\n]/;
 const SECURITY_ESCAPABLE = /[\\"]/g;
 
-export type KeychainWritePlan =
-  | { kind: "interactive"; argv: string[]; stdin: string }
-  | { kind: "argv"; argv: string[] };
+export type KeychainWritePlan = { argv: string[]; stdin: string };
+
+export class KeychainSecretTooLargeError extends YoinkError {
+  constructor(service: string, commandBytes: number) {
+    super(
+      `The "${service}" Keychain entry is too large to save safely (${commandBytes} bytes, the limit is ${SECURITY_INTERACTIVE_LINE_LIMIT}). yoink will not pass credentials on the command line where other processes can read them. Switch the tool to file-based credential storage (for Codex, set cli_auth_credentials_store = "file" in config.toml) and try again.`,
+    );
+    this.name = "KeychainSecretTooLargeError";
+  }
+}
 
 const quoteForSecurity = (value: string): string => {
   if (LINE_BREAKS.test(value)) {
@@ -24,13 +31,11 @@ export const buildKeychainAddCommand = (service: string, account: string, blob: 
 
 export const planKeychainWrite = (service: string, account: string, blob: string): KeychainWritePlan => {
   const command = buildKeychainAddCommand(service, account, blob);
-  if (Buffer.byteLength(command, "utf8") <= SECURITY_INTERACTIVE_LINE_LIMIT) {
-    return { kind: "interactive", argv: ["security", "-i"], stdin: command };
+  const commandBytes = Buffer.byteLength(command, "utf8");
+  if (commandBytes > SECURITY_INTERACTIVE_LINE_LIMIT) {
+    throw new KeychainSecretTooLargeError(service, commandBytes);
   }
-  return {
-    kind: "argv",
-    argv: ["security", "add-generic-password", "-U", "-a", account, "-s", service, "-X", toHex(blob)],
-  };
+  return { argv: ["security", "-i"], stdin: command };
 };
 
 export const interpretKeychainRead = (exitCode: number, output: string): string | null => {

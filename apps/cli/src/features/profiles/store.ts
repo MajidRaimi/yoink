@@ -6,6 +6,7 @@ import { PROFILES_PATH } from "../../shared/paths";
 import { normalizeEndpointUrl, withoutV1 } from "../harnesses/endpoint";
 import { defaultModelSpec } from "./model-spec";
 import { selectedDefaultModel } from "./default-model";
+import { isSubscriptionProfile, normalizeSubscriptionProfile, parseCurrentByTool } from "./subscription-profile";
 import {
   STORE_SCHEMA_VERSION,
   type Endpoint,
@@ -18,6 +19,7 @@ import {
 type RawStore = {
   current?: string | null;
   importOffered?: boolean;
+  currentByTool?: unknown;
   profiles?: Record<string, Record<string, unknown>>;
 };
 
@@ -129,6 +131,7 @@ const migrateExternal = (profile: ExternalProfile, isCurrent: boolean): Provider
 
 const normalizeProfile = (entry: Record<string, unknown>, isCurrent: boolean): Profile => {
   const profile = (entry.type ? entry : { ...entry, type: "claude" }) as Profile;
+  if (isSubscriptionProfile(profile)) return normalizeSubscriptionProfile(profile);
   return profile.type === "external" ? migrateExternal(profile, isCurrent) : profile;
 };
 
@@ -151,6 +154,8 @@ const parseStore = (raw: RawStore): ProfileStore => {
   }
   const store: ProfileStore = { schemaVersion: STORE_SCHEMA_VERSION, current, profiles };
   if (raw.importOffered !== undefined) store.importOffered = raw.importOffered;
+  const currentByTool = parseCurrentByTool(raw.currentByTool);
+  if (currentByTool !== undefined) store.currentByTool = currentByTool;
   return store;
 };
 

@@ -2,6 +2,7 @@ import { YoinkError } from "../../shared/errors";
 import { validateProviderId } from "../../shared/validators";
 import type { HarnessOutcome } from "../harnesses/sync";
 import { toProviderProfile, type ProfileStoreRepository } from "./store";
+import { renameInCurrentByTool } from "./subscription-profile";
 import type { ProviderProfile } from "./types";
 
 export type ResyncRenamedProvider = (provider: ProviderProfile, previousName: string) => Promise<HarnessOutcome[]>;
@@ -33,6 +34,7 @@ export const createRenameProfile =
     delete store.profiles[from];
     store.profiles[to] = renamed;
     if (store.current === from) store.current = to;
+    renameInCurrentByTool(store, from, to);
     await repository.saveStore(store);
     if (renamed.type !== "external") return [];
     return resync(toProviderProfile(renamed), from);

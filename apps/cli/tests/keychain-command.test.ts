@@ -1,6 +1,7 @@
 import { expect, test } from "bun:test";
 import {
   KEYCHAIN_ITEM_NOT_FOUND_EXIT_CODE,
+  KeychainSecretTooLargeError,
   SECURITY_INTERACTIVE_LINE_LIMIT,
   assertKeychainWriteSucceeded,
   buildKeychainAddCommand,
@@ -44,13 +45,66 @@ test("buildKeychainAddCommand rejects line breaks in service or account", () => 
 
 test("planKeychainWrite uses interactive stdin for blobs that fit one security line", () => {
   const plan = planKeychainWrite("svc", "acct", JSON.stringify({ token: SECRET }));
-  expect(plan.kind).toBe("interactive");
   expect(plan.argv).toEqual(["security", "-i"]);
-  if (plan.kind !== "interactive") throw new Error("expected interactive plan");
+  expect(plan.argv.join(" ")).not.toContain(Buffer.from(SECRET).toString("hex"));
   expect(Buffer.byteLength(plan.stdin, "utf8")).toBeLessThanOrEqual(SECURITY_INTERACTIVE_LINE_LIMIT);
 });
 
-test("planKeychainWrite falls back to argv when the line would overflow security's buffer", () => {
+const base64url = (value: string): string => Buffer.from(value, "utf8").toString("base64url");
+
+const fakeJwt = (claims: Record<string, unknown>): string =>
+  `${base64url(JSON.stringify({ alg: "RS256", typ: "JWT" }))}.${base64url(JSON.stringify(claims))}.${base64url("fake-signature".repeat(20))}`;
+
+const fakeCodexAuthJson = (targetBytes: number): string => {
+  const padding = "x".repeat(targetBytes);
+  const auth = {
+    OPENAI_API_KEY: null,
+    tokens: {
+      id_token: fakeJwt({ email: "fake@example.test", padding }),
+      access_token: fakeJwt({ scope: "openid", padding }),
+      refresh_token: "rt_fake_refresh_token_value",
+      account_id: "fake-account",
+    },
+    last_refresh: "2026-01-01T00:00:00Z",
+  };
+  return JSON.stringify(auth);
+};
+
+const capturePlanError = (blob: string): unknown => {
+  try {
+    return planKeychainWrite("Codex Auth", "cli|0123456789abcdef", blob);
+  } catch (error) {
+    return error;
+  }
+};
+
+test("planKeychainWrite refuses a 5 KB Codex auth.json instead of placing it on the command line", () => {
+  const blob = fakeCodexAuthJson(2500);
+  expect(Buffer.byteLength(blob, "utf8")).toBeGreaterThan(5000);
+  const outcome = capturePlanError(blob);
+  expect(outcome).toBeInstanceOf(KeychainSecretTooLargeError);
+  const message = (outcome as KeychainSecretTooLargeError).message;
+  expect(message).toContain("Codex Auth");
+  expect(message).toContain('cli_auth_credentials_store = "file"');
+  expect(message).not.toContain("rt_fake_refresh_token_value");
+  expect(message).not.toContain(Buffer.from("rt_fake_refresh_token_value").toString("hex"));
+});
+
+test("planKeychainWrite never yields a plan whose argv carries the secret, at any size", () => {
+  const marker = "rt_fake_refresh_token_value";
+  for (const size of [10, 500, 1500, 1900, 2000, 4000, 8000]) {
+    const outcome = capturePlanError(fakeCodexAuthJson(size));
+    if (outcome instanceof KeychainSecretTooLargeError) continue;
+    const plan = outcome as ReturnType<typeof planKeychainWrite>;
+    expect(plan.argv).toEqual(["security", "-i"]);
+    const joined = plan.argv.join(" ");
+    expect(joined).not.toContain(marker);
+    expect(joined).not.toContain(Buffer.from(marker).toString("hex"));
+    expect(Buffer.byteLength(plan.stdin, "utf8")).toBeLessThanOrEqual(SECURITY_INTERACTIVE_LINE_LIMIT);
+  }
+});
+
+test("planKeychainWrite refuses oversized Claude blobs rather than falling back to argv", () => {
   const mcpOAuth = Object.fromEntries(
     Array.from({ length: 40 }, (_, index) => [`server-${index}`, { accessToken: `${SECRET}-${index}` }]),
   );
@@ -58,11 +112,7 @@ test("planKeychainWrite falls back to argv when the line would overflow security
   expect(Buffer.byteLength(buildKeychainAddCommand("svc", "acct", blob))).toBeGreaterThan(
     SECURITY_INTERACTIVE_LINE_LIMIT,
   );
-  const plan = planKeychainWrite("svc", "acct", blob);
-  expect(plan.kind).toBe("argv");
-  expect(plan.argv.slice(0, 8)).toEqual(["security", "add-generic-password", "-U", "-a", "acct", "-s", "svc", "-X"]);
-  expect(plan.argv.join(" ")).not.toContain(SECRET);
-  expect(Buffer.from(plan.argv[8] ?? "", "hex").toString("utf8")).toBe(blob);
+  expect(() => planKeychainWrite("svc", "acct", blob)).toThrow(KeychainSecretTooLargeError);
 });
 
 test("interpretKeychainRead treats only errSecItemNotFound as missing credentials", () => {

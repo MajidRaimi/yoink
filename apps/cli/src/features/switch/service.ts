@@ -5,7 +5,15 @@ import { errorMessage, YoinkError } from "../../shared/errors";
 import { nowIso } from "../../shared/time";
 import { claudeCodeModel } from "../profiles/default-model";
 import { loadStore, saveStore, toProviderProfile, type ProfileStoreRepository } from "../profiles/store";
-import type { ClaudeProfile, ExternalProfile, Profile, ProfileStore, ProviderProfile } from "../profiles/types";
+import { isSubscriptionProfile } from "../profiles/subscription-profile";
+import type {
+  ClaudeProfile,
+  ExternalProfile,
+  Profile,
+  ProfileStore,
+  ProviderProfile,
+  SubscriptionProfile,
+} from "../profiles/types";
 
 export type SwitchDependencies = {
   store: ProfileStoreRepository;
@@ -49,6 +57,9 @@ const claudeCodeEnvFor = (target: ExternalProfile): ExternalEnvInput => {
   }
   return { baseUrl: endpoint.baseUrl, token: target.token, model: claudeCodeModel(provider) };
 };
+
+const notClaudeCodeProfile = (profile: SubscriptionProfile): YoinkError =>
+  new YoinkError(`"${profile.name}" is a ${profile.type} login, not a Claude Code account.`);
 
 const withClaudeCodeConnection = (target: ExternalProfile): ProviderProfile => {
   const provider = toProviderProfile(target);
@@ -132,6 +143,7 @@ export const createSwitchService = (deps: SwitchDependencies): SwitchService => 
 
   const assertSwitchable = async (name: string): Promise<void> => {
     const target = (await deps.store.loadStore()).profiles[name];
+    if (target && isSubscriptionProfile(target)) throw notClaudeCodeProfile(target);
     if (target?.type === "external") claudeCodeEnvFor(target);
   };
 
@@ -147,6 +159,7 @@ export const createSwitchService = (deps: SwitchDependencies): SwitchService => 
     if (!target) {
       throw new YoinkError(`No profile named "${name}". Run \`yoink list\` to see your profiles.`);
     }
+    if (isSubscriptionProfile(target)) throw notClaudeCodeProfile(target);
     if (store.current === name) return { profile: target, switched: false };
 
     await resnapshotActiveProfile(store);

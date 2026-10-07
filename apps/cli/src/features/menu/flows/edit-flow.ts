@@ -3,11 +3,11 @@ import { errorMessage } from "../../../shared/errors";
 import { theme } from "../../../shared/theme";
 import { assertNever } from "../../../shared/assert-never";
 import { listProfiles, updateProfile } from "../../profiles/service";
-import type { ClaudeProfile } from "../../profiles/types";
+import type { ClaudeProfile, SubscriptionProfile } from "../../profiles/types";
 import { editExternalProfile } from "./edit-external-flow";
 import { promptProfileName } from "./prompt-name";
 
-const editClaudeProfile = async (profile: ClaudeProfile): Promise<void> => {
+const renameAccountProfile = async (profile: ClaudeProfile | SubscriptionProfile): Promise<void> => {
   const newName = await promptProfileName(profile.name);
   if (newName === null) {
     cancel("Cancelled.");
@@ -39,7 +39,11 @@ export const editProfileFlow = async (name: string): Promise<void> => {
       await editExternalProfile(profile);
       return;
     case "claude":
-      await editClaudeProfile(profile);
+    case "codex":
+    case "kimi":
+    case "gemini":
+    case "copilot":
+      await renameAccountProfile(profile);
       return;
     default:
       assertNever(profile);

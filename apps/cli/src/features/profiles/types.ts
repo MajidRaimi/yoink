@@ -57,7 +57,30 @@ export type ProviderProfile = ExternalProfile & {
   connections: Connections;
 };
 
-export type Profile = ClaudeProfile | ExternalProfile;
+export const SUBSCRIPTION_TOOLS = ["codex", "kimi", "gemini", "copilot"] as const;
+export type SubscriptionTool = (typeof SUBSCRIPTION_TOOLS)[number];
+
+export type SubscriptionSnapshot = {
+  files: Record<string, string>;
+  keyring?: Record<string, string>;
+};
+
+export type SubscriptionIdentity = {
+  label: string;
+  email?: string;
+  plan?: string;
+  accountId?: string;
+};
+
+export type SubscriptionProfile = {
+  type: SubscriptionTool;
+  name: string;
+  snapshot: SubscriptionSnapshot;
+  identity: SubscriptionIdentity;
+  updatedAt: string;
+};
+
+export type Profile = ClaudeProfile | ExternalProfile | SubscriptionProfile;
 
 export const STORE_SCHEMA_VERSION = 2;
 
@@ -65,5 +88,6 @@ export type ProfileStore = {
   schemaVersion?: number;
   current: string | null;
   importOffered?: boolean;
+  currentByTool?: Partial<Record<SubscriptionTool, string>>;
   profiles: Record<string, Profile>;
 };

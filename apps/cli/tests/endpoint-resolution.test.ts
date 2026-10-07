@@ -40,3 +40,20 @@ test("resolveProviderEndpoints probes the base URL when no protocol is given", a
   expect(calls).toEqual([{ baseUrl: "https://api.fuse.test", token: "key" }]);
   expect(resolved).toEqual({ endpoints: [{ protocol: "openai-chat", baseUrl: "https://api.fuse.test/v1" }], displayName: "fuse" });
 });
+
+test("resolveProviderEndpoints keeps exact endpoints even when the base url lacks /v1", async () => {
+  const resolved = await resolveProviderEndpoints(
+    {
+      name: "router",
+      baseUrl: "https://openrouter.test/api",
+      protocols: [],
+      endpoints: [{ protocol: "openai-chat", baseUrl: "https://openrouter.test/api/v1/" }],
+    },
+    "key",
+    failingProbe,
+  );
+  expect(resolved).toEqual({
+    endpoints: [{ protocol: "openai-chat", baseUrl: "https://openrouter.test/api/v1" }],
+    displayName: "router",
+  });
+});

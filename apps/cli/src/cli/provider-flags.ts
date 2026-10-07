@@ -1,6 +1,6 @@
 import { YoinkError } from "../shared/errors";
 import { validateHttpUrl } from "../shared/validators";
-import { HARNESS_IDS, PROTOCOLS, type HarnessId, type Protocol } from "../features/profiles/types";
+import { HARNESS_IDS, PROTOCOLS, type Endpoint, type HarnessId, type Protocol } from "../features/profiles/types";
 
 export type ProviderAddArgs = {
   name: string;
@@ -8,6 +8,7 @@ export type ProviderAddArgs = {
   baseUrl?: string;
   displayName?: string;
   protocols: Protocol[];
+  endpoints: Endpoint[];
   models: string[];
   connect: HarnessId[];
   defaultModel?: string;
@@ -20,13 +21,14 @@ const PROVIDER_ADD_VALUE_FLAGS = new Set([
   "--base-url",
   "--provider",
   "--protocol",
+  "--endpoint",
   "--models",
   "--model",
   "--connect",
   "--default",
 ]);
 
-const PROVIDER_ONLY_FLAGS = ["--preset", "--models", "--connect", "--default", "--protocol"];
+const PROVIDER_ONLY_FLAGS = ["--preset", "--models", "--connect", "--default", "--protocol", "--endpoint"];
 
 type RawFlags = { values: Map<string, string>; switches: Set<string> };
 
@@ -69,11 +71,30 @@ export const parseHarnessList = (value: string | undefined): HarnessId[] =>
     return item;
   });
 
-const parseProtocolList = (value: string | undefined): Protocol[] =>
-  splitList(value).map((item) => {
-    if (!isProtocol(item)) throw new YoinkError(`Unknown protocol "${item}". Use one of: ${PROTOCOLS.join(", ")}.`);
-    return item;
-  });
+const parseProtocolList = (value: string | undefined): Protocol[] => splitList(value).map(parseProtocol);
+
+const parseProtocol = (value: string): Protocol => {
+  if (!isProtocol(value)) throw new YoinkError(`Unknown protocol "${value}". Use one of: ${PROTOCOLS.join(", ")}.`);
+  return value;
+};
+
+const parseEndpoint = (entry: string): Endpoint => {
+  const separator = entry.indexOf("=");
+  if (separator <= 0) throw new YoinkError(`Invalid --endpoint "${entry}". Use <protocol>=<url>.`);
+  const protocol = parseProtocol(entry.slice(0, separator).trim());
+  const baseUrl = entry.slice(separator + 1).trim();
+  const error = validateHttpUrl(baseUrl);
+  if (error) throw new YoinkError(`Invalid --endpoint url for ${protocol}: ${error}`);
+  return { protocol, baseUrl };
+};
+
+const parseEndpointList = (value: string | undefined): Endpoint[] => {
+  const endpoints = splitList(value).map(parseEndpoint);
+  const protocols = endpoints.map((endpoint) => endpoint.protocol);
+  const duplicate = protocols.find((protocol, index) => protocols.indexOf(protocol) !== index);
+  if (duplicate) throw new YoinkError(`Protocol ${duplicate} is listed more than once in --endpoint.`);
+  return endpoints;
+};
 
 export const isProviderAddInvocation = (args: readonly string[]): boolean =>
   args.some((arg) => PROVIDER_ONLY_FLAGS.includes(arg));
@@ -84,7 +105,12 @@ export const parseProviderAddArgs = (args: readonly string[]): ProviderAddArgs =
   if (!name) throw new YoinkError("Missing required flag --name.");
   const preset = values.get("--preset");
   const baseUrl = values.get("--base-url");
-  if (!preset && !baseUrl) throw new YoinkError("Pass --preset <id> or --base-url <url>.");
+  const endpoints = parseEndpointList(values.get("--endpoint"));
+  if (!preset && !baseUrl && endpoints.length === 0) {
+    throw new YoinkError("Pass --preset <id>, --base-url <url> or --endpoint <protocol>=<url>.");
+  }
+  if (endpoints.length > 0 && preset) throw new YoinkError("Pass either --preset or --endpoint, not both.");
+  if (endpoints.length > 0 && values.has("--protocol")) throw new YoinkError("Pass either --protocol or --endpoint, not both.");
   if (baseUrl) {
     const error = validateHttpUrl(baseUrl);
     if (error) throw new YoinkError(`Invalid --base-url: ${error}`);
@@ -97,6 +123,7 @@ export const parseProviderAddArgs = (args: readonly string[]): ProviderAddArgs =
     baseUrl,
     displayName: values.get("--provider"),
     protocols: parseProtocolList(values.get("--protocol")),
+    endpoints,
     models,
     connect: parseHarnessList(values.get("--connect")),
     defaultModel: values.get("--default"),

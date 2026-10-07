@@ -61,6 +61,36 @@ afterEach(async () => {
   await removeTempDir(home);
 });
 
+test("add keeps a probed /v1 endpoint when the base url has none", async () => {
+  const result = await cli(
+    [
+      "add",
+      "--name",
+      "router",
+      "--base-url",
+      "https://openrouter.invalid/api",
+      "--endpoint",
+      "openai-chat=https://openrouter.invalid/api/v1",
+      "--models",
+      "m1",
+      "--connect",
+      "pi",
+      "--token-stdin",
+    ],
+    "FAKEKEY",
+  );
+
+  expect(result.exitCode).toBe(0);
+  const stored = JSON.parse(await readText(join(home, ".config", "yoink", "profiles.json"))) as {
+    profiles: Record<string, { endpoints?: { protocol: string; baseUrl: string }[] }>;
+  };
+  expect(stored.profiles.router?.endpoints).toEqual([
+    { protocol: "openai-chat", baseUrl: "https://openrouter.invalid/api/v1" },
+  ]);
+  const piProvider = (await readPiModels()).providers.router as { baseUrl?: string } | undefined;
+  expect(piProvider?.baseUrl).toBe("https://openrouter.invalid/api/v1");
+});
+
 test("disconnect drops a recorded pi connection whose entry was deleted by hand", async () => {
   await addPiProvider("fuse");
   await writeFile(piModelsPath(), JSON.stringify({ providers: {} }));

@@ -1,17 +1,21 @@
-import { useEffect } from "react";
+import { useEffect, type ReactElement } from "react";
 import { Button } from "./button";
 
-export const useEscapeKey = (onEscape: () => void) => {
+const useEscapeListener = (target: Window | Document, onEscape: () => void): void => {
   useEffect(() => {
-    const handler = (event: KeyboardEvent) => {
-      if (event.key !== "Escape") return;
+    const handler = (event: Event) => {
+      if (!(event instanceof KeyboardEvent) || event.key !== "Escape") return;
       event.stopPropagation();
       onEscape();
     };
-    window.addEventListener("keydown", handler, true);
-    return () => window.removeEventListener("keydown", handler, true);
-  }, [onEscape]);
+    target.addEventListener("keydown", handler, true);
+    return () => target.removeEventListener("keydown", handler, true);
+  }, [target, onEscape]);
 };
+
+export const useEscapeKey = (onEscape: () => void): void => useEscapeListener(document, onEscape);
+
+const useDialogEscapeKey = (onEscape: () => void): void => useEscapeListener(window, onEscape);
 
 type ConfirmDialogProps = {
   title: string;
@@ -22,8 +26,8 @@ type ConfirmDialogProps = {
   onCancel: () => void;
 };
 
-export const ConfirmDialog = ({ title, body, confirmLabel, danger = false, onConfirm, onCancel }: ConfirmDialogProps) => {
-  useEscapeKey(onCancel);
+export const ConfirmDialog = ({ title, body, confirmLabel, danger = false, onConfirm, onCancel }: ConfirmDialogProps): ReactElement => {
+  useDialogEscapeKey(onCancel);
   return (
     <div
       className="absolute inset-0 z-40 flex items-center justify-center bg-glass-strong backdrop-blur-sm"

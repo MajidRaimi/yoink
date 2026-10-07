@@ -11,6 +11,7 @@ export type EndpointRequest = {
   baseUrl?: string;
   displayName?: string;
   protocols: readonly Protocol[];
+  endpoints?: readonly Endpoint[];
 };
 
 export type ResolvedEndpoints = {
@@ -32,6 +33,15 @@ export const resolveProviderEndpoints = async (
   }
   const baseUrl = request.baseUrl ?? "";
   const displayName = request.displayName ?? request.name;
+  if (request.endpoints && request.endpoints.length > 0) {
+    return {
+      endpoints: request.endpoints.map((endpoint) => ({
+        protocol: endpoint.protocol,
+        baseUrl: normalizeEndpointUrl(endpoint.protocol, endpoint.baseUrl),
+      })),
+      displayName,
+    };
+  }
   if (request.protocols.length > 0) {
     return {
       endpoints: request.protocols.map((protocol) => ({ protocol, baseUrl: normalizeEndpointUrl(protocol, baseUrl) })),

@@ -24,6 +24,7 @@ import { lookupModelSpecs } from "../features/providers/catalog";
 import { resolveProviderEndpoints } from "../features/providers/endpoint-resolution";
 import { setProviderModels } from "../features/providers/model-selection";
 import { addProvider } from "../features/providers/service";
+import { formatHarnessLine, JSON_SWITCH, printJson } from "./json-output";
 import { parseHarnessList, parseProviderAddArgs, parseRawFlags, splitList } from "./provider-flags";
 import { renderOutcomes } from "./render-outcomes";
 import { readTokenFromStdin } from "./stdin-token";
@@ -100,18 +101,17 @@ export const handleDisconnect = async (args: string[]): Promise<void> => {
 };
 
 export const handleHarnesses = async (args: string[]): Promise<void> => {
-  const { switches } = parseRawFlags(args, new Set(), new Set(["--json"]));
+  const { switches } = parseRawFlags(args, new Set(), new Set([JSON_SWITCH]));
   const reports = await harnessReports();
-  if (switches.has("--json")) {
-    console.log(JSON.stringify(reports, null, 2));
+  if (switches.has(JSON_SWITCH)) {
+    printJson(reports);
     return;
   }
   for (const report of reports) {
-    const marker = report.installed ? theme.active("●") : pc.dim("○");
     const linked = report.providers.length > 0 ? theme.accent(report.providers.join(", ")) : pc.dim("no providers");
     const installedStatus = report.error ? theme.warn(`unreadable: ${report.error}`) : linked;
     const status = report.installed ? installedStatus : pc.dim("not installed");
-    console.log(`${marker} ${pc.bold(report.label.padEnd(12))} ${status}  ${pc.dim(report.configPath)}`);
+    console.log(formatHarnessLine({ active: report.installed, label: report.label, state: status, configPath: report.configPath }));
   }
 };
 

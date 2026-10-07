@@ -34,6 +34,7 @@ test("parseProviderAddArgs parses a preset invocation", () => {
     baseUrl: undefined,
     displayName: undefined,
     protocols: [],
+    endpoints: [],
     models: ["kimi-k3", "kimi-k2.7-code"],
     connect: ["pi", "opencode"],
     defaultModel: "kimi-k3",
@@ -57,12 +58,47 @@ test("parseProviderAddArgs accepts a custom base url with explicit protocols", (
 });
 
 test("parseProviderAddArgs rejects missing source, models and bad values", () => {
-  expect(() => parseProviderAddArgs(["--name", "x", "--models", "m"])).toThrow("--preset <id> or --base-url <url>");
+  expect(() => parseProviderAddArgs(["--name", "x", "--models", "m"])).toThrow("--preset <id>, --base-url <url> or --endpoint <protocol>=<url>");
   expect(() => parseProviderAddArgs(["--name", "x", "--preset", "openai"])).toThrow("--models");
   expect(() => parseProviderAddArgs(["--name", "x", "--base-url", "ftp://x", "--models", "m"])).toThrow("Invalid --base-url");
   expect(() => parseProviderAddArgs(["--name", "x", "--preset", "p", "--models", "m", "--protocol", "grpc"])).toThrow(
     'Unknown protocol "grpc"',
   );
+});
+
+test("parseProviderAddArgs accepts exact endpoints alongside a base url", () => {
+  const parsed = parseProviderAddArgs([
+    "--name",
+    "router",
+    "--base-url",
+    "https://openrouter.test/api",
+    "--endpoint",
+    "openai-chat=https://openrouter.test/api/v1,anthropic-messages=https://openrouter.test/api",
+    "--models",
+    "m1",
+  ]);
+  expect(parsed.baseUrl).toBe("https://openrouter.test/api");
+  expect(parsed.protocols).toEqual([]);
+  expect(parsed.endpoints).toEqual([
+    { protocol: "openai-chat", baseUrl: "https://openrouter.test/api/v1" },
+    { protocol: "anthropic-messages", baseUrl: "https://openrouter.test/api" },
+  ]);
+});
+
+test("parseProviderAddArgs rejects malformed or conflicting endpoints", () => {
+  const base = ["--name", "x", "--models", "m"];
+  expect(() => parseProviderAddArgs([...base, "--endpoint", "https://x.test"])).toThrow("Use <protocol>=<url>");
+  expect(() => parseProviderAddArgs([...base, "--endpoint", "grpc=https://x.test"])).toThrow('Unknown protocol "grpc"');
+  expect(() => parseProviderAddArgs([...base, "--endpoint", "openai-chat=ftp://x.test"])).toThrow("Invalid --endpoint url");
+  expect(() =>
+    parseProviderAddArgs([...base, "--endpoint", "openai-chat=https://a.test,openai-chat=https://b.test"]),
+  ).toThrow("listed more than once");
+  expect(() => parseProviderAddArgs([...base, "--preset", "openai", "--endpoint", "openai-chat=https://a.test"])).toThrow(
+    "either --preset or --endpoint",
+  );
+  expect(() =>
+    parseProviderAddArgs([...base, "--endpoint", "openai-chat=https://a.test", "--protocol", "openai-chat"]),
+  ).toThrow("either --protocol or --endpoint");
 });
 
 test("parseHarnessList validates harness ids", () => {

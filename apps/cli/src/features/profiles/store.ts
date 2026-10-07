@@ -1,27 +1,47 @@
-import { mkdir } from "node:fs/promises";
-import { dirname } from "node:path";
+import { mkdir, rm } from "node:fs/promises";
+import { dirname, join } from "node:path";
 import { writeFileAtomic } from "../../shared/atomic-write";
+import { readTrimmedString } from "../../shared/guards";
 import { readJsonFile } from "../../shared/json-file";
 import { PROFILES_PATH } from "../../shared/paths";
 import { normalizeEndpointUrl, withoutV1 } from "../harnesses/endpoint";
 import { defaultModelSpec } from "./model-spec";
 import { selectedDefaultModel } from "./default-model";
+import { uniqueName } from "./naming";
 import { isSubscriptionProfile, normalizeSubscriptionProfile, parseCurrentByTool } from "./subscription-profile";
 import {
   STORE_SCHEMA_VERSION,
+  SUBSCRIPTION_STORE_SCHEMA_VERSION,
+  type CurrentByTool,
   type Endpoint,
   type ExternalProfile,
   type Profile,
   type ProfileStore,
   type ProviderProfile,
+  type SharedProfile,
+  type SubscriptionProfile,
+  type SubscriptionStore,
 } from "./types";
+
+type RawProfiles = Record<string, Record<string, unknown>>;
 
 type RawStore = {
   current?: string | null;
   importOffered?: boolean;
   currentByTool?: unknown;
-  profiles?: Record<string, Record<string, unknown>>;
+  profiles?: RawProfiles;
 };
+
+type RawSubscriptionStore = {
+  currentByTool?: unknown;
+  profiles?: RawProfiles;
+};
+
+type PersistedSharedStore = Omit<ProfileStore, "currentByTool" | "profiles"> & {
+  profiles: Record<string, SharedProfile>;
+};
+
+export const SUBSCRIPTIONS_FILE_NAME = "subscriptions.json";
 
 export type ProfileStoreRepository = {
   loadStore: () => Promise<ProfileStore>;
@@ -117,11 +137,8 @@ export const applyLegacyEdits = (profile: ProviderProfile, edits: LegacyEdits): 
   return model === undefined ? withUrl : withLegacyModel(withUrl, model);
 };
 
-const nonEmpty = (value: unknown): string | undefined =>
-  typeof value === "string" && value.trim() !== "" ? value : undefined;
-
 const withOutOfBandLegacyEdits = (profile: ExternalProfile, migrated: ProviderProfile): ProviderProfile =>
-  applyLegacyEdits(migrated, { baseUrl: nonEmpty(profile.baseUrl), model: nonEmpty(profile.model) });
+  applyLegacyEdits(migrated, { baseUrl: readTrimmedString(profile.baseUrl), model: readTrimmedString(profile.model) });
 
 const migrateExternal = (profile: ExternalProfile, isCurrent: boolean): ProviderProfile => {
   const migrated = toProviderProfile(profile);
@@ -135,38 +152,97 @@ const normalizeProfile = (entry: Record<string, unknown>, isCurrent: boolean): P
   return profile.type === "external" ? migrateExternal(profile, isCurrent) : profile;
 };
 
-const toPersistedProfile = (profile: Profile): Profile =>
+const toPersistedProfile = (profile: SharedProfile): SharedProfile =>
   isProviderProfile(profile) ? syncLegacyFields(profile) : profile;
 
-const toPersistedStore = (store: ProfileStore): ProfileStore => ({
-  ...store,
-  schemaVersion: STORE_SCHEMA_VERSION,
-  profiles: Object.fromEntries(
-    Object.entries(store.profiles).map(([name, profile]) => [name, toPersistedProfile(profile)]),
-  ),
-});
+const toPersistedSharedStore = (store: ProfileStore): PersistedSharedStore => {
+  const persisted: PersistedSharedStore = { schemaVersion: STORE_SCHEMA_VERSION, current: store.current, profiles: {} };
+  if (store.importOffered !== undefined) persisted.importOffered = store.importOffered;
+  for (const [name, profile] of Object.entries(store.profiles)) {
+    if (!isSubscriptionProfile(profile)) persisted.profiles[name] = toPersistedProfile(profile);
+  }
+  return persisted;
+};
 
-const parseStore = (raw: RawStore): ProfileStore => {
-  const current = raw.current ?? null;
+const toSubscriptionStore = (store: ProfileStore): SubscriptionStore => {
+  const profiles: Record<string, SubscriptionProfile> = {};
+  for (const [name, profile] of Object.entries(store.profiles)) {
+    if (isSubscriptionProfile(profile)) profiles[name] = profile;
+  }
+  return { schemaVersion: SUBSCRIPTION_STORE_SCHEMA_VERSION, currentByTool: store.currentByTool ?? {}, profiles };
+};
+
+const isEmptySubscriptionStore = (store: SubscriptionStore): boolean =>
+  Object.keys(store.profiles).length === 0 && Object.keys(store.currentByTool).length === 0;
+
+const parseProfiles = (rawProfiles: RawProfiles | undefined, current: string | null): Record<string, Profile> => {
   const profiles: Record<string, Profile> = {};
-  for (const [name, entry] of Object.entries(raw.profiles ?? {})) {
+  for (const [name, entry] of Object.entries(rawProfiles ?? {})) {
     profiles[name] = normalizeProfile(entry, name === current);
   }
+  return profiles;
+};
+
+const subscriptionSlot = (profiles: Record<string, Profile>, name: string): string => {
+  const existing = profiles[name];
+  return existing === undefined || isSubscriptionProfile(existing) ? name : uniqueName(Object.values(profiles), name);
+};
+
+const mergeSubscriptions = (
+  profiles: Record<string, Profile>,
+  currentByTool: CurrentByTool | undefined,
+  rawProfiles: RawProfiles | undefined,
+): CurrentByTool | undefined => {
+  const nextCurrentByTool = currentByTool === undefined ? undefined : { ...currentByTool };
+  for (const [name, entry] of Object.entries(rawProfiles ?? {})) {
+    const profile = normalizeProfile(entry, false);
+    if (!isSubscriptionProfile(profile)) continue;
+    const slot = subscriptionSlot(profiles, name);
+    profiles[slot] = slot === name ? profile : { ...profile, name: slot };
+    if (slot !== name && nextCurrentByTool?.[profile.type] === name) nextCurrentByTool[profile.type] = slot;
+  }
+  return nextCurrentByTool;
+};
+
+const parseStore = (raw: RawStore, rawSubscriptions: RawSubscriptionStore | null): ProfileStore => {
+  const current = raw.current ?? null;
+  const profiles = parseProfiles(raw.profiles, current);
+  const currentByTool = mergeSubscriptions(
+    profiles,
+    parseCurrentByTool(rawSubscriptions?.currentByTool ?? raw.currentByTool),
+    rawSubscriptions?.profiles,
+  );
   const store: ProfileStore = { schemaVersion: STORE_SCHEMA_VERSION, current, profiles };
   if (raw.importOffered !== undefined) store.importOffered = raw.importOffered;
-  const currentByTool = parseCurrentByTool(raw.currentByTool);
   if (currentByTool !== undefined) store.currentByTool = currentByTool;
   return store;
 };
 
-export const createProfileStore = (path: string): ProfileStoreRepository => ({
+const writeSubscriptionStore = async (path: string, store: SubscriptionStore): Promise<void> => {
+  if (isEmptySubscriptionStore(store)) {
+    await rm(path, { force: true });
+    return;
+  }
+  await writeFileAtomic(path, JSON.stringify(store, null, 2), 0o600);
+};
+
+export const subscriptionsPathFor = (profilesPath: string): string =>
+  join(dirname(profilesPath), SUBSCRIPTIONS_FILE_NAME);
+
+export const createProfileStore = (
+  path: string,
+  subscriptionsPath: string = subscriptionsPathFor(path),
+): ProfileStoreRepository => ({
   loadStore: async (): Promise<ProfileStore> => {
     const raw = await readJsonFile<RawStore>(path);
-    return raw === null ? emptyStore() : parseStore(raw);
+    const rawSubscriptions = await readJsonFile<RawSubscriptionStore>(subscriptionsPath);
+    return raw === null && rawSubscriptions === null ? emptyStore() : parseStore(raw ?? {}, rawSubscriptions);
   },
   saveStore: async (store: ProfileStore): Promise<void> => {
     await mkdir(dirname(path), { recursive: true, mode: 0o700 });
-    await writeFileAtomic(path, JSON.stringify(toPersistedStore(store), null, 2), 0o600);
+    await mkdir(dirname(subscriptionsPath), { recursive: true, mode: 0o700 });
+    await writeSubscriptionStore(subscriptionsPath, toSubscriptionStore(store));
+    await writeFileAtomic(path, JSON.stringify(toPersistedSharedStore(store), null, 2), 0o600);
   },
 });
 

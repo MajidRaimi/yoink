@@ -117,7 +117,7 @@ test("connect creates kilo.json with mode 0600 and the provider block", async ()
       },
     },
   });
-  expect(await Bun.file(`${jsonPath}.yoink.bak`).exists()).toBe(false);
+  expect(await readText(`${jsonPath}.yoink.bak`)).toBe("");
 });
 
 test("connect uses the anthropic sdk with a /v1 base url when chat is unavailable", async () => {

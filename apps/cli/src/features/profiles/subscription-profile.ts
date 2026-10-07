@@ -1,12 +1,11 @@
 import {
   SUBSCRIPTION_TOOLS,
+  type CurrentByTool,
   type Profile,
   type ProfileStore,
   type SubscriptionProfile,
   type SubscriptionTool,
 } from "./types";
-
-type CurrentByTool = Partial<Record<SubscriptionTool, string>>;
 
 export const isSubscriptionTool = (value: unknown): value is SubscriptionTool =>
   typeof value === "string" && (SUBSCRIPTION_TOOLS as readonly string[]).includes(value);

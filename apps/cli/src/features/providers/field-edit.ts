@@ -1,9 +1,12 @@
+import { retiredSecret, scrubbingBackups } from "../../shared/backup";
 import { applyExternalEnv, GLOBAL_SETTINGS_PATH } from "../../shared/claude-settings";
 import { YoinkError } from "../../shared/errors";
 import { nowIso } from "../../shared/time";
 import { validateProviderId } from "../../shared/validators";
+import { pickEndpoint } from "../harnesses/endpoint";
 import { resyncProvider, type HarnessOutcome } from "../harnesses/sync";
 import { listProfiles, updateProfile } from "../profiles/service";
+import { PROFILE_GROUP_TITLES } from "../profiles/format";
 import { applyLegacyEdits, syncLegacyFields, toProviderProfile } from "../profiles/store";
 import type { ProviderProfile } from "../profiles/types";
 
@@ -25,7 +28,8 @@ const loadEditableProvider = async (name: string): Promise<ProviderProfile> => {
   const profile = profiles.find((candidate) => candidate.name === name);
   if (!profile) throw new YoinkError(`No profile named "${name}".`);
   if (profile.type !== "external") {
-    throw new YoinkError(`"${name}" is a Claude profile. Flag edits only apply to external profiles.`);
+    const kind = PROFILE_GROUP_TITLES[profile.type];
+    throw new YoinkError(`"${name}" is a ${kind} login. Flag edits only apply to providers.`);
   }
   return toProviderProfile(profile);
 };
@@ -61,8 +65,9 @@ export const applyProviderFieldEdit = (
 
 export const reapplyClaudeEnv = async (provider: ProviderProfile): Promise<boolean> => {
   const { current } = await listProfiles();
-  if (current !== provider.name) return false;
-  await applyExternalEnv(GLOBAL_SETTINGS_PATH, { baseUrl: provider.baseUrl, token: provider.token, model: provider.model });
+  const endpoint = pickEndpoint(provider, ["anthropic-messages"]);
+  if (current !== provider.name || !endpoint) return false;
+  await applyExternalEnv(GLOBAL_SETTINGS_PATH, { baseUrl: endpoint.baseUrl, token: provider.token, model: provider.model });
   return true;
 };
 
@@ -72,5 +77,8 @@ export const editProviderFields = async (name: string, edit: ProviderFieldEdit):
   const next = applyProviderFieldEdit(current, edit, nowIso());
   await updateProfile(name, next);
   await reapplyClaudeEnv(next);
-  return { provider: next, outcomes: await resyncProvider(withoutClaudeCode(next), name) };
+  const outcomes = await scrubbingBackups(retiredSecret(current.token, next.token), () =>
+    resyncProvider(withoutClaudeCode(next), name),
+  );
+  return { provider: next, outcomes };
 };

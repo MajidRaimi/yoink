@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { writeSecretFileAtomic } from "../../../shared/atomic-write";
 import { YoinkError } from "../../../shared/errors";
 import { parseJsonOrNull, pathExists } from "../../../shared/fs-errors";
-import { isRecord } from "../../../shared/guards";
+import { isRecord, readTrimmedString } from "../../../shared/guards";
 import type { SubscriptionIdentity, SubscriptionSnapshot } from "../../profiles/types";
 import { createDefaultBackendDeps } from "../deps";
 import { decodeJwtPayload, stringClaim } from "../shared/jwt-claims";
@@ -23,14 +23,11 @@ type GoogleAccounts = {
   old: string[];
 };
 
-const nonEmptyString = (value: unknown): string | undefined =>
-  typeof value === "string" && value.trim().length > 0 ? value.trim() : undefined;
-
 const parseGoogleAccounts = (text: string | undefined): GoogleAccounts | null => {
   const parsed = parseJsonOrNull(text);
   if (!isRecord(parsed)) return null;
   const old = Array.isArray(parsed.old) ? parsed.old.filter((entry): entry is string => typeof entry === "string") : [];
-  return { active: nonEmptyString(parsed.active) ?? null, old };
+  return { active: readTrimmedString(parsed.active) ?? null, old };
 };
 
 export const geminiIdentityFromFiles = (files: Readonly<Record<string, string>>): SubscriptionIdentity => {
@@ -47,7 +44,7 @@ export const geminiIdentityFromFiles = (files: Readonly<Record<string, string>>)
 };
 
 export const createGeminiBackend = (deps: SubscriptionBackendDeps): SubscriptionBackend => {
-  const home = (): string => join(nonEmptyString(deps.env.GEMINI_CLI_HOME) ?? deps.homeDir, GEMINI_DIRECTORY);
+  const home = (): string => join(readTrimmedString(deps.env.GEMINI_CLI_HOME) ?? deps.homeDir, GEMINI_DIRECTORY);
 
   const assertFileStorage = async (): Promise<void> => {
     if (deps.env[FORCE_ENCRYPTED_STORAGE_ENV]?.trim().toLowerCase() === "true") {

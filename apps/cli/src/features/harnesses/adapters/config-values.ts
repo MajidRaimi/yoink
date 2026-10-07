@@ -1,13 +1,10 @@
-import { isRecord, type UnknownRecord } from "../../../shared/guards";
+import { isRecord, readString, type UnknownRecord } from "../../../shared/guards";
 
-export { isRecord };
+export { isRecord, readString };
 
 export type ConfigRecord = UnknownRecord;
 
 export const asRecord = (value: unknown): ConfigRecord => (isRecord(value) ? value : {});
-
-export const readString = (value: unknown): string | undefined =>
-  typeof value === "string" && value.length > 0 ? value : undefined;
 
 export const readNumber = (value: unknown): number | undefined =>
   typeof value === "number" && Number.isFinite(value) && value > 0 ? value : undefined;

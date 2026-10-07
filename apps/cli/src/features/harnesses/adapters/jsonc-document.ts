@@ -1,6 +1,6 @@
 import { applyEdits, modify, parse, printParseErrorCode, type JSONPath, type ParseError } from "jsonc-parser";
 import { ConfigParseError, YoinkError } from "../../../shared/errors";
-import { readTextFile } from "../../../shared/json-file";
+import { readOptionalText } from "../../../shared/fs-errors";
 import { isRecord, type ConfigRecord } from "./config-values";
 
 const FORMATTING = { insertSpaces: true, tabSize: 2, eol: "\n" } as const;
@@ -38,7 +38,7 @@ export const pruneEmptyJsoncObjects = (text: string, paths: readonly JSONPath[])
 export type JsoncDocument = { path: string; text: string; config: ConfigRecord };
 
 export const loadJsoncDocument = async (path: string): Promise<JsoncDocument | null> => {
-  const text = await readTextFile(path);
+  const text = await readOptionalText(path);
   return text === null ? null : { path, text, config: parseJsoncObject(path, text) };
 };
 

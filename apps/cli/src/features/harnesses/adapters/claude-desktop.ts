@@ -2,8 +2,8 @@ import { readdir } from "node:fs/promises";
 import { homedir } from "node:os";
 import { basename, join } from "node:path";
 import type { ModelSpec, Protocol, ProviderProfile } from "../../profiles/types";
-import { isMissingFileError, parseJsonOrNull } from "../../../shared/fs-errors";
-import { parseJsonText, readTextFile } from "../../../shared/json-file";
+import { isMissingFileError, parseJsonOrNull, readOptionalText } from "../../../shared/fs-errors";
+import { parseJsonText } from "../../../shared/json-file";
 import { withoutV1 } from "../endpoint";
 import type { ConnectOptions, HarnessAdapter, HarnessDetection, ImportedProvider } from "../types";
 import { removeOwnedConfigFile, writeOwnedConfigFile } from "./config-file";
@@ -66,7 +66,7 @@ const configPath = (paths: ClaudeDesktopPaths, providerId: string): string =>
   join(libraryDir(paths), configFileName(providerId));
 
 const readConfigFile = async (path: string): Promise<ConfigRecord | null> => {
-  const text = await readTextFile(path);
+  const text = await readOptionalText(path);
   if (text === null || text.trim().length === 0) return null;
   return asRecord(parseJsonText<unknown>(path, text));
 };
@@ -189,6 +189,7 @@ export const createClaudeDesktopAdapter = (
   setsDefaultModel: true,
   connectNotice: claudeDesktopNotice,
   detect: () => detect(paths, probes),
+  writeTargets: async (provider) => [configPath(paths, provider.name)],
   readProviders: () => readProviders(paths),
   isConnected: (providerId) => isConnected(paths, providerId),
   readDefaultModel: (providerId) => readDefaultModel(paths, providerId),

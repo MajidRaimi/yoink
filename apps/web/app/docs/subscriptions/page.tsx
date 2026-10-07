@@ -112,8 +112,8 @@ yoink list --json`}
 
     <DocsSection heading="Nothing crosses over" icon={ShieldCheck}>
       <p>
-        Snapshots live in <code>~/.config/yoink/profiles.json</code> at <code>0600</code>, next to
-        your Claude profiles. A subscription token is only ever written back into the tool it came
+        Snapshots live in <code>~/.config/yoink/subscriptions.json</code> at <code>0600</code>, next
+        to <code>profiles.json</code>. A subscription token is only ever written back into the tool it came
         from, never into a harness config or another tool. API keys are a separate thing: see{" "}
         <Link href="/docs/providers" className={linkClass}>
           Providers

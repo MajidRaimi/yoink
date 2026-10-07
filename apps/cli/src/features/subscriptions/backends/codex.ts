@@ -2,6 +2,13 @@ import { createHash } from "node:crypto";
 import { realpath } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import type { SubscriptionIdentity, SubscriptionSnapshot } from "../../profiles/types";
+import {
+  CODEX_AUTH_FILE,
+  codexConfigPath,
+  codexOverridingModelProvider,
+  codexProviderOverrideNotice,
+} from "../../../shared/codex-config";
+import { parseJsonText } from "../../../shared/json-file";
 import { ConfigParseError, YoinkError } from "../../../shared/errors";
 import { pathExists, readOptionalText } from "../../../shared/fs-errors";
 import { isRecord } from "../../../shared/guards";
@@ -11,8 +18,6 @@ import { isKeyringSupported } from "../shared/keyring";
 import { assertDeclaredPath, readSnapshotFiles, restoreSnapshotFiles } from "../shared/snapshot-files";
 import type { SubscriptionBackend, SubscriptionBackendDeps, SubscriptionCapture } from "../types";
 
-export const CODEX_AUTH_FILE = "auth.json";
-export const CODEX_CONFIG_FILE = "config.toml";
 export const CODEX_KEYRING_SERVICE = "Codex Auth";
 
 const AUTH_PATTERNS = [CODEX_AUTH_FILE] as const;
@@ -59,12 +64,7 @@ export const codexKeyringAccount = async (home: string): Promise<string> => {
 };
 
 const parseAuthPayload = (payload: string, source: string): Record<string, unknown> => {
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(payload);
-  } catch (error) {
-    throw new ConfigParseError(source, error);
-  }
+  const parsed = parseJsonText<unknown>(source, payload);
   if (!isRecord(parsed)) throw new ConfigParseError(source, new Error("expected a JSON object"));
   return parsed;
 };
@@ -132,7 +132,7 @@ export const createCodexBackend = (deps: SubscriptionBackendDeps): SubscriptionB
     return configured !== undefined && configured.length > 0 ? resolve(configured) : join(deps.homeDir, ".codex");
   };
 
-  const configPath = (): string => join(home(), CODEX_CONFIG_FILE);
+  const configPath = (): string => codexConfigPath(home());
   const authPath = (): string => join(home(), CODEX_AUTH_FILE);
 
   const assertKeyringSupported = (mode: CodexStorageMode): void => {
@@ -187,6 +187,11 @@ export const createCodexBackend = (deps: SubscriptionBackendDeps): SubscriptionB
     if (mode !== "file") assertKeyringSupported(mode);
   };
 
+  const postSwitchNotice = (): string | null => {
+    const provider = codexOverridingModelProvider(home());
+    return provider === null ? null : codexProviderOverrideNotice(home(), provider);
+  };
+
   return {
     tool: "codex",
     label: CODEX_LABEL,
@@ -197,6 +202,7 @@ export const createCodexBackend = (deps: SubscriptionBackendDeps): SubscriptionB
     prepareLogin,
     loginCommand: () => ["codex", "login"],
     processMatcher: { names: ["codex"], argvContains: ["@openai/codex"] },
+    postSwitchNotice,
   };
 };
 

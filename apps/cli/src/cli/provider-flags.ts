@@ -1,5 +1,6 @@
 import { YoinkError } from "../shared/errors";
 import { validateHttpUrl } from "../shared/validators";
+import { ALLOW_TRACKED_SWITCH } from "../features/harnesses/tracked-guard";
 import { HARNESS_IDS, PROTOCOLS, type Endpoint, type HarnessId, type Protocol } from "../features/profiles/types";
 
 export type ProviderAddArgs = {
@@ -13,6 +14,7 @@ export type ProviderAddArgs = {
   connect: HarnessId[];
   defaultModel?: string;
   tokenFromStdin: boolean;
+  allowTracked: boolean;
 };
 
 const PROVIDER_ADD_VALUE_FLAGS = new Set([
@@ -100,7 +102,7 @@ export const isProviderAddInvocation = (args: readonly string[]): boolean =>
   args.some((arg) => PROVIDER_ONLY_FLAGS.includes(arg));
 
 export const parseProviderAddArgs = (args: readonly string[]): ProviderAddArgs => {
-  const { values, switches } = parseRawFlags(args, PROVIDER_ADD_VALUE_FLAGS, new Set(["--external", "--token-stdin"]));
+  const { values, switches } = parseRawFlags(args, PROVIDER_ADD_VALUE_FLAGS, new Set(["--external", "--token-stdin", ALLOW_TRACKED_SWITCH]));
   const name = values.get("--name");
   if (!name) throw new YoinkError("Missing required flag --name.");
   const preset = values.get("--preset");
@@ -128,5 +130,6 @@ export const parseProviderAddArgs = (args: readonly string[]): ProviderAddArgs =
     connect: parseHarnessList(values.get("--connect")),
     defaultModel: values.get("--default"),
     tokenFromStdin: switches.has("--token-stdin"),
+    allowTracked: switches.has(ALLOW_TRACKED_SWITCH),
   };
 };

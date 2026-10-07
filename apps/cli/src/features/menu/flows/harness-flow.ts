@@ -3,8 +3,7 @@ import pc from "picocolors";
 import { homedir } from "node:os";
 import { theme } from "../../../shared/theme";
 import { promptConfirm, promptMultiSelect, promptSelect } from "../../../shared/prompt";
-import { applyExternalEnv, GLOBAL_SETTINGS_PATH, localSettingsPath } from "../../../shared/claude-settings";
-import { isTrackedAndNotIgnored } from "../../../shared/git-status";
+import { applyExternalEnv, localSettingsPath } from "../../../shared/claude-settings";
 import { pickEndpoint } from "../../harnesses/endpoint";
 import { linkedHarnessIds } from "../../harnesses/links";
 import {
@@ -12,10 +11,13 @@ import {
   disconnectHarnesses,
   harnessStatuses,
   loadProvider,
+  type ConnectRequest,
+  type HarnessOutcome,
   type HarnessStatus,
 } from "../../harnesses/sync";
 import type { HarnessId, ProviderProfile } from "../../profiles/types";
 import { experimentalTag } from "../../harnesses/experimental-tag";
+import { confirmIfClaudeRunning } from "../../switch/confirm-running";
 import { protectLocalSecret } from "./protect-local-secret";
 import { reportOutcomes } from "./report-outcomes";
 
@@ -81,15 +83,39 @@ const applyClaudeLocally = async (provider: ProviderProfile, model: string): Pro
   return true;
 };
 
-const confirmGlobalClaudeWrite = async (): Promise<boolean> => {
-  if (!(await isTrackedAndNotIgnored(GLOBAL_SETTINGS_PATH))) return true;
+type TrackedRefusal = Extract<HarnessOutcome, { ok: false }> & { trackedPaths: string[] };
+
+const isTrackedRefusal = (outcome: HarnessOutcome): outcome is TrackedRefusal =>
+  !outcome.ok && outcome.trackedPaths !== undefined;
+
+const confirmTrackedWrite = async (refusals: readonly TrackedRefusal[]): Promise<boolean> => {
+  const paths = [...new Set(refusals.flatMap((refusal) => refusal.trackedPaths))].map(tildify);
+  const verb = paths.length === 1 ? "is" : "are";
   const proceed = await promptConfirm({
-    message: theme.warn(
-      "~/.claude/settings.json is tracked in a git repo on this machine, so your API key could be committed. Continue?",
-    ),
+    message: theme.warn(`${paths.join(", ")} ${verb} tracked in a git repo on this machine, so your API key could be committed. Write anyway?`),
     initialValue: false,
   });
   return proceed === true;
+};
+
+const skippedTracked = (refusal: TrackedRefusal): HarnessOutcome => ({
+  id: refusal.id,
+  ok: false,
+  message: "Skipped because its config is tracked in git.",
+});
+
+const connectConfirmingTracked = async (
+  name: string,
+  ids: readonly HarnessId[],
+  request: ConnectRequest,
+): Promise<HarnessOutcome[]> => {
+  const outcomes = await connectHarnesses(name, ids, request);
+  const refusals = outcomes.filter(isTrackedRefusal);
+  if (refusals.length === 0) return outcomes;
+  const settled = outcomes.filter((outcome) => !isTrackedRefusal(outcome));
+  if (!(await confirmTrackedWrite(refusals))) return [...settled, ...refusals.map(skippedTracked)];
+  const retried = await connectHarnesses(name, refusals.map((refusal) => refusal.id), { ...request, allowTracked: true });
+  return [...settled, ...retried];
 };
 
 const describe = (provider: ProviderProfile): string =>
@@ -120,14 +146,15 @@ const connectAdded = async (
     if (model === null || model === undefined) return false;
     if (scope === LOCAL_SCOPE) {
       if (await applyClaudeLocally(provider, model)) note("Wrote ./.claude/settings.local.json", "Claude Code");
-    } else if (await confirmGlobalClaudeWrite()) {
-      reportOutcomes(await connectHarnesses(provider.name, ["claude-code"], { defaultModel: model }), "Connected");
+    } else {
+      if (!(await confirmIfClaudeRunning())) return false;
+      reportOutcomes(await connectConfirmingTracked(provider.name, ["claude-code"], { defaultModel: model }), "Connected");
     }
   }
   if (others.length === 0) return true;
   const defaultModel = await chooseSharedDefaultModel(provider, others, statuses);
   if (defaultModel === null) return false;
-  reportOutcomes(await connectHarnesses(provider.name, others, { defaultModel }), "Connected");
+  reportOutcomes(await connectConfirmingTracked(provider.name, others, { defaultModel }), "Connected");
   return true;
 };
 

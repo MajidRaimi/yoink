@@ -1,11 +1,11 @@
-import { log, note, outro } from "@clack/prompts";
+import { log } from "@clack/prompts";
 import pc from "picocolors";
 import { theme } from "../../../shared/theme";
 import { promptMultiSelect } from "../../../shared/prompt";
-import { describeReadFailure, scanHarnesses, type HarnessReadFailure, type ImportCandidate } from "../../harnesses/import";
+import { describeReadFailure, type HarnessReadFailure, type ImportCandidate } from "../../harnesses/import";
 import { findAdapter } from "../../harnesses/registry";
 import { markImportOffered } from "../../profiles/import-flag";
-import { listProfiles } from "../../profiles/service";
+import { scanImportCandidates } from "../../providers/import-scan";
 import { importProvider } from "../../providers/service";
 import { reportOutcomes } from "./report-outcomes";
 
@@ -45,25 +45,8 @@ const warnReadFailures = (failures: HarnessReadFailure[]): void => {
 };
 
 export const offerImport = async (): Promise<void> => {
-  const { profiles } = await listProfiles();
-  const { candidates, failures } = await scanHarnesses(profiles);
+  const { candidates, failures } = await scanImportCandidates();
   warnReadFailures(failures);
-  if (candidates.length === 0) {
-    if (failures.length === 0) await markImportOffered();
-    return;
-  }
+  if (candidates.length === 0) return;
   await importCandidatesFlow(candidates);
-};
-
-export const runImportCommand = async (): Promise<void> => {
-  const { profiles } = await listProfiles();
-  const { candidates, failures } = await scanHarnesses(profiles);
-  warnReadFailures(failures);
-  if (candidates.length === 0) {
-    note("No unmanaged providers found in pi, omp, opencode, codex or Claude Code.", "Import");
-    if (failures.length === 0) await markImportOffered();
-    return;
-  }
-  await importCandidatesFlow(candidates);
-  outro("Done.");
 };

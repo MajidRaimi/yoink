@@ -11,12 +11,18 @@ const ANTHROPIC_VERSION = "2023-06-01";
 const ANTHROPIC_MODEL_PAGE_SIZE = 1000;
 const PLACEHOLDER_MODEL = "yoink-probe";
 const MAX_PROBE_MODELS = 3;
+const MAX_REDIRECTS = 5;
+const REDIRECT_STATUSES = new Set([301, 302, 303, 307, 308]);
 const NON_CHAT_MODEL = /embed|whisper|tts|dall-e|image|moderation|audio|rerank|transcribe/i;
 
 type Headers = Record<string, string>;
 
+type RouteOutcome = ProbeOutcome | "redirected";
+
+type RouteVerdict = Omit<ProbeVerdict, "outcome"> & { outcome: RouteOutcome };
+
 type ModelListing = {
-  outcome: ProbeOutcome;
+  outcome: RouteOutcome;
   models: ProviderModel[];
 };
 
@@ -50,13 +56,62 @@ const anthropicHeaders = (token: string): Headers => ({
   "Content-Type": "application/json",
 });
 
-const send = async (fetcher: Fetcher, url: string, init: RequestInit, timeoutMs: number): Promise<Response | null> => {
+type SendOutcome =
+  | { kind: "response"; response: Response }
+  | { kind: "unreachable" }
+  | { kind: "cross-origin-redirect" };
+
+const sameOrigin = (from: string, to: string): boolean => new URL(from).origin === new URL(to).origin;
+
+const redirectTarget = (response: Response, url: string): string | null => {
+  const location = response.headers.get("location");
+  if (!location) return null;
   try {
-    return await fetcher(url, { ...init, signal: AbortSignal.timeout(timeoutMs) });
+    return new URL(location, url).toString();
   } catch {
     return null;
   }
 };
+
+const redirectInit = (status: number, init: RequestInit): RequestInit => {
+  const method = (init.method ?? "GET").toUpperCase();
+  const switchesToGet = status === 303 || ((status === 301 || status === 302) && method === "POST");
+  return switchesToGet ? { ...init, method: "GET", body: undefined } : init;
+};
+
+const followSameOrigin = async (
+  fetcher: Fetcher,
+  url: string,
+  init: RequestInit,
+  hopsLeft: number,
+): Promise<SendOutcome> => {
+  const response = await fetcher(url, { ...init, redirect: "manual" });
+  if (response.type === "opaqueredirect") return { kind: "cross-origin-redirect" };
+  if (!REDIRECT_STATUSES.has(response.status)) return { kind: "response", response };
+  const target = redirectTarget(response, url);
+  if (!target || !sameOrigin(url, target)) return { kind: "cross-origin-redirect" };
+  if (hopsLeft <= 0) return { kind: "unreachable" };
+  return followSameOrigin(fetcher, target, redirectInit(response.status, init), hopsLeft - 1);
+};
+
+const send = async (fetcher: Fetcher, url: string, init: RequestInit, timeoutMs: number): Promise<SendOutcome> => {
+  try {
+    return await followSameOrigin(fetcher, url, { ...init, signal: AbortSignal.timeout(timeoutMs) }, MAX_REDIRECTS);
+  } catch {
+    return { kind: "unreachable" };
+  }
+};
+
+const unansweredOutcome = (sent: Exclude<SendOutcome, { kind: "response" }>): RouteOutcome =>
+  sent.kind === "cross-origin-redirect" ? "redirected" : "unsupported";
+
+const strongestFailure = (outcomes: readonly RouteOutcome[]): RouteOutcome => {
+  if (outcomes.includes("unauthorized")) return "unauthorized";
+  return outcomes.includes("redirected") ? "redirected" : "unsupported";
+};
+
+const crossOriginRedirectMessage = (url: string): string =>
+  `${url} redirected to a different host. yoink does not follow it so your API key is not sent there. Use the final base URL instead.`;
 
 const readJson = async (response: Response): Promise<unknown> => {
   try {
@@ -80,13 +135,14 @@ const listModels = async (
   token: string,
   timeoutMs: number,
 ): Promise<ModelListing> => {
-  const response = await send(
+  const sent = await send(
     fetcher,
     modelsUrl(endpoint),
     { method: "GET", headers: modelsHeaders(endpoint.protocol, token) },
     timeoutMs,
   );
-  if (!response) return { outcome: "unsupported", models: [] };
+  if (sent.kind !== "response") return { outcome: unansweredOutcome(sent), models: [] };
+  const { response } = sent;
   const body = await readJson(response);
   const models = response.ok ? parseModelList(body) : null;
   return models ? { outcome: "supported", models } : { outcome: classifyListingFailure(response.status, body), models: [] };
@@ -136,42 +192,43 @@ const endpointProbes = (
 };
 
 const listOpenaiModels = async (fetcher: Fetcher, rawUrl: string, token: string): Promise<OpenaiListing> => {
-  const outcomes: ProbeOutcome[] = [];
+  const outcomes: RouteOutcome[] = [];
   for (const baseUrl of openaiBaseCandidates(rawUrl)) {
     const listing = await listModels(fetcher, { protocol: "openai-chat", baseUrl }, token, PROBE_TIMEOUT_MS);
     if (listing.outcome === "supported") return { ...listing, bases: [baseUrl] };
     outcomes.push(listing.outcome);
   }
-  const outcome = outcomes.includes("unauthorized") ? "unauthorized" : "unsupported";
-  return { outcome, models: [], bases: openaiBaseCandidates(rawUrl) };
+  return { outcome: strongestFailure(outcomes), models: [], bases: openaiBaseCandidates(rawUrl) };
 };
 
 const firstPerProtocol = (endpoints: readonly Endpoint[]): Endpoint[] =>
   endpoints.filter((endpoint, index) => endpoints.findIndex((other) => other.protocol === endpoint.protocol) === index);
 
-const attemptProbe = async (fetcher: Fetcher, probe: EndpointProbe, model: string): Promise<ProbeVerdict> => {
-  const response = await send(
+const attemptProbe = async (fetcher: Fetcher, probe: EndpointProbe, model: string): Promise<RouteVerdict> => {
+  const sent = await send(
     fetcher,
     probe.url,
     { method: "POST", headers: probe.headers, body: JSON.stringify(probe.body(model)) },
     PROBE_TIMEOUT_MS,
   );
-  if (!response) return { outcome: "unsupported", retryWithAnotherModel: false };
-  return classifyProbeResponse(probe.endpoint.protocol, response.status, await readJson(response));
+  if (sent.kind !== "response") return { outcome: unansweredOutcome(sent), retryWithAnotherModel: false };
+  return classifyProbeResponse(probe.endpoint.protocol, sent.response.status, await readJson(sent.response));
 };
 
-const runProbe = async (fetcher: Fetcher, probe: EndpointProbe, modelIndex = 0): Promise<ProbeOutcome> => {
+const runProbe = async (fetcher: Fetcher, probe: EndpointProbe, modelIndex = 0): Promise<RouteOutcome> => {
   const model = probe.models[modelIndex];
   if (model === undefined) return "unsupported";
   const verdict = await attemptProbe(fetcher, probe, model);
   return verdict.retryWithAnotherModel ? runProbe(fetcher, probe, modelIndex + 1) : verdict.outcome;
 };
 
-const assertUsable = (rawUrl: string, endpoints: Endpoint[], outcomes: ProbeOutcome[]): void => {
+const assertUsable = (rawUrl: string, endpoints: Endpoint[], outcomes: RouteOutcome[]): void => {
   if (endpoints.length > 0) return;
-  if (outcomes.includes("unauthorized")) {
+  const failure = strongestFailure(outcomes);
+  if (failure === "unauthorized") {
     throw new YoinkError(`The provider at ${rawUrl} rejected the API key (401/403). Check the key and try again.`);
   }
+  if (failure === "redirected") throw new YoinkError(crossOriginRedirectMessage(rawUrl));
   throw new YoinkError(
     `No OpenAI or Anthropic compatible API answered at ${rawUrl}. Check the base URL and that the server is reachable.`,
   );
@@ -198,13 +255,17 @@ export const fetchProviderModels = async (
   fetcher: Fetcher = fetch,
 ): Promise<ProviderModel[]> => {
   const url = modelsUrl(endpoint);
-  const response = await send(
+  const sent = await send(
     fetcher,
     url,
     { method: "GET", headers: modelsHeaders(endpoint.protocol, token) },
     LIST_TIMEOUT_MS,
   );
-  if (!response) throw new YoinkError(`Could not reach ${url}. Check the base URL and your connection.`);
+  if (sent.kind === "cross-origin-redirect") {
+    throw new YoinkError(crossOriginRedirectMessage(url));
+  }
+  if (sent.kind === "unreachable") throw new YoinkError(`Could not reach ${url}. Check the base URL and your connection.`);
+  const { response } = sent;
   if (!response.ok) {
     throw new YoinkError(
       `Provider rejected the request (${response.status} ${response.statusText}). Check the base URL and API key.`,

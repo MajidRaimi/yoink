@@ -1,7 +1,7 @@
 import { mkdir, rm } from "node:fs/promises";
 import { dirname } from "node:path";
 import { writeSecretFileAtomic } from "../../../shared/atomic-write";
-import { BACKUP_SUFFIX, ensureBackup } from "../../../shared/backup";
+import { backupPathFor, ensureBackup } from "../../../shared/backup";
 
 const CONFIG_DIR_MODE = 0o700;
 
@@ -22,7 +22,7 @@ export const writeOwnedConfigFile = async (path: string, contents: string): Prom
 
 export const removeOwnedConfigFile = async (path: string): Promise<void> => {
   await rm(path, { force: true });
-  await rm(`${path}${BACKUP_SUFFIX}`, { force: true });
+  await rm(backupPathFor(path), { force: true });
 };
 
 export const firstExisting = async (candidates: readonly string[]): Promise<string | undefined> => {

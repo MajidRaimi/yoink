@@ -1,11 +1,13 @@
 import { readClaudeCredentials } from "../../shared/credentials";
 import { readOauthAccount } from "../../shared/claude-config";
+import { clearExternalEnv, GLOBAL_SETTINGS_PATH } from "../../shared/claude-settings";
 import { YoinkError } from "../../shared/errors";
 import { nowIso } from "../../shared/time";
 import { resyncProvider } from "../harnesses/sync";
+import { releaseClaudeCode } from "./claude-code-release";
 import { createRenameProfile, type RenameProfile } from "./rename";
-import { loadStore, saveStore } from "./store";
-import { isSubscriptionProfile, releaseFromCurrentByTool, renameInCurrentByTool } from "./subscription-profile";
+import { loadStore, saveStore, type ProfileStoreRepository } from "./store";
+import { releaseFromCurrentByTool, renameInCurrentByTool } from "./subscription-profile";
 import type { Profile, ProfileStore } from "./types";
 
 const snapshotLiveLogin = async (name: string): Promise<Profile> => {
@@ -38,32 +40,47 @@ export const updateProfile = async (oldName: string, next: Profile): Promise<voi
   await saveStore(store);
 };
 
-export const assertClaudeSaveTarget = (store: ProfileStore, name: string): void => {
-  const existing = store.profiles[name];
-  if (existing && isSubscriptionProfile(existing)) {
-    throw new YoinkError(`A profile named "${name}" already exists for something else. Pick another name.`);
-  }
+export const claudeSaveConflict = (profiles: readonly Profile[], name: string): string | undefined => {
+  const existing = profiles.find((profile) => profile.name === name);
+  if (!existing || existing.type === "claude") return undefined;
+  return `A profile named "${name}" already exists for something else. Pick another name.`;
 };
 
-export const saveProfile = async (name: string): Promise<Profile> => {
-  const store = await loadStore();
-  assertClaudeSaveTarget(store, name);
-  const profile = await snapshotLiveLogin(name);
-  store.profiles[name] = profile;
-  store.current = name;
-  await saveStore(store);
-  return profile;
+export const assertClaudeSaveTarget = (store: ProfileStore, name: string): void => {
+  const conflict = claudeSaveConflict(Object.values(store.profiles), name);
+  if (conflict) throw new YoinkError(conflict);
 };
+
+export type SaveProfile = (name: string) => Promise<Profile>;
+
+export type SaveProfileDeps = {
+  store: ProfileStoreRepository;
+  snapshotLiveLogin: (name: string) => Promise<Profile>;
+  clearExternalEnv: () => Promise<void>;
+};
+
+export const createSaveProfile =
+  ({ store: repository, snapshotLiveLogin: snapshot, clearExternalEnv: clearEnv }: SaveProfileDeps): SaveProfile =>
+  async (name) => {
+    const store = await repository.loadStore();
+    assertClaudeSaveTarget(store, name);
+    const profile = await snapshot(name);
+    if (releaseClaudeCode(store)) await clearEnv();
+    store.profiles[name] = profile;
+    store.current = name;
+    await repository.saveStore(store);
+    return profile;
+  };
+
+export const saveProfile: SaveProfile = createSaveProfile({
+  store: { loadStore, saveStore },
+  snapshotLiveLogin,
+  clearExternalEnv: () => clearExternalEnv(GLOBAL_SETTINGS_PATH),
+});
 
 export const listProfiles = async (): Promise<{ current: string | null; profiles: Profile[] }> => {
   const store = await loadStore();
   return { current: store.current, profiles: Object.values(store.profiles) };
-};
-
-export const currentProfile = async (): Promise<Profile | null> => {
-  const store = await loadStore();
-  if (!store.current) return null;
-  return store.profiles[store.current] ?? null;
 };
 
 export const removeProfile = async (name: string): Promise<void> => {

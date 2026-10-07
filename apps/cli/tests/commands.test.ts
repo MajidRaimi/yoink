@@ -7,7 +7,13 @@ import { CLI_TEST_TIMEOUT_MS, runCli as runCliIn, type CliResult } from "./suppo
 
 setDefaultTimeout(CLI_TEST_TIMEOUT_MS);
 
-type StoredProfile = { name: string; connections?: Record<string, unknown> };
+type StoredProfile = {
+  name: string;
+  provider?: string;
+  connections?: Record<string, unknown>;
+  endpoints?: { protocol: string; baseUrl: string }[];
+  models?: { id: string }[];
+};
 
 type StoredStore = { current: string | null; profiles: Record<string, StoredProfile> };
 
@@ -128,6 +134,26 @@ test("add --external rejects an invalid provider id", async () => {
   expect(result.exitCode).not.toBe(0);
   expect(result.stderr).toContain("Invalid provider name");
   expect(existsSync(join(home, ".config", "yoink", "profiles.json"))).toBe(false);
+});
+
+test("add --external stores a provider profile with endpoints and models", async () => {
+  const result = await addLegacyExternal("fuse");
+
+  expect(result.exitCode).toBe(0);
+  const stored = (await readStore()).profiles.fuse;
+  expect(stored?.provider).toBe("Fuse");
+  expect(stored?.endpoints).toEqual([{ protocol: "anthropic-messages", baseUrl: "https://example.invalid" }]);
+  expect(stored?.models?.map((model) => model.id)).toEqual(["m1"]);
+  expect(stored?.connections).toEqual({});
+});
+
+test("add --external rejects a duplicate provider id", async () => {
+  expect((await addLegacyExternal("fuse")).exitCode).toBe(0);
+
+  const result = await addLegacyExternal("fuse");
+
+  expect(result.exitCode).not.toBe(0);
+  expect(result.stderr).toContain('A profile named "fuse" already exists');
 });
 
 test("edit --name rejects an invalid provider id and leaves harnesses untouched", async () => {

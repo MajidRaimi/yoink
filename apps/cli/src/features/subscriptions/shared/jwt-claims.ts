@@ -1,4 +1,4 @@
-import { isRecord } from "../../../shared/guards";
+import { isRecord, readString } from "../../../shared/guards";
 
 export type JwtClaims = Readonly<Record<string, unknown>>;
 
@@ -31,6 +31,5 @@ export const claimAt = (claims: JwtClaims | null, path: readonly string[]): unkn
 
 export const stringClaim = (claims: JwtClaims | null, ...path: string[]): string | undefined => {
   const value = claimAt(claims, path);
-  if (typeof value === "string" && value.length > 0) return value;
-  return typeof value === "number" && Number.isFinite(value) ? String(value) : undefined;
+  return readString(value) ?? (typeof value === "number" && Number.isFinite(value) ? String(value) : undefined);
 };

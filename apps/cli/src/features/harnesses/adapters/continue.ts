@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { isDeepStrictEqual } from "node:util";
 import { YAMLSeq, isMap, isSeq, type Document } from "yaml";
 import { YoinkError } from "../../../shared/errors";
-import { readTextFile } from "../../../shared/json-file";
+import { readOptionalText } from "../../../shared/fs-errors";
 import type { Endpoint, ModelSpec, ProviderProfile } from "../../profiles/types";
 import type { ConnectOptions, HarnessAdapter, HarnessDetection, ImportedProvider } from "../types";
 import { asRecord, readString, type ConfigRecord } from "./config-values";
@@ -66,7 +66,7 @@ const legacyModelEntry = (entry: unknown): unknown => {
 
 const readLegacyModels = async (paths: ContinuePaths): Promise<unknown[]> => {
   const path = legacyConfigPath(paths);
-  const text = await readTextFile(path);
+  const text = await readOptionalText(path);
   if (text === null) return [];
   const models = parseJsoncObject(path, text)[MODELS_KEY];
   return Array.isArray(models) ? models.map(legacyModelEntry) : [];

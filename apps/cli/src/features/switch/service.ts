@@ -3,6 +3,7 @@ import { readOauthAccount, writeOauthAccount, type OauthAccount } from "../../sh
 import { applyExternalEnv, clearExternalEnv, GLOBAL_SETTINGS_PATH, type ExternalEnvInput } from "../../shared/claude-settings";
 import { errorMessage, YoinkError } from "../../shared/errors";
 import { nowIso } from "../../shared/time";
+import { releaseClaudeCode } from "../profiles/claude-code-release";
 import { claudeCodeModel } from "../profiles/default-model";
 import { loadStore, saveStore, toProviderProfile, type ProfileStoreRepository } from "../profiles/store";
 import { isSubscriptionProfile } from "../profiles/subscription-profile";
@@ -70,17 +71,6 @@ const withClaudeCodeConnection = (target: ExternalProfile): ProviderProfile => {
       "claude-code": { connectedAt: nowIso(), defaultModel: claudeCodeModel(provider) },
     },
   };
-};
-
-const withoutClaudeCodeConnection = (profile: ExternalProfile): ProviderProfile => {
-  const provider = toProviderProfile(profile);
-  const { "claude-code": _released, ...connections } = provider.connections;
-  return { ...provider, connections };
-};
-
-const releaseClaudeCode = (store: ProfileStore): void => {
-  const previous = store.current ? store.profiles[store.current] : undefined;
-  if (previous?.type === "external") store.profiles[previous.name] = withoutClaudeCodeConnection(previous);
 };
 
 const withRollback = async (action: () => Promise<void>, rollback: () => Promise<void>): Promise<void> => {

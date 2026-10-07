@@ -1,7 +1,8 @@
 import { homedir } from "node:os";
 import { join } from "node:path";
 import type { Endpoint, ModelSpec, Protocol, ProviderProfile } from "../../profiles/types";
-import { readTextFile } from "../../../shared/json-file";
+import { codexConfigPath, codexOverridingModelProvider, codexProviderOverrideNotice, hasCodexChatGptLogin } from "../../../shared/codex-config";
+import { readOptionalText } from "../../../shared/fs-errors";
 import { normalizeEndpointUrl, sdkBaseUrl } from "../endpoint";
 import type { ConnectOptions, HarnessAdapter, HarnessDetection, ImportedProvider } from "../types";
 import { writeConfigFile } from "./config-file";
@@ -26,7 +27,7 @@ export const defaultCodexPaths = (): CodexPaths => ({
   codexHome: process.env.CODEX_HOME ?? join(homedir(), ".codex"),
 });
 
-const configPath = (paths: CodexPaths): string => join(paths.codexHome, "config.toml");
+const configPath = (paths: CodexPaths): string => codexConfigPath(paths.codexHome);
 
 const providerEntries = (provider: ProviderProfile, endpoint: Endpoint): TomlStringEntry[] => [
   ["name", provider.provider],
@@ -70,7 +71,7 @@ const applyEdits = (path: string, source: string, edits: readonly TomlEdit[]): s
 const connect = async (paths: CodexPaths, provider: ProviderProfile, options: ConnectOptions): Promise<void> => {
   const endpoint = requireEndpoint(provider, CODEX_PROTOCOLS, LABEL);
   const path = configPath(paths);
-  const source = (await readTextFile(path)) ?? "";
+  const source = (await readOptionalText(path)) ?? "";
   const edits = [
     upsertProviderEdit(provider.name, providerEntries(provider, endpoint)),
     ...(options.defaultModel ? [setDefaultEdit(provider.name, options.defaultModel)] : []),
@@ -80,7 +81,7 @@ const connect = async (paths: CodexPaths, provider: ProviderProfile, options: Co
 
 const disconnect = async (paths: CodexPaths, providerId: string): Promise<void> => {
   const path = configPath(paths);
-  const source = await readTextFile(path);
+  const source = await readOptionalText(path);
   if (source === null) return;
   const config = await readTomlObject(path);
   const hasEntry = providerId in asRecord(config?.[PROVIDERS_KEY]);
@@ -133,6 +134,12 @@ const readDefaultModel = async (paths: CodexPaths, providerId: string): Promise<
   return config?.[MODEL_PROVIDER_KEY] === providerId ? (readString(config[MODEL_KEY]) ?? null) : null;
 };
 
+const connectNotice = (paths: CodexPaths, provider: ProviderProfile): string | undefined => {
+  if (codexOverridingModelProvider(paths.codexHome) !== provider.name) return undefined;
+  if (!hasCodexChatGptLogin(paths.codexHome)) return undefined;
+  return codexProviderOverrideNotice(paths.codexHome, provider.name);
+};
+
 const detect = async (paths: CodexPaths, probes: DetectionProbes): Promise<HarnessDetection> => ({
   installed: await isInstalled(probes, ["codex"], [paths.codexHome]),
   configPath: configPath(paths),
@@ -145,6 +152,7 @@ export const createCodexAdapter = (paths: CodexPaths, probes: DetectionProbes = 
   exclusive: false,
   experimental: false,
   setsDefaultModel: true,
+  connectNotice: (provider) => connectNotice(paths, provider),
   detect: () => detect(paths, probes),
   readProviders: () => readProviders(paths),
   isConnected: (providerId) => isConnected(paths, providerId),

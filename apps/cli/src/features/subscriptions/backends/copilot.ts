@@ -2,7 +2,8 @@ import { join, resolve } from "node:path";
 import { writeSecretFileAtomic } from "../../../shared/atomic-write";
 import { ConfigParseError, YoinkError } from "../../../shared/errors";
 import { pathExists, readOptionalText } from "../../../shared/fs-errors";
-import { isRecord } from "../../../shared/guards";
+import { isRecord, readTrimmedString } from "../../../shared/guards";
+import { parseJsonText } from "../../../shared/json-file";
 import type { SubscriptionIdentity, SubscriptionSnapshot } from "../../profiles/types";
 import { createDefaultBackendDeps } from "../deps";
 import { assertDeclaredPath } from "../shared/snapshot-files";
@@ -21,11 +22,6 @@ const IDENTITY_KEY = "identity.json";
 const IDENTITY_PATTERNS = [IDENTITY_KEY] as const;
 const DEFAULT_HOST = "https://github.com";
 const TOKEN_ENV_VARS = ["COPILOT_GITHUB_TOKEN", "GH_TOKEN", "GITHUB_TOKEN"] as const;
-
-const nonEmpty = (value: string | undefined): string | undefined => {
-  const trimmed = value?.trim();
-  return trimmed === undefined || trimmed.length === 0 ? undefined : trimmed;
-};
 
 const normalizeHost = (host: string): string => host.trim().replace(/\/+$/, "").toLowerCase();
 
@@ -57,19 +53,14 @@ export const copilotIdentity = (user: CopilotUser): SubscriptionIdentity => {
 };
 
 export const copilotTokenOverrideNotice = (env: SubscriptionEnv): string | null => {
-  const present = TOKEN_ENV_VARS.filter((name) => nonEmpty(env[name]) !== undefined);
+  const present = TOKEN_ENV_VARS.filter((name) => readTrimmedString(env[name]) !== undefined);
   if (present.length === 0) return null;
   const [verb, effect] = present.length === 1 ? ["is", "overrides"] : ["are", "override"];
   return `${present.join(", ")} ${verb} set and ${effect} the stored GitHub Copilot login. Unset ${present.length === 1 ? "it" : "them"} for the switch to take effect.`;
 };
 
 const parseConfig = (path: string, raw: string): CopilotConfig => {
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(raw);
-  } catch (error) {
-    throw new ConfigParseError(path, error);
-  }
+  const parsed = parseJsonText<unknown>(path, raw);
   if (!isRecord(parsed)) throw new ConfigParseError(path, new Error("expected a JSON object"));
   return parsed;
 };
@@ -107,7 +98,7 @@ const loggedInUsers = (config: CopilotConfig): CopilotUser[] => {
 
 export const createCopilotBackend = (deps: SubscriptionBackendDeps): CopilotBackend => {
   const home = (): string => {
-    const override = nonEmpty(deps.env.COPILOT_HOME);
+    const override = readTrimmedString(deps.env.COPILOT_HOME);
     return override === undefined ? join(deps.homeDir, ".copilot") : resolve(override);
   };
 

@@ -27,6 +27,7 @@ export type HarnessAdapter = {
   setsDefaultModel: boolean;
   connectNotice?: (provider: ProviderProfile) => string | undefined;
   detect: () => Promise<HarnessDetection>;
+  writeTargets?: (provider: ProviderProfile) => Promise<string[]>;
   readProviders: () => Promise<ImportedProvider[]>;
   isConnected: (providerId: string) => Promise<boolean>;
   readDefaultModel: (providerId: string) => Promise<string | null>;

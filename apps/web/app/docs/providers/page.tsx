@@ -24,8 +24,9 @@ const presets = [
 const addFlags = [
   { flag: "--name <id>", does: "Profile id, also the provider id in harness configs. Required." },
   { flag: "--preset <id>", does: "Use a preset's endpoints instead of a base URL." },
-  { flag: "--base-url <url>", does: "Custom provider URL, probed unless --protocol is given." },
+  { flag: "--base-url <url>", does: "Custom provider URL, probed unless --protocol or --endpoint is given." },
   { flag: "--protocol <p,...>", does: "Skip probing: openai-chat, openai-responses, anthropic-messages." },
+  { flag: "--endpoint <p>=<url>,...", does: "Exact URL per protocol, no probing. Not with --preset or --protocol." },
   { flag: "--provider <label>", does: "Display name. Defaults to the preset label or the id." },
   { flag: "--models <m,...>", does: "Models to expose. Required." },
   { flag: "--connect <h,...>", does: "Connect right away: pi, omp, opencode, codex, claude-code, qwen, kilo, droid, crush, goose, zed, continue, claude-desktop." },
@@ -104,7 +105,8 @@ yoink models fuse --set claude-sonnet-4-5,gpt-5.2`}
         The key lives in <code>~/.config/yoink/profiles.json</code> at chmod 600 and is written as
         a literal into each connected harness config, atomically and with <code>0600</code>{" "}
         permissions. The first time Yoink changes an existing harness file it keeps the original as{" "}
-        <code>&lt;file&gt;.yoink.bak</code>.
+        <code>&lt;file&gt;.yoink.bak</code>, except the per-provider Goose and Claude Desktop files,
+        which Yoink owns and deletes on disconnect.
       </p>
       <p>
         <code>yoink edit &lt;name&gt;</code> opens a field picker: harnesses, models, profile id,

@@ -1,14 +1,13 @@
-import { stat } from "node:fs/promises";
+import { pathExists } from "../../../shared/fs-errors";
 
 export type DetectionProbes = {
   which: (binary: string) => string | null;
   exists: (path: string) => Promise<boolean>;
 };
 
-export const pathExists = async (path: string): Promise<boolean> => {
+const isReachablePath = async (path: string): Promise<boolean> => {
   try {
-    await stat(path);
-    return true;
+    return await pathExists(path);
   } catch {
     return false;
   }
@@ -16,7 +15,7 @@ export const pathExists = async (path: string): Promise<boolean> => {
 
 export const defaultProbes: DetectionProbes = {
   which: (binary) => Bun.which(binary),
-  exists: pathExists,
+  exists: isReachablePath,
 };
 
 export const isInstalled = async (

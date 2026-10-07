@@ -1,9 +1,11 @@
+import { retiredSecret, scrubbingBackups } from "../../shared/backup";
 import { YoinkError } from "../../shared/errors";
 import { validateProviderId } from "../../shared/validators";
 import { listProfiles, removeProfile, updateProfile, upsertProfile } from "../profiles/service";
 import { pruneStaleDefaultModels } from "../profiles/default-model";
 import { loadStore, saveStore } from "../profiles/store";
 import type { ProviderProfile } from "../profiles/types";
+import { supportsAny } from "../harnesses/endpoint";
 import { HARNESS_ADAPTERS } from "../harnesses/registry";
 import { disconnectHarnesses, loadProvider, resyncProvider, type HarnessOutcome } from "../harnesses/sync";
 import { buildProviderProfile, type ProviderInput } from "./build-profile";
@@ -33,6 +35,16 @@ export const addProvider = async (input: ProviderInput): Promise<ProviderProfile
   return profile;
 };
 
+const CLAUDE_CODE_PROTOCOLS = ["anthropic-messages"] as const;
+
+const assertKeepsClaudeCodeEndpoint = async (current: ProviderProfile, next: ProviderProfile): Promise<void> => {
+  if (supportsAny(next, CLAUDE_CODE_PROTOCOLS) || !supportsAny(current, CLAUDE_CODE_PROTOCOLS)) return;
+  if ((await listProfiles()).current !== current.name) return;
+  throw new YoinkError(
+    `"${current.name}" is active in Claude Code, which needs its Anthropic-compatible endpoint. Switch Claude Code to another profile before removing it.`,
+  );
+};
+
 export const updateProvider = async (name: string, patch: ProviderPatch): Promise<HarnessOutcome[]> => {
   const current = await loadProvider(name);
   const models = patch.models ?? current.models;
@@ -50,8 +62,10 @@ export const updateProvider = async (name: string, patch: ProviderPatch): Promis
     ),
   };
   assertValidInput({ ...next, displayName: next.provider });
+  await assertKeepsClaudeCodeEndpoint(current, next);
   await updateProfile(name, next);
-  return resyncProvider(await loadProvider(next.name), name);
+  const stored = await loadProvider(next.name);
+  return scrubbingBackups(retiredSecret(current.token, stored.token), () => resyncProvider(stored, name));
 };
 
 export const removeProvider = async (name: string): Promise<HarnessOutcome[]> => {

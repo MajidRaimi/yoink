@@ -13,6 +13,7 @@ export const metadata = pageMetadata({
 
 const files = [
   { path: "~/.config/yoink/profiles.json", role: "profile store, chmod 600" },
+  { path: "~/.config/yoink/subscriptions.json", role: "subscription login snapshots, chmod 600" },
   { path: "Keychain · Claude Code-credentials", role: "the OAuth credential blob on macOS" },
   { path: "~/.claude/.credentials.json", role: "the OAuth credential blob on Linux and Windows" },
   { path: "~/.claude.json", role: "oauthAccount identity block" },
@@ -30,7 +31,7 @@ const files = [
   { path: "~/.config/zed/settings.json", role: "Zed language models and agent default" },
   { path: "~/.continue/config.yaml", role: "Continue models" },
   { path: "Claude-3p/configLibrary/yoink-<id>.json", role: "Claude Desktop third-party inference config" },
-  { path: "<harness config>.yoink.bak", role: "one-time backup before the first change" },
+  { path: "<harness config>.yoink.bak", role: "one-time backup before the first change (not the yoink-owned Goose and Claude Desktop files)" },
 ];
 
 const ReferencePage = () => (

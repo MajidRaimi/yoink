@@ -94,14 +94,26 @@ export type SubscriptionProfile = {
   updatedAt: string;
 };
 
-export type Profile = ClaudeProfile | ExternalProfile | SubscriptionProfile;
+export type SharedProfile = ClaudeProfile | ExternalProfile;
+
+export type Profile = SharedProfile | SubscriptionProfile;
 
 export const STORE_SCHEMA_VERSION = 2;
+
+export const SUBSCRIPTION_STORE_SCHEMA_VERSION = 1;
+
+export type CurrentByTool = Partial<Record<SubscriptionTool, string>>;
+
+export type SubscriptionStore = {
+  schemaVersion: number;
+  currentByTool: CurrentByTool;
+  profiles: Record<string, SubscriptionProfile>;
+};
 
 export type ProfileStore = {
   schemaVersion?: number;
   current: string | null;
   importOffered?: boolean;
-  currentByTool?: Partial<Record<SubscriptionTool, string>>;
+  currentByTool?: CurrentByTool;
   profiles: Record<string, Profile>;
 };

@@ -319,3 +319,16 @@ test("prepareLogin succeeds for file storage and leaves the login in place", asy
   await backendFor({ platform: "linux" }).prepareLogin();
   expect(await readCodex("auth.json")).toBe(aliceAuth);
 });
+
+test("postSwitchNotice warns when a custom model_provider overrides the ChatGPT login", async () => {
+  expect(backendFor().postSwitchNotice?.()).toBeNull();
+  await writeCodex("config.toml", 'model_provider = "openai"\n');
+  expect(backendFor().postSwitchNotice?.()).toBeNull();
+  await writeCodex("config.toml", 'model = "m1"\nmodel_provider = "prov2"\n');
+  const notice = backendFor().postSwitchNotice?.();
+  expect(notice).toContain('model_provider = "prov2"');
+  expect(notice).toContain("yoink disconnect prov2 --from codex");
+  expect(notice).toContain(join(codexHome, "config.toml"));
+  await writeCodex("config.toml", "model_provider = [");
+  expect(backendFor().postSwitchNotice?.()).toBeNull();
+});

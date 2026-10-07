@@ -2,7 +2,8 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import type { Document } from "yaml";
 import type { ProviderProfile } from "../../profiles/types";
-import { parseJsonText, readTextFile } from "../../../shared/json-file";
+import { readOptionalText } from "../../../shared/fs-errors";
+import { parseJsonText } from "../../../shared/json-file";
 import type { ConnectOptions, HarnessAdapter, HarnessDetection, ImportedProvider } from "../types";
 import { firstExisting } from "./config-file";
 import { asRecord } from "./config-values";
@@ -40,7 +41,7 @@ const ompToken = (value: unknown): string | null => {
 
 const readLegacyRoot = async (paths: OmpPaths): Promise<Record<string, unknown>> => {
   const path = legacyModelsPath(paths);
-  const text = await readTextFile(path);
+  const text = await readOptionalText(path);
   if (text === null || text.trim().length === 0) return {};
   return asRecord(parseJsonText<unknown>(path, text));
 };

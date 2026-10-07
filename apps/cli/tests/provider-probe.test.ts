@@ -300,3 +300,80 @@ test("fetchProviderModels lists OpenAI models at the stored base URL as is", asy
   ]);
   expect(requests[0]?.url).toBe(`${gateway}/models`);
 });
+
+type RedirectRoute = { status: number; location?: string; body?: unknown };
+
+const createRedirectFetcher = (
+  routes: Record<string, RedirectRoute>,
+): { fetcher: Fetcher; requests: RecordedRequest[]; redirectModes: RequestInit["redirect"][] } => {
+  const requests: RecordedRequest[] = [];
+  const redirectModes: RequestInit["redirect"][] = [];
+  const fetcher: Fetcher = async (input, init) => {
+    const method = init?.method ?? "GET";
+    redirectModes.push(init?.redirect);
+    requests.push({
+      method,
+      url: input,
+      headers: (init?.headers ?? {}) as Record<string, string>,
+      body: typeof init?.body === "string" ? JSON.parse(init.body) : undefined,
+    });
+    const route = routes[`${method} ${input.split("?")[0] ?? input}`] ?? { status: 404 };
+    const headers = route.location ? { location: route.location } : undefined;
+    return new Response(route.body === undefined ? "" : JSON.stringify(route.body), { status: route.status, headers });
+  };
+  return { fetcher, requests, redirectModes };
+};
+
+const sentToHost = (requests: RecordedRequest[], host: string): RecordedRequest[] =>
+  requests.filter((request) => new URL(request.url).host === host);
+
+test("probeProvider never sends the key to a cross origin redirect target", async () => {
+  const { fetcher, requests, redirectModes } = createRedirectFetcher({
+    "GET https://gateway.example.com/v1/models": { status: 307, location: "https://evil.example.net/v1/models" },
+    "POST https://gateway.example.com/v1/messages": { status: 307, location: "https://evil.example.net/v1/messages" },
+    "POST https://gateway.example.com/v1/responses": { status: 308, location: "https://evil.example.net/v1/responses" },
+    "GET https://gateway.example.com/models": { status: 302, location: "https://evil.example.net/models" },
+    "POST https://gateway.example.com/responses": { status: 302, location: "https://evil.example.net/responses" },
+  });
+  await expect(probeProvider({ baseUrl: "https://gateway.example.com", token: "secret", fetcher })).rejects.toThrow(
+    /redirected to a different host/,
+  );
+  expect(sentToHost(requests, "evil.example.net")).toEqual([]);
+  expect(redirectModes.every((mode) => mode === "manual")).toBe(true);
+});
+
+test("fetchProviderModels refuses a cross origin redirect without forwarding the key", async () => {
+  const { fetcher, requests } = createRedirectFetcher({
+    "GET https://gateway.example.com/v1/models": { status: 307, location: "https://evil.example.net/v1/models" },
+  });
+  const listing = fetchProviderModels({ protocol: "anthropic-messages", baseUrl: "https://gateway.example.com" }, "secret", fetcher);
+  await expect(listing).rejects.toBeInstanceOf(YoinkError);
+  await expect(listing).rejects.toThrow(/redirected to a different host/);
+  expect(sentToHost(requests, "evil.example.net")).toEqual([]);
+});
+
+test("fetchProviderModels follows a same origin redirect", async () => {
+  const { fetcher, requests } = createRedirectFetcher({
+    "GET https://gateway.example.com/v1/models": { status: 308, location: "/api/v1/models" },
+    "GET https://gateway.example.com/api/v1/models": { status: 200, body: { data: [{ id: "m-1" }] } },
+  });
+  const models = await fetchProviderModels({ protocol: "openai-chat", baseUrl: "https://gateway.example.com/v1" }, "sk", fetcher);
+  expect(models).toEqual([{ id: "m-1", name: "m-1" }]);
+  expect(requests.map((request) => request.url)).toEqual([
+    "https://gateway.example.com/v1/models",
+    "https://gateway.example.com/api/v1/models",
+  ]);
+  expect(requests[1]?.headers.Authorization).toBe("Bearer sk");
+});
+
+test("probeProvider follows a same origin 307 for the messages probe and keeps the POST body", async () => {
+  const { fetcher, requests } = createRedirectFetcher({
+    "POST https://gateway.example.com/v1/messages": { status: 307, location: "https://gateway.example.com/anthropic/v1/messages" },
+    "POST https://gateway.example.com/anthropic/v1/messages": { status: 200, body: messagesSuccess },
+  });
+  const result = await probeProvider({ baseUrl: "https://gateway.example.com", token: "key", fetcher });
+  expect(result.endpoints).toEqual([{ protocol: "anthropic-messages", baseUrl: "https://gateway.example.com" }]);
+  const followed = requests.find((request) => request.url === "https://gateway.example.com/anthropic/v1/messages");
+  expect(followed?.method).toBe("POST");
+  expect(followed?.body).toMatchObject({ max_tokens: 1 });
+});

@@ -5,10 +5,11 @@ import { introBanner } from "../features/menu/banner";
 import { manageProviderHarnesses } from "../features/menu/flows/harness-flow";
 import { editProviderModels } from "../features/menu/flows/edit-external-flow";
 import { importCandidatesFlow } from "../features/menu/flows/import-flow";
-import { describeReadFailure, scanHarnesses } from "../features/harnesses/import";
+import { describeReadFailure } from "../features/harnesses/import";
 import { disconnectTargets } from "../features/harnesses/links";
 import { countFailures } from "../features/harnesses/outcomes";
 import { harnessReports } from "../features/harnesses/reports";
+import { ALLOW_TRACKED_SWITCH } from "../features/harnesses/tracked-guard";
 import {
   connectHarnesses,
   disconnectHarnesses,
@@ -16,11 +17,9 @@ import {
   loadProvider,
   type HarnessOutcome,
 } from "../features/harnesses/sync";
-import { markImportOffered } from "../features/profiles/import-flag";
-import { listProfiles } from "../features/profiles/service";
 import type { HarnessId, ProviderProfile } from "../features/profiles/types";
-import { importAllCandidates } from "../features/providers/bulk-import";
 import { lookupModelSpecs } from "../features/providers/catalog";
+import { importScannedCandidates, scanImportCandidates } from "../features/providers/import-scan";
 import { resolveProviderEndpoints } from "../features/providers/endpoint-resolution";
 import { setProviderModels } from "../features/providers/model-selection";
 import { addProvider } from "../features/providers/service";
@@ -58,13 +57,14 @@ export const handleProviderAdd = async (args: string[]): Promise<void> => {
   const profile = await addProvider({ name: parsed.name, displayName, token, endpoints, models, presetId: parsed.preset });
   console.log(`${theme.success("✔")} Added ${theme.accent(pc.bold(profile.name))} ${pc.dim(`(${displayName})`)}`);
   if (parsed.connect.length > 0) {
-    printOutcomes(await connectHarnesses(profile.name, parsed.connect, { defaultModel: parsed.defaultModel }), "Connected");
+    const request = { defaultModel: parsed.defaultModel, allowTracked: parsed.allowTracked };
+    printOutcomes(await connectHarnesses(profile.name, parsed.connect, request), "Connected");
   }
 };
 
 export const handleConnect = async (args: string[]): Promise<void> => {
-  const name = requireName(args, "yoink connect <name> [--to pi,opencode] [--default <model>]");
-  const { values } = parseRawFlags(args.slice(1), new Set(["--to", "--default"]), new Set());
+  const name = requireName(args, `yoink connect <name> [--to pi,opencode] [--default <model>] [${ALLOW_TRACKED_SWITCH}]`);
+  const { values, switches } = parseRawFlags(args.slice(1), new Set(["--to", "--default"]), new Set([ALLOW_TRACKED_SWITCH]));
   const targets = parseHarnessList(values.get("--to"));
   if (targets.length === 0) {
     if (!isInteractive()) throw new YoinkError("Pass --to <harness,...> when not in an interactive terminal.");
@@ -72,7 +72,8 @@ export const handleConnect = async (args: string[]): Promise<void> => {
     await manageProviderHarnesses(name);
     return;
   }
-  printOutcomes(await connectHarnesses(name, targets, { defaultModel: values.get("--default") }), "Connected");
+  const request = { defaultModel: values.get("--default"), allowTracked: switches.has(ALLOW_TRACKED_SWITCH) };
+  printOutcomes(await connectHarnesses(name, targets, request), "Connected");
 };
 
 const defaultDisconnectTargets = async (provider: ProviderProfile): Promise<HarnessId[]> => {
@@ -138,25 +139,22 @@ export const handleModels = async (args: string[]): Promise<void> => {
 
 export const handleImport = async (args: string[]): Promise<void> => {
   const { switches } = parseRawFlags(args, new Set(), new Set(["--yes"]));
-  const { profiles } = await listProfiles();
-  const { candidates, failures } = await scanHarnesses(profiles);
-  for (const failure of failures) console.error(theme.warn(describeReadFailure(failure)));
-  if (candidates.length === 0) {
-    if (failures.length === 0) await markImportOffered();
+  const scan = await scanImportCandidates();
+  for (const failure of scan.failures) console.error(theme.warn(describeReadFailure(failure)));
+  if (scan.candidates.length === 0) {
     console.log(pc.dim("No unmanaged providers found in your harness configs."));
     return;
   }
   if (switches.has("--yes")) {
-    const { results, failed } = await importAllCandidates(candidates);
+    const { results, failed } = await importScannedCandidates(scan);
     for (const { profile, outcomes } of results) {
       console.log(`${theme.success("✔")} Imported ${theme.accent(profile.name)}`);
       renderOutcomes(outcomes.filter((outcome) => !outcome.ok), "Synced");
     }
-    if (failures.length === 0) await markImportOffered();
     assertNoFailures(failed);
     return;
   }
   if (!isInteractive()) throw new YoinkError("Pass --yes to import without prompting.");
   introBanner("import providers");
-  await importCandidatesFlow(candidates);
+  await importCandidatesFlow(scan.candidates);
 };

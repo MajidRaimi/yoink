@@ -230,3 +230,16 @@ test("connect writes an unversioned gateway base_url as stored and readProviders
   const [imported] = await adapter.readProviders();
   expect(imported?.endpoints).toEqual([{ protocol: "openai-responses", baseUrl: gateway }]);
 });
+
+test("connectNotice warns only when the provider is the default and a ChatGPT login exists", async () => {
+  const provider = makeProvider();
+  await adapter.connect(provider, {});
+  await writeFile(join(dir, "auth.json"), JSON.stringify({ tokens: { id_token: "x" } }));
+  expect(adapter.connectNotice?.(provider)).toBeUndefined();
+  await adapter.connect(provider, { defaultModel: "m1" });
+  const notice = adapter.connectNotice?.(provider);
+  expect(notice).toContain(`model_provider = "${provider.name}"`);
+  expect(notice).toContain(`yoink disconnect ${provider.name} --from codex`);
+  await writeFile(join(dir, "auth.json"), JSON.stringify({ OPENAI_API_KEY: "sk-fake" }));
+  expect(adapter.connectNotice?.(provider)).toBeUndefined();
+});

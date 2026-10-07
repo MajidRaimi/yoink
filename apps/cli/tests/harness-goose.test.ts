@@ -117,6 +117,14 @@ test("connect overwrites the same id and keeps extra fields on the existing file
   expect(await Bun.file(`${providerPath}.yoink.bak`).exists()).toBe(false);
 });
 
+test("a hand-made custom provider file at the same path is owned by yoink and deleted on disconnect", async () => {
+  await writeConfigFixture(providerPath, JSON.stringify({ name: "custom_fuse", engine: "openai", base_url: "https://hand.test" }));
+  await adapter.connect(makeProvider(), {});
+  expect(await Bun.file(`${providerPath}.yoink.bak`).exists()).toBe(false);
+  await adapter.disconnect("fuse");
+  expect(await Bun.file(providerPath).exists()).toBe(false);
+});
+
 test("disconnect removes a stale backup of the custom provider file", async () => {
   const backupPath = `${providerPath}.yoink.bak`;
   await writeConfigFixture(backupPath, JSON.stringify({ name: "custom_fuse" }));

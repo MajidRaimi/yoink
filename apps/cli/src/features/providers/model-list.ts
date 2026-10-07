@@ -1,8 +1,5 @@
-import { isRecord } from "../../shared/guards";
+import { isRecord, readString } from "../../shared/guards";
 import type { ProviderModel } from "./types";
-
-const nonEmptyString = (value: unknown): string | null =>
-  typeof value === "string" && value.length > 0 ? value : null;
 
 const rawEntries = (body: unknown): unknown[] | null => {
   if (Array.isArray(body)) return body;
@@ -13,9 +10,9 @@ const rawEntries = (body: unknown): unknown[] | null => {
 
 const toProviderModel = (entry: unknown): ProviderModel | null => {
   if (!isRecord(entry)) return null;
-  const id = nonEmptyString(entry.id);
-  if (id === null) return null;
-  return { id, name: nonEmptyString(entry.name) ?? nonEmptyString(entry.display_name) ?? id };
+  const id = readString(entry.id);
+  if (id === undefined) return null;
+  return { id, name: readString(entry.name) ?? readString(entry.display_name) ?? id };
 };
 
 export const parseModelList = (body: unknown): ProviderModel[] | null => {

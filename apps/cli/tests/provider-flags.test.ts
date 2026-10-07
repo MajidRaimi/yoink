@@ -6,6 +6,7 @@ import {
   parseRawFlags,
   splitList,
 } from "../src/cli/provider-flags";
+import { HARNESS_IDS } from "../src/features/profiles/types";
 
 test("isProviderAddInvocation only triggers on provider-only flags", () => {
   expect(isProviderAddInvocation(["--external", "--name", "x", "--models", "a"])).toBe(true);
@@ -39,6 +40,7 @@ test("parseProviderAddArgs parses a preset invocation", () => {
     connect: ["pi", "opencode"],
     defaultModel: "kimi-k3",
     tokenFromStdin: true,
+    allowTracked: false,
   });
 });
 
@@ -101,8 +103,23 @@ test("parseProviderAddArgs rejects malformed or conflicting endpoints", () => {
   ).toThrow("either --protocol or --endpoint");
 });
 
+test("parseProviderAddArgs accepts endpoints without a base url", () => {
+  const parsed = parseProviderAddArgs([
+    "--name",
+    "direct",
+    "--endpoint",
+    "openai-chat=https://api.direct.test/v1",
+    "--models",
+    "m1",
+  ]);
+  expect(parsed.baseUrl).toBeUndefined();
+  expect(parsed.preset).toBeUndefined();
+  expect(parsed.endpoints).toEqual([{ protocol: "openai-chat", baseUrl: "https://api.direct.test/v1" }]);
+});
+
 test("parseHarnessList validates harness ids", () => {
   expect(parseHarnessList("pi, codex")).toEqual(["pi", "codex"]);
+  expect(parseHarnessList(HARNESS_IDS.join(","))).toEqual([...HARNESS_IDS]);
   expect(parseHarnessList(undefined)).toEqual([]);
   expect(() => parseHarnessList("cursor")).toThrow('Unknown harness "cursor"');
 });
@@ -117,4 +134,19 @@ test("parseRawFlags separates switches and values and rejects unknown flags", ()
 
 test("splitList trims and drops empty entries", () => {
   expect(splitList(" a, ,b ,")).toEqual(["a", "b"]);
+});
+
+test("parseProviderAddArgs reads --allow-tracked", () => {
+  const parsed = parseProviderAddArgs([
+    "--name",
+    "kimi",
+    "--preset",
+    "kimi-code",
+    "--models",
+    "kimi-k3",
+    "--connect",
+    "codex",
+    "--allow-tracked",
+  ]);
+  expect(parsed.allowTracked).toBe(true);
 });

@@ -172,6 +172,7 @@ export const createGooseAdapter = (paths: GoosePaths, probes: DetectionProbes = 
   setsDefaultModel: true,
   connectNotice: (provider) => connectNotice(paths, provider),
   detect: () => detect(paths, probes),
+  writeTargets: async (provider) => [configPath(paths), secretsPath(paths), customProviderPath(paths, provider.name)],
   readProviders: () => readProviders(paths),
   isConnected: (providerId) => isConnected(paths, providerId),
   readDefaultModel: (providerId) => readDefaultModel(paths, providerId),

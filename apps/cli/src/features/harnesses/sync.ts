@@ -1,9 +1,13 @@
+import { scrubbingBackups } from "../../shared/backup";
 import { errorMessage, YoinkError } from "../../shared/errors";
+import { isTrackedAndNotIgnored } from "../../shared/git-status";
 import { nowIso } from "../../shared/time";
+import { PROFILE_GROUP_TITLES } from "../profiles/format";
 import { loadStore, saveStore, toProviderProfile, type ProfileStoreRepository } from "../profiles/store";
 import type { Connection, Connections, HarnessId, ProviderProfile } from "../profiles/types";
 import { supportsAny } from "./endpoint";
 import { HARNESS_ADAPTERS } from "./registry";
+import { trackedRefusalMessage, trackedWriteTargets, type TrackedCheck } from "./tracked-guard";
 import type { HarnessAdapter } from "./types";
 
 export type HarnessStatus = {
@@ -27,15 +31,17 @@ export type ConnectionProbe = {
 
 export type HarnessOutcome =
   | { id: HarnessId; ok: true; notice?: string }
-  | { id: HarnessId; ok: false; message: string };
+  | { id: HarnessId; ok: false; message: string; trackedPaths?: string[] };
 
 export type ConnectRequest = {
   defaultModel?: string;
+  allowTracked?: boolean;
 };
 
 export type HarnessSyncDeps = {
   adapters: readonly HarnessAdapter[];
   store: ProfileStoreRepository;
+  isTracked?: TrackedCheck;
 };
 
 export type HarnessSync = {
@@ -97,12 +103,16 @@ const readLiveDefault = async (adapter: HarnessAdapter, providerIds: readonly st
 };
 
 const resyncDefaultModel = (provider: ProviderProfile, id: HarnessId, live: string | null): string | undefined => {
+  if (live === null) return undefined;
   const recorded = provider.connections[id]?.defaultModel;
-  const fallback = live !== null || recorded !== undefined ? provider.models[0]?.id : undefined;
-  return selectedModel(provider, live) ?? selectedModel(provider, recorded) ?? fallback;
+  return selectedModel(provider, live) ?? selectedModel(provider, recorded) ?? provider.models[0]?.id;
 };
 
-export const createHarnessSync = ({ adapters, store }: HarnessSyncDeps): HarnessSync => {
+export const createHarnessSync = ({
+  adapters,
+  store,
+  isTracked = isTrackedAndNotIgnored,
+}: HarnessSyncDeps): HarnessSync => {
   const findAdapter = (id: HarnessId): HarnessAdapter | undefined => adapters.find((candidate) => candidate.id === id);
 
   const requireAdapter = (id: HarnessId): HarnessAdapter => {
@@ -111,16 +121,37 @@ export const createHarnessSync = ({ adapters, store }: HarnessSyncDeps): Harness
     return adapter;
   };
 
+  const trackedRefusal = async (
+    adapter: HarnessAdapter,
+    provider: ProviderProfile,
+    request: ConnectRequest,
+  ): Promise<HarnessOutcome | null> => {
+    if (request.allowTracked) return null;
+    const trackedPaths = await trackedWriteTargets(adapter, provider, isTracked);
+    if (trackedPaths.length === 0) return null;
+    return { id: adapter.id, ok: false, message: trackedRefusalMessage(trackedPaths), trackedPaths };
+  };
+
   const connectOne = async (
     id: HarnessId,
     provider: ProviderProfile,
     options: ConnectRequest,
-  ): Promise<HarnessOutcome> => runForHarness(id, () => requireAdapter(id).connect(provider, options));
+  ): Promise<HarnessOutcome> => {
+    try {
+      const adapter = requireAdapter(id);
+      const refusal = await trackedRefusal(adapter, provider, options);
+      return refusal ?? (await runForHarness(id, () => adapter.connect(provider, options)));
+    } catch (error) {
+      return { id, ok: false, message: errorMessage(error) };
+    }
+  };
 
   const loadProvider = async (name: string): Promise<ProviderProfile> => {
     const profile = (await store.loadStore()).profiles[name];
     if (!profile) throw new YoinkError(`No profile named "${name}".`);
-    if (profile.type !== "external") throw new YoinkError(`"${name}" is a Claude account, not a provider.`);
+    if (profile.type !== "external") {
+      throw new YoinkError(`"${name}" is a ${PROFILE_GROUP_TITLES[profile.type]} login, not a provider.`);
+    }
     return toProviderProfile(profile);
   };
 
@@ -176,7 +207,12 @@ export const createHarnessSync = ({ adapters, store }: HarnessSyncDeps): Harness
     return outcomes;
   };
 
-  const disconnectHarnesses = async (name: string, ids: readonly HarnessId[]): Promise<HarnessOutcome[]> => {
+  const storedToken = async (name: string): Promise<string | undefined> => {
+    const profile = (await store.loadStore()).profiles[name];
+    return profile?.type === "external" ? toProviderProfile(profile).token : undefined;
+  };
+
+  const disconnectEach = async (name: string, ids: readonly HarnessId[]): Promise<HarnessOutcome[]> => {
     const outcomes: HarnessOutcome[] = [];
     for (const id of ids) {
       const outcome = await runForHarness(id, () => requireAdapter(id).disconnect(name));
@@ -189,6 +225,9 @@ export const createHarnessSync = ({ adapters, store }: HarnessSyncDeps): Harness
     }
     return outcomes;
   };
+
+  const disconnectHarnesses = async (name: string, ids: readonly HarnessId[]): Promise<HarnessOutcome[]> =>
+    scrubbingBackups([await storedToken(name)], () => disconnectEach(name, ids));
 
   const connectedHarnessIds = async (provider: ProviderProfile): Promise<HarnessId[]> => {
     const statuses = await harnessStatuses(provider);
@@ -217,6 +256,8 @@ export const createHarnessSync = ({ adapters, store }: HarnessSyncDeps): Harness
     const live = await readLiveDefault(adapter, renamedFrom ? [renamedFrom, provider.name] : [provider.name]);
     const outcomes: HarnessOutcome[] = [];
     if (renamedFrom) {
+      const refusal = await trackedRefusal(adapter, provider, {});
+      if (refusal) return [refusal];
       const removal = await runForHarness(id, () => adapter.disconnect(renamedFrom));
       if (!removal.ok) outcomes.push(removal);
     }

@@ -53,7 +53,7 @@ const keyHandling = [
   { id: "kilo", how: "literal options.apiKey, same entry as opencode" },
   { id: "droid", how: "literal apiKey on each customModels entry, tagged [<id>] in displayName" },
   { id: "crush", how: "literal api_key, cost fields written as 0" },
-  { id: "goose", how: "api_key_env CUSTOM_<ID>_API_KEY; secrets.yaml only when the keyring is disabled" },
+  { id: "goose", how: "api_key_env CUSTOM_<ID>_API_KEY; secrets.yaml only when GOOSE_DISABLE_KEYRING is truthy in your environment or config.yaml" },
   { id: "zed", how: "never written; Zed reads <ID>_API_KEY or its own agent settings" },
   { id: "continue", how: "literal apiKey on entries named <model> (<id>)" },
   { id: "claude-desktop", how: "literal inferenceGatewayApiKey in its own file" },
@@ -198,6 +198,11 @@ const HarnessesPage = () => (
         <code>&lt;file&gt;.yoink.bak</code>. The backup is made once and never overwritten, so it
         always holds your config from before Yoink. Every write after that is atomic and{" "}
         <code>0600</code>.
+      </p>
+      <p>
+        Goose&apos;s <code>custom_providers/custom_&lt;id&gt;.json</code> and Claude Desktop&apos;s{" "}
+        <code>Claude-3p/configLibrary/yoink-&lt;id&gt;.json</code> are owned by Yoink instead: they
+        are overwritten without a backup on connect and deleted on disconnect.
       </p>
     </DocsSection>
 

@@ -9,7 +9,7 @@ import { createHarnessSync, type HarnessSync } from "../src/features/harnesses/s
 import type { HarnessAdapter } from "../src/features/harnesses/types";
 import { pruneStaleDefaultModels } from "../src/features/profiles/default-model";
 import { createProfileStore, type ProfileStoreRepository } from "../src/features/profiles/store";
-import type { Connections, HarnessId, ProviderProfile } from "../src/features/profiles/types";
+import type { Connections, HarnessId, ProviderProfile, SubscriptionProfile } from "../src/features/profiles/types";
 import { kimiModel, makeProvider, makeTempDir, probesWith, readText, removeTempDir, visionModel } from "./support/provider-fixture";
 
 type ExclusiveState = {
@@ -176,6 +176,38 @@ test("a harness that points at another provider keeps its default on resync", as
 
   expect(await piSettings()).toEqual({ defaultProvider: "other", defaultModel: `other/${kimiModel.id}` });
   expect((await storedProvider(provider.name)).connections.pi?.defaultModel).toBeUndefined();
+});
+
+test("a key rotation never takes back harness defaults moved to another provider", async () => {
+  const provider = makeProvider();
+  await saveProvider(provider);
+  await sync.connectHarnesses(provider.name, ["pi", "codex"], { defaultModel: visionModel.id });
+  const other = makeProvider({ name: "other" });
+  await findFileAdapter("pi").connect(other, { defaultModel: kimiModel.id });
+  await findFileAdapter("codex").connect(other, { defaultModel: kimiModel.id });
+
+  const connected = await storedProvider(provider.name);
+  await applyUpdate(connected, { ...connected, token: "sk-rotated" });
+  const outcomes = await sync.resyncProvider(await storedProvider(provider.name), provider.name);
+
+  expect(outcomes.every((outcome) => outcome.ok)).toBe(true);
+  expect(await piSettings()).toEqual({ defaultProvider: "other", defaultModel: `other/${kimiModel.id}` });
+  expect(await findFileAdapter("codex").readDefaultModel(provider.name)).toBeNull();
+  expect(await findFileAdapter("codex").readDefaultModel("other")).toBe(kimiModel.id);
+  expect(await findFileAdapter("codex").isConnected(provider.name)).toBe(true);
+});
+
+test("loadProvider names the subscription type of a non-provider profile", async () => {
+  const login: SubscriptionProfile = {
+    type: "codex",
+    name: "gpt-one",
+    snapshot: { files: {} },
+    identity: { label: "me@example.com" },
+    updatedAt: connectedAt,
+  };
+  await store.saveStore({ current: null, profiles: { [login.name]: login } });
+
+  await expect(sync.loadProvider("gpt-one")).rejects.toThrow('"gpt-one" is a ChatGPT (Codex) login, not a provider.');
 });
 
 test("a provider activated without a recorded connection still gets its new key in the exclusive harness", async () => {

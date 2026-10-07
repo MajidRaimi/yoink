@@ -1,18 +1,20 @@
 import pc from "picocolors";
 import { YoinkError } from "../shared/errors";
 import { theme } from "../shared/theme";
-import { nowIso } from "../shared/time";
-import { listProfiles, renameProfile, upsertProfile } from "../features/profiles/service";
-import type { ExternalProfile } from "../features/profiles/types";
+import { renameProfile } from "../features/profiles/service";
+import { defaultModelSpec } from "../features/profiles/model-spec";
+import type { Protocol } from "../features/profiles/types";
+import { normalizeEndpointUrl } from "../features/harnesses/endpoint";
+import { addProvider, type ProviderInput } from "../features/providers/service";
 import { deleteProfile } from "../features/providers/removal";
 import { countFailures } from "../features/harnesses/outcomes";
-import { validateProviderId } from "../shared/validators";
 import { editProviderFields } from "../features/providers/field-edit";
 import { accountLabel } from "../features/profiles/format";
 import { introBanner } from "../features/menu/banner";
 import { addAccountMenu } from "../features/menu/flows/add-account-menu";
 import { editProfileFlow } from "../features/menu/flows/edit-flow";
 import {
+  type ExternalAddArgs,
   hasExternalEditFlags,
   isExternalAddInvocation,
   parseExternalAddArgs,
@@ -23,32 +25,22 @@ import { readTokenFromStdin } from "./stdin-token";
 import { isProviderAddInvocation } from "./provider-flags";
 import { handleProviderAdd } from "./provider-commands";
 
-const assertValidProviderName = (name: string): void => {
-  const error = validateProviderId(name);
-  if (error) throw new YoinkError(`Invalid provider name "${name}": ${error}.`);
-};
+const LEGACY_EXTERNAL_PROTOCOL: Protocol = "anthropic-messages";
+
+const toProviderInput = (parsed: ExternalAddArgs, token: string): ProviderInput => ({
+  name: parsed.name,
+  displayName: parsed.provider,
+  token,
+  endpoints: [{ protocol: LEGACY_EXTERNAL_PROTOCOL, baseUrl: normalizeEndpointUrl(LEGACY_EXTERNAL_PROTOCOL, parsed.baseUrl) }],
+  models: [defaultModelSpec(parsed.model)],
+});
 
 const handleExternalAdd = async (args: string[]): Promise<void> => {
   const parsed = parseExternalAddArgs(args);
-  assertValidProviderName(parsed.name);
   if (!parsed.tokenFromStdin) {
     throw new YoinkError("An API key is required. Pipe it on stdin with --token-stdin.");
   }
-  const token = await readTokenFromStdin();
-  const { profiles } = await listProfiles();
-  if (profiles.some((profile) => profile.name === parsed.name)) {
-    throw new YoinkError(`A profile named "${parsed.name}" already exists.`);
-  }
-  const profile: ExternalProfile = {
-    type: "external",
-    name: parsed.name,
-    provider: parsed.provider,
-    baseUrl: parsed.baseUrl,
-    token,
-    model: parsed.model,
-    updatedAt: nowIso(),
-  };
-  await upsertProfile(profile, false);
+  const profile = await addProvider(toProviderInput(parsed, await readTokenFromStdin()));
   console.log(`${theme.success("✔")} Added ${theme.accent(pc.bold(profile.name))} ${pc.dim(`(${accountLabel(profile)})`)}`);
 };
 

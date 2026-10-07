@@ -1,6 +1,6 @@
 import { parse as parseWithPatcher, patch } from "@decimalturn/toml-patch";
 import { ConfigParseError, YoinkError } from "../../../shared/errors";
-import { readTextFile } from "../../../shared/json-file";
+import { readOptionalText } from "../../../shared/fs-errors";
 import { asRecord, type ConfigRecord } from "./config-values";
 
 export type TomlEdit = {
@@ -17,7 +17,7 @@ export const parseTomlObject = (path: string, text: string): ConfigRecord => {
 };
 
 export const readTomlObject = async (path: string): Promise<ConfigRecord | null> => {
-  const text = await readTextFile(path);
+  const text = await readOptionalText(path);
   return text === null ? null : parseTomlObject(path, text);
 };
 

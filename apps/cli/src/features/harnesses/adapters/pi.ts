@@ -2,7 +2,8 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import type { ProviderProfile } from "../../profiles/types";
 import { YoinkError } from "../../../shared/errors";
-import { parseJsonText, readTextFile } from "../../../shared/json-file";
+import { readOptionalText } from "../../../shared/fs-errors";
+import { parseJsonText } from "../../../shared/json-file";
 import type { ConnectOptions, HarnessAdapter, HarnessDetection, ImportedProvider } from "../types";
 import { writeConfigFile } from "./config-file";
 import { asRecord, isRecord, type ConfigRecord } from "./config-values";
@@ -25,7 +26,7 @@ const modelsPath = (paths: PiPaths): string => join(paths.agentDir, "models.json
 const settingsPath = (paths: PiPaths): string => join(paths.agentDir, "settings.json");
 
 const readJsonObject = async (path: string): Promise<ConfigRecord | null> => {
-  const text = await readTextFile(path);
+  const text = await readOptionalText(path);
   if (text === null) return null;
   if (text.trim().length === 0) return {};
   const parsed = parseJsonText<unknown>(path, text);

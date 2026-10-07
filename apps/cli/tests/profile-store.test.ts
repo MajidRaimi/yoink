@@ -6,6 +6,7 @@ import {
   applyLegacyEdits,
   createProfileStore,
   isProviderProfile,
+  subscriptionsPathFor,
   toProviderProfile,
 } from "../src/features/profiles/store";
 import type { ExternalProfile, ProviderProfile, SubscriptionProfile } from "../src/features/profiles/types";
@@ -32,6 +33,8 @@ const legacyExternal: ExternalProfile = {
   token: "sk-or",
   updatedAt: "2026-01-01T00:00:00.000Z",
 };
+
+const subscriptionsPath = (): string => subscriptionsPathFor(path);
 
 const writeRaw = async (value: unknown): Promise<void> => {
   await Bun.write(path, JSON.stringify(value));
@@ -248,19 +251,98 @@ test("loadStore repairs a subscription profile with a malformed snapshot or iden
   expect(profile).toEqual({ type: "kimi", name: "k", snapshot: { files: {} }, identity: { label: "k" }, updatedAt: "t" });
 });
 
-test("saveStore round-trips subscription profiles and currentByTool without touching other profiles", async () => {
+test("saveStore moves subscription profiles and currentByTool out of profiles.json", async () => {
   const repository = createProfileStore(path);
   await writeRaw({ current: "router", profiles: { router: legacyExternal, "codex-work": codexProfile } });
   const store = await repository.loadStore();
   store.currentByTool = { codex: "codex-work" };
   await repository.saveStore(store);
-  const saved = (await Bun.file(path).json()) as { current: string; currentByTool: unknown; profiles: Record<string, unknown> };
+  const saved = (await Bun.file(path).json()) as Record<string, unknown> & { profiles: Record<string, unknown> };
   expect(saved.current).toBe("router");
-  expect(saved.currentByTool).toEqual({ codex: "codex-work" });
-  expect(saved.profiles["codex-work"]).toEqual(codexProfile);
-  const reloaded = (await repository.loadStore()).profiles.router as ProviderProfile;
-  expect(reloaded.endpoints).toEqual((store.profiles.router as ProviderProfile).endpoints);
-  expect(reloaded.connections).toEqual((store.profiles.router as ProviderProfile).connections);
+  expect("currentByTool" in saved).toBe(false);
+  expect(Object.keys(saved.profiles)).toEqual(["router"]);
+  const subscriptions = (await Bun.file(subscriptionsPath()).json()) as {
+    schemaVersion: number;
+    currentByTool: unknown;
+    profiles: Record<string, unknown>;
+  };
+  expect(subscriptions).toEqual({ schemaVersion: 1, currentByTool: { codex: "codex-work" }, profiles: { "codex-work": codexProfile } });
+  if (process.platform !== "win32") expect((await stat(subscriptionsPath())).mode & 0o777).toBe(0o600);
+  const reloaded = await repository.loadStore();
+  expect(reloaded.profiles["codex-work"]).toEqual(codexProfile as SubscriptionProfile);
+  expect(reloaded.currentByTool).toEqual({ codex: "codex-work" });
+  expect((reloaded.profiles.router as ProviderProfile).endpoints).toEqual((store.profiles.router as ProviderProfile).endpoints);
+  expect((reloaded.profiles.router as ProviderProfile).connections).toEqual((store.profiles.router as ProviderProfile).connections);
+});
+
+const MAIN_BRANCH_PROFILE_FIELDS: Record<string, string[]> = {
+  claude: ["name", "updatedAt"],
+  external: ["name", "provider", "baseUrl", "model", "updatedAt"],
+};
+
+const parsesAsMainBranchStore = (value: unknown): boolean => {
+  if (typeof value !== "object" || value === null) return false;
+  const { current, profiles } = value as { current?: unknown; profiles?: unknown };
+  if (current !== undefined && current !== null && typeof current !== "string") return false;
+  if (typeof profiles !== "object" || profiles === null) return false;
+  return Object.values(profiles as Record<string, Record<string, unknown>>).every((profile) => {
+    const required = MAIN_BRANCH_PROFILE_FIELDS[String(profile.type)];
+    return required !== undefined && required.every((field) => typeof profile[field] === "string");
+  });
+};
+
+test("a store holding every profile kind stays readable by the pre-subscription desktop RawStore", async () => {
+  const repository = createProfileStore(path);
+  await repository.saveStore({
+    current: "router",
+    currentByTool: { codex: "codex-work" },
+    profiles: {
+      work: { type: "claude", name: "work", keychain: "{}", account: null, updatedAt: "t" },
+      router: toProviderProfile(legacyExternal),
+      "codex-work": codexProfile as SubscriptionProfile,
+    },
+  });
+  const saved = (await Bun.file(path).json()) as { profiles: Record<string, unknown> };
+  expect(parsesAsMainBranchStore(saved)).toBe(true);
+  expect(Object.keys(saved.profiles).sort()).toEqual(["router", "work"]);
+});
+
+test("subscriptions survive an older sidecar rewriting profiles.json with only current and profiles", async () => {
+  const repository = createProfileStore(path);
+  await repository.saveStore({
+    current: null,
+    currentByTool: { codex: "codex-work" },
+    profiles: { router: toProviderProfile(legacyExternal), "codex-work": codexProfile as SubscriptionProfile },
+  });
+  const saved = (await Bun.file(path).json()) as { profiles: Record<string, unknown> };
+  await writeRaw({ current: "router", profiles: saved.profiles });
+  const store = await repository.loadStore();
+  expect(store.current).toBe("router");
+  expect(store.currentByTool).toEqual({ codex: "codex-work" });
+  expect(store.profiles["codex-work"]).toEqual(codexProfile as SubscriptionProfile);
+});
+
+test("loadStore renames a subscription whose name an older writer gave to a Claude account", async () => {
+  const repository = createProfileStore(path);
+  await repository.saveStore({
+    current: null,
+    currentByTool: { codex: "work" },
+    profiles: { work: { ...(codexProfile as SubscriptionProfile), name: "work" } },
+  });
+  await writeRaw({ current: "work", profiles: { work: { type: "claude", name: "work", keychain: "{}", account: null, updatedAt: "t" } } });
+  const store = await repository.loadStore();
+  expect(store.profiles.work?.type).toBe("claude");
+  expect(store.profiles["work-2"]).toEqual({ ...(codexProfile as SubscriptionProfile), name: "work-2" });
+  expect(store.currentByTool).toEqual({ codex: "work-2" });
+});
+
+test("saveStore removes subscriptions.json once the last subscription and selection are gone", async () => {
+  const repository = createProfileStore(path);
+  await repository.saveStore({ current: null, currentByTool: { codex: "codex-work" }, profiles: { "codex-work": codexProfile as SubscriptionProfile } });
+  expect(await Bun.file(subscriptionsPath()).exists()).toBe(true);
+  await repository.saveStore({ current: null, currentByTool: {}, profiles: {} });
+  expect(await Bun.file(subscriptionsPath()).exists()).toBe(false);
+  expect(await repository.loadStore()).toEqual({ schemaVersion: 2, current: null, profiles: {} });
 });
 
 test("loadStore omits currentByTool when the file has none", async () => {

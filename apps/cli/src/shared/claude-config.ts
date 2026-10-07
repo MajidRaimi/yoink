@@ -1,7 +1,8 @@
 import { CLAUDE_CONFIG_PATH } from "./paths";
 import { YoinkError } from "./errors";
 import { writeFileAtomic } from "./atomic-write";
-import { parseJsonText, readJsonFile, readTextFile } from "./json-file";
+import { readOptionalText } from "./fs-errors";
+import { parseJsonText, readJsonFile } from "./json-file";
 
 export type OauthAccount = {
   emailAddress?: string;
@@ -22,7 +23,7 @@ export const readOauthAccount = async (): Promise<OauthAccount | null> => {
 };
 
 export const writeOauthAccount = async (account: OauthAccount): Promise<void> => {
-  const raw = await readTextFile(CLAUDE_CONFIG_PATH);
+  const raw = await readOptionalText(CLAUDE_CONFIG_PATH);
   if (raw === null) {
     throw new YoinkError(`${CLAUDE_CONFIG_PATH} not found. Is Claude Code installed and logged in?`);
   }

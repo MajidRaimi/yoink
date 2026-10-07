@@ -10,7 +10,7 @@ import {
   runClaudeLogin,
   type LiveLogin,
 } from "../../login/service";
-import { listProfiles, saveProfile } from "../../profiles/service";
+import { claudeSaveConflict, listProfiles, saveProfile } from "../../profiles/service";
 import { accountLabel } from "../../profiles/format";
 import { findClaudeProfileByEmail, hasProfileForEmail } from "../../profiles/lookup";
 import { uniqueName } from "../../profiles/naming";
@@ -56,7 +56,7 @@ export const addAccountFlow = async (): Promise<void> => {
     const defaultName = existing
       ? existing.name
       : uniqueName(currentProfiles, defaultNameFromEmail(after.email));
-    const name = await promptProfileName(defaultName);
+    const name = await promptProfileName(defaultName, (value) => claudeSaveConflict(currentProfiles, value));
     if (name === null) {
       cancel("Cancelled.");
       return;

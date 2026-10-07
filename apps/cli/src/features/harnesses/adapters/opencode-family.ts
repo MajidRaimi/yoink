@@ -1,6 +1,6 @@
 import { join } from "node:path";
 import type { Endpoint, HarnessId, ModelSpec, Protocol, ProviderProfile } from "../../profiles/types";
-import { readTextFile } from "../../../shared/json-file";
+import { readOptionalText } from "../../../shared/fs-errors";
 import { normalizeEndpointUrl, sdkBaseUrl } from "../endpoint";
 import type { ConnectOptions, HarnessAdapter, HarnessDetection, ImportedProvider } from "../types";
 import { firstExisting, writeConfigFile } from "./config-file";
@@ -55,7 +55,7 @@ const protocolFromNpm = (npm: unknown): Protocol | undefined =>
 
 const loadConfig = async (context: FamilyContext): Promise<LoadedConfig | null> => {
   const path = await resolveConfigPath(context);
-  const text = await readTextFile(path);
+  const text = await readOptionalText(path);
   return text === null ? null : { path, text, config: parseJsoncObject(path, text) };
 };
 

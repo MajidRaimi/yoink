@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, expect, test } from "bun:test";
-import { chmod, mkdir, mkdtemp, rm, stat } from "node:fs/promises";
+import { chmod, mkdir, mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
@@ -12,8 +12,7 @@ import { createUnsupportedKeyring } from "../src/features/subscriptions/shared/k
 import type { SubscriptionEnv } from "../src/features/subscriptions/types";
 import { ConfigParseError, YoinkError } from "../src/shared/errors";
 import { fakeJwt } from "./support/fake-jwt";
-
-const posix = process.platform !== "win32";
+import { expectMode, isPosix } from "./support/posix";
 const GITHUB = "https://github.com";
 const ENTERPRISE = "https://ghe.example.com";
 
@@ -195,13 +194,13 @@ test("capture then restore round trips between two users", async () => {
 
 test("written config is 0600 and unrelated files in the home are untouched", async () => {
   await writeConfig(twoUserConfig(alice));
-  if (posix) await chmod(configPath(), 0o644);
+  if (isPosix) await chmod(configPath(), 0o644);
   await Bun.write(join(copilotHome, "history-session-state", "s1.json"), "session");
   await Bun.write(join(copilotHome, "mcp-config.json"), "{\"servers\":{}}");
   await backendWith().restore({ files: { "identity.json": JSON.stringify(bob) } });
   expect(await Bun.file(join(copilotHome, "history-session-state", "s1.json")).text()).toBe("session");
   expect(await Bun.file(join(copilotHome, "mcp-config.json")).text()).toBe("{\"servers\":{}}");
-  if (posix) expect((await stat(configPath())).mode & 0o777).toBe(0o600);
+  await expectMode(configPath(), 0o600);
 });
 
 test("restore writes to COPILOT_HOME when it is set", async () => {

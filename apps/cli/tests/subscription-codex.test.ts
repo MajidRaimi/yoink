@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, expect, test } from "bun:test";
 import { createHash } from "node:crypto";
-import { mkdir, mkdtemp, realpath, rm, stat, symlink } from "node:fs/promises";
+import { mkdir, mkdtemp, realpath, rm, symlink } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
@@ -15,8 +15,7 @@ import type { KeyringAdapter, SubscriptionBackend, SubscriptionBackendDeps } fro
 import { ConfigParseError, YoinkError } from "../src/shared/errors";
 import { sameIdentity } from "../src/features/subscriptions/identity";
 import { fakeJwt } from "./support/fake-jwt";
-
-const posix = process.platform !== "win32";
+import { expectMode, isPosix } from "./support/posix";
 const AUTH_CLAIM = "https://api.openai.com/auth";
 
 type MemoryKeyring = KeyringAdapter & { items: Map<string, string> };
@@ -144,11 +143,11 @@ test("parseCodexStorageMode defaults to file and rejects unknown modes and bad T
 test("codexKeyringAccount hashes the canonical home path", async () => {
   await mkdir(codexHome, { recursive: true });
   const linked = join(userHome, "codex-link");
-  if (posix) await symlink(codexHome, linked);
+  if (isPosix) await symlink(codexHome, linked);
   const account = await codexKeyringAccount(codexHome);
   expect(account).toBe(await expectedAccount(codexHome));
   expect(account).toMatch(/^cli\|[0-9a-f]{16}$/);
-  if (posix) expect(await codexKeyringAccount(linked)).toBe(account);
+  if (isPosix) expect(await codexKeyringAccount(linked)).toBe(account);
   const missing = join(userHome, "missing");
   expect(await codexKeyringAccount(missing)).toBe(
     `cli|${createHash("sha256").update(missing).digest("hex").slice(0, 16)}`,
@@ -189,13 +188,13 @@ test("restore writes auth.json with mode 0600 and leaves other files untouched",
   expect(await readCodex("auth.json")).toBe(bobAuth);
   expect(await readCodex("config.toml")).toBe('model = "o3"\n');
   expect(await readCodex("sessions/one.jsonl")).toBe("session");
-  if (posix) expect((await stat(join(codexHome, "auth.json"))).mode & 0o777).toBe(0o600);
+  await expectMode(join(codexHome, "auth.json"), 0o600);
 });
 
 test("restore creates a missing codex home with a 0600 auth.json", async () => {
   await backendFor().restore({ files: { "auth.json": aliceAuth } });
   expect(await readCodex("auth.json")).toBe(aliceAuth);
-  if (posix) expect((await stat(join(codexHome, "auth.json"))).mode & 0o777).toBe(0o600);
+  await expectMode(join(codexHome, "auth.json"), 0o600);
 });
 
 test("capture and restore round trip between two accounts", async () => {

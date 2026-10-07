@@ -4,7 +4,8 @@ import { join } from "node:path";
 import { parse } from "jsonc-parser";
 import { createOpencodeAdapter, defaultOpencodePaths } from "../src/features/harnesses/adapters/opencode";
 import type { HarnessAdapter } from "../src/features/harnesses/types";
-import { fileMode, kimiModel, makeProvider, makeTempDir, probesWith, readText, removeTempDir } from "./support/provider-fixture";
+import { kimiModel, makeProvider, makeTempDir, probesWith, readText, removeTempDir } from "./support/provider-fixture";
+import { expectMode } from "./support/posix";
 
 let root: string;
 let dir: string;
@@ -76,7 +77,7 @@ afterEach(async () => {
 
 test("connect creates opencode.json with mode 0600, schema and provider block", async () => {
   await adapter.connect(makeProvider(), {});
-  expect(await fileMode(jsonPath)).toBe(0o600);
+  await expectMode(jsonPath, 0o600);
   expect(await readJsonc(jsonPath)).toEqual({
     $schema: "https://opencode.ai/config.json",
     provider: {

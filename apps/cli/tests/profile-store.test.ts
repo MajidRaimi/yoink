@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, expect, test } from "bun:test";
-import { mkdtemp, rm, stat } from "node:fs/promises";
+import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
@@ -11,6 +11,7 @@ import {
 } from "../src/features/profiles/store";
 import type { ExternalProfile, ProviderProfile, SubscriptionProfile } from "../src/features/profiles/types";
 import { ConfigParseError } from "../src/shared/errors";
+import { expectMode } from "./support/posix";
 
 let dir: string;
 let path: string;
@@ -103,7 +104,7 @@ test("saveStore writes schemaVersion 2, mode 0600 and syncs legacy fields", asyn
   expect(saved.importOffered).toBe(true);
   expect(saved.profiles.router?.baseUrl).toBe("https://api.kimi.com/coding");
   expect(saved.profiles.router?.model).toBe("kimi-for-coding");
-  if (process.platform !== "win32") expect((await stat(path)).mode & 0o777).toBe(0o600);
+  await expectMode(path, 0o600);
   expect((await repository.loadStore()).importOffered).toBe(true);
 });
 
@@ -267,7 +268,7 @@ test("saveStore moves subscription profiles and currentByTool out of profiles.js
     profiles: Record<string, unknown>;
   };
   expect(subscriptions).toEqual({ schemaVersion: 1, currentByTool: { codex: "codex-work" }, profiles: { "codex-work": codexProfile } });
-  if (process.platform !== "win32") expect((await stat(subscriptionsPath())).mode & 0o777).toBe(0o600);
+  await expectMode(subscriptionsPath(), 0o600);
   const reloaded = await repository.loadStore();
   expect(reloaded.profiles["codex-work"]).toEqual(codexProfile as SubscriptionProfile);
   expect(reloaded.currentByTool).toEqual({ codex: "codex-work" });

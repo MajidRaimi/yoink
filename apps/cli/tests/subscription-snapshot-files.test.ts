@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, expect, test } from "bun:test";
-import { mkdir, mkdtemp, rm, stat, symlink } from "node:fs/promises";
+import { mkdir, mkdtemp, rm, symlink } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
@@ -9,9 +9,9 @@ import {
   restoreSnapshotFiles,
 } from "../src/features/subscriptions/shared/snapshot-files";
 import { YoinkError } from "../src/shared/errors";
+import { expectMode, isPosix } from "./support/posix";
 
 const PATTERNS = ["auth.json", "credentials/*.json"];
-const posix = process.platform !== "win32";
 
 let home: string;
 
@@ -50,10 +50,8 @@ test("restoreSnapshotFiles writes 0600 files in 0700 directories and removes sta
   expect(await readSnapshotFiles(home, PATTERNS)).toEqual({ "auth.json": "A", "credentials/new.json": "N" });
   expect(await Bun.file(join(home, "credentials/keep.txt")).text()).toBe("keep");
   expect(await Bun.file(join(home, "other.json")).text()).toBe("other");
-  if (posix) {
-    expect((await stat(join(target, "credentials/new.json"))).mode & 0o777).toBe(0o600);
-    expect((await stat(join(target, "credentials"))).mode & 0o777).toBe(0o700);
-  }
+  await expectMode(join(target, "credentials/new.json"), 0o600);
+  await expectMode(join(target, "credentials"), 0o700);
 });
 
 test("restoreSnapshotFiles with an empty snapshot clears the declared files only", async () => {
@@ -74,7 +72,7 @@ test("restoreSnapshotFiles refuses paths outside the declared set before writing
 });
 
 test("restoreSnapshotFiles keeps a symlinked file a symlink", async () => {
-  if (!posix) return;
+  if (!isPosix) return;
   const dotfiles = join(home, "dotfiles");
   await mkdir(dotfiles);
   await Bun.write(join(dotfiles, "auth.json"), "old");

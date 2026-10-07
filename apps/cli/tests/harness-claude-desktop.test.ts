@@ -8,7 +8,6 @@ import {
 } from "../src/features/harnesses/adapters/claude-desktop";
 import type { HarnessAdapter } from "../src/features/harnesses/types";
 import {
-  fileMode,
   kimiModel,
   makeProvider,
   makeTempDir,
@@ -17,6 +16,7 @@ import {
   removeTempDir,
   visionModel,
 } from "./support/provider-fixture";
+import { expectMode } from "./support/posix";
 
 let root: string;
 let configDir: string;
@@ -57,7 +57,7 @@ test("adapter metadata is experimental, non exclusive and anthropic only", () =>
 
 test("connect creates the library file with mode 0600 and the gateway fields", async () => {
   await adapter.connect(makeProvider(), {});
-  expect(await fileMode(fusePath)).toBe(0o600);
+  await expectMode(fusePath, 0o600);
   expect(await readJson(fusePath)).toEqual({
     inferenceProvider: "gateway",
     inferenceGatewayBaseUrl: "https://api.fuse.test",

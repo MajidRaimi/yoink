@@ -4,7 +4,8 @@ import { join } from "node:path";
 import { parse } from "jsonc-parser";
 import { createCrushAdapter, crushPathsFor, defaultCrushPaths } from "../src/features/harnesses/adapters/crush";
 import type { HarnessAdapter } from "../src/features/harnesses/types";
-import { fileMode, kimiModel, makeProvider, makeTempDir, probesWith, readText, removeTempDir, visionModel } from "./support/provider-fixture";
+import { kimiModel, makeProvider, makeTempDir, probesWith, readText, removeTempDir, visionModel } from "./support/provider-fixture";
+import { expectMode } from "./support/posix";
 
 type CrushConfig = {
   $schema?: string;
@@ -97,7 +98,7 @@ afterEach(async () => {
 
 test("connect creates crush.json with mode 0600, schema and an openai-compat provider", async () => {
   await adapter.connect(makeProvider(), {});
-  expect(await fileMode(configPath)).toBe(0o600);
+  await expectMode(configPath, 0o600);
   expect(await readConfig()).toEqual({
     $schema: "https://charm.land/crush.json",
     providers: {

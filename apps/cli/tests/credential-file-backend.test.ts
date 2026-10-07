@@ -1,8 +1,9 @@
 import { afterEach, beforeEach, expect, test } from "bun:test";
-import { mkdtemp, rm, stat, writeFile } from "node:fs/promises";
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createFileBackend } from "../src/shared/credentials/file-backend";
+import { expectMode, isPosix } from "./support/posix";
 
 let dir: string;
 
@@ -49,14 +50,11 @@ test("write replaces existing content", async () => {
   expect(await backend.read()).toBe("second");
 });
 
-test("write sets restrictive file and directory modes on posix", async () => {
-  if (process.platform === "win32") return;
+test.if(isPosix)("write sets restrictive file and directory modes on posix", async () => {
   const parent = join(dir, "created");
   const path = join(parent, ".credentials.json");
   const backend = createFileBackend(path);
   await backend.write("blob");
-  const fileStat = await stat(path);
-  const dirStat = await stat(parent);
-  expect(fileStat.mode & 0o777).toBe(0o600);
-  expect(dirStat.mode & 0o777).toBe(0o700);
+  await expectMode(path, 0o600);
+  await expectMode(parent, 0o700);
 });

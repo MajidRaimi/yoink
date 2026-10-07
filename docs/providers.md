@@ -1,6 +1,6 @@
 # Providers
 
-A provider is an API-key backend (OpenAI, Kimi, OpenRouter, a local Ollama, or any OpenAI- or Anthropic-compatible API) that yoink stores once and writes into every coding harness you connect it to: pi, omp, opencode, codex, and Claude Code. You keep one key and one model list in yoink, and yoink keeps each harness config in sync. See [Harnesses](./harnesses.md) for what gets written where.
+A provider is an API-key backend (OpenAI, Kimi, OpenRouter, a local Ollama, or any OpenAI- or Anthropic-compatible API) that yoink stores once and writes into every coding harness you connect it to: pi, omp, opencode, codex, Claude Code, Qwen Code, Kilo Code, Droid, Crush, Goose, Zed, Continue, and Claude Desktop. You keep one key and one model list in yoink, and yoink keeps each harness config in sync. See [Harnesses](./harnesses.md) for what gets written where.
 
 ## Adding a provider
 

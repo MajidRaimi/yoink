@@ -7,7 +7,7 @@ import { DocsPage, DocsSection } from "@/components/custom/docs-page";
 
 export const metadata = pageMetadata({
   title: "Providers",
-  description: "Add an API key once and use it in pi, omp, opencode, codex, and Claude Code.",
+  description: "Add an API key once and use it in pi, opencode, codex, Claude Code, Qwen Code, Zed, and more.",
   path: "/docs/providers/",
 });
 
@@ -28,7 +28,7 @@ const addFlags = [
   { flag: "--protocol <p,...>", does: "Skip probing: openai-chat, openai-responses, anthropic-messages." },
   { flag: "--provider <label>", does: "Display name. Defaults to the preset label or the id." },
   { flag: "--models <m,...>", does: "Models to expose. Required." },
-  { flag: "--connect <h,...>", does: "Connect right away: pi, omp, opencode, codex, claude-code." },
+  { flag: "--connect <h,...>", does: "Connect right away: pi, omp, opencode, codex, claude-code, qwen, kilo, droid, crush, goose, zed, continue, claude-desktop." },
   { flag: "--default <m>", does: "Default model in the connected harnesses." },
   { flag: "--token-stdin", does: "Read the API key from stdin. Required." },
 ];
@@ -73,7 +73,9 @@ const ProvidersPage = () => (
         <code>ping</code> to <code>/v1/messages</code>, <code>/chat/completions</code>, and{" "}
         <code>/responses</code>. Every protocol that answers becomes an endpoint, and the endpoints
         decide which harnesses the provider can join: codex needs OpenAI Responses, Claude Code
-        needs Anthropic Messages, and pi, omp, and opencode take any of the three.
+        and Claude Desktop need Anthropic Messages, pi, omp, opencode, Kilo Code, Qwen Code,
+        Droid, and Zed take any of the three, and Crush, Goose, and Continue take Chat
+        Completions or Anthropic Messages.
       </p>
       <p>
         Paste whichever URL the provider documents: trailing paths like{" "}
@@ -86,7 +88,7 @@ const ProvidersPage = () => (
       <p>
         Select as many models as you want; lists longer than twelve get a search box. Each one is
         looked up on <a href="https://models.dev" className={linkClass}>models.dev</a> for its
-        context window, output limit, reasoning, and image support, which pi, omp, and opencode
+        context window, output limit, reasoning, and image support, which most harnesses
         need. Unknown models get safe defaults (128k context, 32k output). The catalog is cached
         in <code>~/.config/yoink/cache/models-dev.json</code> and refreshed daily.
       </p>

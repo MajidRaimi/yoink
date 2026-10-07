@@ -9,7 +9,7 @@
 <p>
 Snapshot each Claude login into a named profile and swap them in a single keystroke from the menu bar app or the
 CLI. Add an API key once (OpenAI, Kimi, OpenRouter, Ollama, or any compatible API) and yoink writes it into
-pi, omp, opencode, codex, and Claude Code, and keeps them in sync. No browser, no re-login, no hand-edited configs.
+pi, omp, opencode, codex, Claude Code, Qwen Code, Kilo Code, Droid, Crush, Goose, Zed, Continue, and Claude Desktop, and keeps them in sync. No browser, no re-login, no hand-edited configs.
 </p>
 
 <p>
@@ -112,7 +112,7 @@ Actions loop back to the list, so you can switch, add, and prune in one sitting,
 
 - **Instant switching.** Each profile stores the credential blob (macOS Keychain on macOS, `~/.claude/.credentials.json` on Linux/Windows) plus the `oauthAccount` identity, so a swap is a keystroke, not a browser round-trip.
 - **Never loses a token.** Every switch re-snapshots the active profile from the live credential store first, so a background token refresh is never dropped.
-- **One key, every harness.** Add a provider once and connect it to pi, omp, opencode, codex, and Claude Code. Rotate the key or change the model list and yoink re-syncs every harness it is connected to.
+- **One key, every harness.** Add a provider once and connect it to pi, omp, opencode, codex, Claude Code, Qwen Code, Kilo Code, Droid, Crush, Goose, Zed, Continue, and Claude Desktop. Rotate the key or change the model list and yoink re-syncs every harness it is connected to.
 - **Subscription logins beyond Claude.** Save and switch ChatGPT (Codex), Kimi Code, Gemini, and GitHub Copilot logins too. Each tool switches inside itself only, so a subscription token never leaks into another tool. See [subscriptions](./docs/subscriptions.md).
 - **Presets and custom providers.** OpenAI, Kimi Code, Moonshot, OpenRouter, DeepSeek, Z.ai, and Ollama are built in. For anything else, yoink probes the base URL to find which of OpenAI Chat, OpenAI Responses, and Anthropic Messages it speaks.
 - **Real model metadata.** Pick as many models as you like from the provider's live list; context windows, output limits, reasoning, and image support come from [models.dev](https://models.dev).
@@ -131,7 +131,7 @@ Actions loop back to the list, so you can switch, add, and prune in one sitting,
 | `yoink edit <name>` | | Edit a profile (name, or a provider's harnesses / models / key / endpoints) |
 | `yoink save <name>` | | Snapshot the current login as a profile (`--tool codex\|kimi\|gemini\|copilot` for other tools) |
 | `yoink use <name>` | `switch` | Switch to a saved profile in the tool it belongs to (`--force` if the tool is running) |
-| `yoink connect <name>` | | Connect a provider to harnesses (pi, omp, opencode, codex, claude-code) |
+| `yoink connect <name>` | | Connect a provider to harnesses (pi, omp, opencode, codex, claude-code, qwen, kilo, droid, crush, goose, zed, continue, claude-desktop) |
 | `yoink disconnect <name>` | | Remove a provider from harnesses |
 | `yoink models <name>` | | Choose which models a provider exposes, then re-sync |
 | `yoink harnesses` | | Show detected harnesses and their providers |
@@ -171,7 +171,27 @@ yoink connect fuse --to claude-code                         # makes Fuse Claude 
 yoink disconnect fuse --from opencode
 ```
 
-codex only connects to providers with an OpenAI Responses endpoint, and Claude Code holds one backend at a time, so connecting a provider there switches the active profile. See [providers](./docs/providers.md) and [harnesses](./docs/harnesses.md) for the full flow.
+codex only connects to providers with an OpenAI Responses endpoint, and Claude Code holds one backend at a time, so connecting a provider there switches the active profile. Goose, Zed, and Claude Desktop are experimental: yoink writes their config, then prints a short notice when one more step is needed, such as exporting the key or selecting the config inside the app. See [providers](./docs/providers.md) and [harnesses](./docs/harnesses.md) for the full flow.
+
+### Supported harnesses
+
+| Harness | Id | Config | Protocols |
+| --- | --- | --- | --- |
+| pi | `pi` | `~/.pi/agent/models.json` | Chat, Responses, Messages |
+| omp | `omp` | `~/.omp/agent/models.yml` | Chat, Responses, Messages |
+| opencode | `opencode` | `~/.config/opencode/opencode.json` | Chat, Messages, Responses |
+| codex | `codex` | `~/.codex/config.toml` | Responses only |
+| Claude Code | `claude-code` | `~/.claude/settings.json` | Messages only |
+| Qwen Code | `qwen` | `~/.qwen/settings.json` | Chat, Responses, Messages |
+| Kilo Code | `kilo` | `~/.config/kilo/kilo.json` | Chat, Messages, Responses |
+| Droid | `droid` | `~/.factory/settings.json` | Messages, Responses, Chat |
+| Crush | `crush` | `~/.config/crush/crush.json` | Chat, Messages |
+| Goose (experimental) | `goose` | `~/.config/goose/custom_providers/` | Chat, Messages |
+| Zed (experimental) | `zed` | `~/.config/zed/settings.json` | Chat, Responses, Messages |
+| Continue | `continue` | `~/.continue/config.yaml` | Chat, Messages |
+| Claude Desktop (experimental) | `claude-desktop` | `Claude-3p/configLibrary/` | Messages only |
+
+Chat is OpenAI Chat Completions, Responses is the OpenAI Responses API, and Messages is Anthropic Messages, each listed in the harness's order of preference.
 
 ## How it works
 

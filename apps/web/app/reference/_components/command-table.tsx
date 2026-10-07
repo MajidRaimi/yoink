@@ -20,7 +20,7 @@ const commands: CommandRow[] = [
   },
   { command: "yoink save <name>", description: "Snapshot your current login as a profile" },
   { command: "yoink use <name>", aliases: ["switch"], description: "Switch Claude Code to a saved profile" },
-  { command: "yoink connect <name>", description: "Connect a provider to harnesses (--to pi,opencode)" },
+  { command: "yoink connect <name>", description: "Connect a provider to harnesses (--to pi,opencode,qwen)" },
   { command: "yoink disconnect <name>", description: "Remove a provider from harnesses (--from codex)" },
   { command: "yoink models <name>", description: "Choose a provider's models, then re-sync (--set a,b)" },
   { command: "yoink harnesses", description: "Show detected harnesses and their providers (--json)" },

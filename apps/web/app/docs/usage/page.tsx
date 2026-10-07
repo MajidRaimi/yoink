@@ -63,7 +63,7 @@ yoink harnesses
 yoink import`}
       />
       <p>
-        <code>connect</code> writes a provider into pi, omp, opencode, codex, or Claude Code, and{" "}
+        <code>connect</code> writes a provider into any of the 13 supported harnesses, and{" "}
         <code>disconnect</code> takes it out. <code>models</code> changes which models it exposes
         and re-syncs every connected harness. <code>harnesses</code> shows what is installed and
         where its config lives, and <code>import</code> adopts providers you set up by hand. Each

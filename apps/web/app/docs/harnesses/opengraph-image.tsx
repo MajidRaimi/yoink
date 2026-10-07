@@ -7,6 +7,6 @@ export const alt = "Yoink · Harnesses";
 export default function Image() {
   return createOgImage({
     title: "Harnesses",
-    subtitle: "What Yoink writes into pi, omp, opencode, codex, and Claude Code.",
+    subtitle: "What Yoink writes into pi, opencode, codex, Claude Code, Qwen Code, Zed, and more.",
   });
 }

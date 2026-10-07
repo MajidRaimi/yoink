@@ -22,6 +22,14 @@ const files = [
   { path: "~/.omp/agent/models.yml", role: "omp providers (config.yml holds the default)" },
   { path: "~/.config/opencode/opencode.json", role: "opencode providers and default model" },
   { path: "~/.codex/config.toml", role: "codex model providers and default model" },
+  { path: "~/.qwen/settings.json", role: "Qwen Code model providers, key env, and default model" },
+  { path: "~/.config/kilo/kilo.json", role: "Kilo Code providers and default model" },
+  { path: "~/.factory/settings.json", role: "Droid custom models" },
+  { path: "~/.config/crush/crush.json", role: "Crush providers and large model" },
+  { path: "~/.config/goose/custom_providers/custom_<id>.json", role: "Goose custom provider (config.yaml holds the default)" },
+  { path: "~/.config/zed/settings.json", role: "Zed language models and agent default" },
+  { path: "~/.continue/config.yaml", role: "Continue models" },
+  { path: "Claude-3p/configLibrary/yoink-<id>.json", role: "Claude Desktop third-party inference config" },
   { path: "<harness config>.yoink.bak", role: "one-time backup before the first change" },
 ];
 

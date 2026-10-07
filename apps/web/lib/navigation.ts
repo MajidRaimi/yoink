@@ -45,7 +45,7 @@ export const docsSections: DocSection[] = [
       {
         title: "Harnesses",
         href: "/docs/harnesses",
-        description: "What Yoink writes into pi, omp, opencode, codex, and Claude Code.",
+        description: "What Yoink writes into pi, opencode, codex, Claude Code, Qwen Code, Zed, and more.",
         icon: Layers,
       },
       {

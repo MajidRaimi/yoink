@@ -1,6 +1,6 @@
 # Usage
 
-`yoink` switches between Claude Code accounts, switches [subscription logins](./subscriptions.md) for ChatGPT (Codex), Kimi Code, Gemini, and GitHub Copilot, and manages API-key providers across your coding harnesses (pi, omp, opencode, codex, and Claude Code). This page covers every command, the shorthand for switching, and a few common examples.
+`yoink` switches between Claude Code accounts, switches [subscription logins](./subscriptions.md) for ChatGPT (Codex), Kimi Code, Gemini, and GitHub Copilot, and manages API-key providers across your coding harnesses (pi, omp, opencode, codex, Claude Code, Qwen Code, Kilo Code, Droid, Crush, Goose, Zed, Continue, and Claude Desktop). This page covers every command, the shorthand for switching, and a few common examples.
 
 ## Commands
 
@@ -43,7 +43,7 @@ Adding a Claude account always needs an interactive terminal, because it runs th
 | `yoink use` (tool running) | `yoink use <name> --force` |
 | `yoink list` | `yoink list --json` |
 
-`--token-stdin` reads the API key from stdin, so it never lands in your shell history. Harness ids are `pi`, `omp`, `opencode`, `codex`, and `claude-code`. Every flag is described in [Providers](./providers.md#non-interactive-add) and [Harnesses](./harnesses.md#commands).
+`--token-stdin` reads the API key from stdin, so it never lands in your shell history. Harness ids are `pi`, `omp`, `opencode`, `codex`, `claude-code`, `qwen`, `kilo`, `droid`, `crush`, `goose`, `zed`, `continue`, and `claude-desktop` (`goose`, `zed`, and `claude-desktop` are experimental). Every flag is described in [Providers](./providers.md#non-interactive-add) and [Harnesses](./harnesses.md#commands).
 
 ## Examples
 
@@ -101,5 +101,5 @@ yoink import
 
 - [Interactive menu](./interactive-menu.md): keymap and behavior of the `yoink` account menu.
 - [Providers](./providers.md): presets, custom providers, model selection, and Claude Code scope.
-- [Harnesses](./harnesses.md): what yoink writes into pi, omp, opencode, codex, and Claude Code.
+- [Harnesses](./harnesses.md): what yoink writes into each of the 13 supported harnesses.
 - [Subscriptions](./subscriptions.md): switching ChatGPT (Codex), Kimi Code, Gemini, and GitHub Copilot logins.

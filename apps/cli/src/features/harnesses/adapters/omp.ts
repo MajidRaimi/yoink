@@ -4,13 +4,13 @@ import type { Document } from "yaml";
 import type { ProviderProfile } from "../../profiles/types";
 import { parseJsonText, readTextFile } from "../../../shared/json-file";
 import type { ConnectOptions, HarnessAdapter, HarnessDetection, ImportedProvider } from "../types";
-import { firstExisting, writeConfigFile } from "./config-file";
+import { firstExisting } from "./config-file";
 import { asRecord } from "./config-values";
 import { defaultProbes, isInstalled, type DetectionProbes } from "./detection";
 import { literalToken, modelIdFromRef, qualifiedModelRef, refersToProvider } from "./model-mapping";
 import { PI_PROTOCOLS, buildPiProviderEntry, importPiProviders } from "./pi-schema";
 import { requireEndpoint } from "./require-endpoint";
-import { parseYamlDocument, readYamlDocument } from "./yaml-document";
+import { loadYamlDocument, parseYamlDocument, readYamlDocument, writeYamlDocument } from "./yaml-document";
 import { setYamlEntry } from "./yaml-entry";
 
 export type OmpPaths = {
@@ -45,11 +45,6 @@ const readLegacyRoot = async (paths: OmpPaths): Promise<Record<string, unknown>>
   return asRecord(parseJsonText<unknown>(path, text));
 };
 
-const loadDocument = async (path: string): Promise<Document> =>
-  (await readYamlDocument(path)) ?? parseYamlDocument(path, "");
-
-const saveDocument = (path: string, document: Document): Promise<void> => writeConfigFile(path, String(document));
-
 const loadModelsDocument = async (paths: OmpPaths, path: string): Promise<Document> => {
   const existing = await readYamlDocument(path);
   if (existing) return existing;
@@ -64,9 +59,9 @@ const providersFromDocument = (document: Document | null): Record<string, unknow
 
 const setDefaultModel = async (paths: OmpPaths, providerId: string, modelId: string): Promise<void> => {
   const path = configPath(paths);
-  const document = await loadDocument(path);
+  const document = await loadYamlDocument(path);
   document.setIn(DEFAULT_ROLE_PATH, qualifiedModelRef(providerId, modelId));
-  await saveDocument(path, document);
+  await writeYamlDocument(path, document);
 };
 
 const clearDefaultModel = async (paths: OmpPaths, providerId: string): Promise<void> => {
@@ -74,7 +69,7 @@ const clearDefaultModel = async (paths: OmpPaths, providerId: string): Promise<v
   const document = await readYamlDocument(path);
   if (!document || !refersToProvider(document.getIn(DEFAULT_ROLE_PATH), providerId)) return;
   document.deleteIn(DEFAULT_ROLE_PATH);
-  await saveDocument(path, document);
+  await writeYamlDocument(path, document);
 };
 
 const connect = async (paths: OmpPaths, provider: ProviderProfile, options: ConnectOptions): Promise<void> => {
@@ -83,7 +78,7 @@ const connect = async (paths: OmpPaths, provider: ProviderProfile, options: Conn
   const document = await loadModelsDocument(paths, path);
   const existingEntry = providersFromDocument(document)[provider.name];
   setYamlEntry(document, ["providers", provider.name], buildPiProviderEntry(provider, endpoint, existingEntry));
-  await saveDocument(path, document);
+  await writeYamlDocument(path, document);
   if (options.defaultModel) await setDefaultModel(paths, provider.name, options.defaultModel);
 };
 
@@ -93,7 +88,7 @@ const disconnect = async (paths: OmpPaths, providerId: string): Promise<void> =>
   const document = await readYamlDocument(path);
   if (!document || !(providerId in providersFromDocument(document))) return;
   document.deleteIn(["providers", providerId]);
-  await saveDocument(path, document);
+  await writeYamlDocument(path, document);
 };
 
 const readModelProviders = async (paths: OmpPaths): Promise<Record<string, unknown>> => {
@@ -122,6 +117,8 @@ export const createOmpAdapter = (paths: OmpPaths, probes: DetectionProbes = defa
   label: LABEL,
   protocols: PI_PROTOCOLS,
   exclusive: false,
+  experimental: false,
+  setsDefaultModel: true,
   detect: () => detect(paths, probes),
   readProviders: () => readProviders(paths),
   isConnected: (providerId) => isConnected(paths, providerId),

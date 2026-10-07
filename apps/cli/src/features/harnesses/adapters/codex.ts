@@ -143,6 +143,8 @@ export const createCodexAdapter = (paths: CodexPaths, probes: DetectionProbes = 
   label: LABEL,
   protocols: CODEX_PROTOCOLS,
   exclusive: false,
+  experimental: false,
+  setsDefaultModel: true,
   detect: () => detect(paths, probes),
   readProviders: () => readProviders(paths),
   isConnected: (providerId) => isConnected(paths, providerId),

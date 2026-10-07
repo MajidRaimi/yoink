@@ -15,6 +15,7 @@ import {
   type HarnessStatus,
 } from "../../harnesses/sync";
 import type { HarnessId, ProviderProfile } from "../../profiles/types";
+import { experimentalTag } from "../../harnesses/experimental-tag";
 import { protectLocalSecret } from "./protect-local-secret";
 import { reportOutcomes } from "./report-outcomes";
 
@@ -38,7 +39,7 @@ const statusOption = (status: HarnessStatus) => {
   const reason = unavailableReason(status);
   return {
     value: status.id,
-    label: status.label,
+    label: `${status.label}${experimentalTag(status.experimental)}`,
     hint: reason ?? tildify(status.configPath),
     disabled: reason !== undefined,
   };
@@ -94,7 +95,23 @@ const confirmGlobalClaudeWrite = async (): Promise<boolean> => {
 const describe = (provider: ProviderProfile): string =>
   `${provider.provider} · ${provider.endpoints.map((endpoint) => endpoint.protocol).join(", ")} · ${provider.models.length} models`;
 
-const connectAdded = async (provider: ProviderProfile, added: HarnessId[], labels: Map<HarnessId, string>) => {
+const chooseSharedDefaultModel = async (
+  provider: ProviderProfile,
+  ids: readonly HarnessId[],
+  statuses: ReadonlyMap<HarnessId, HarnessStatus>,
+): Promise<string | undefined | null> => {
+  const targets = ids.flatMap((id) => {
+    const status = statuses.get(id);
+    return status?.setsDefaultModel ? [status.label] : [];
+  });
+  return targets.length === 0 ? undefined : chooseDefaultModel(provider, targets, false);
+};
+
+const connectAdded = async (
+  provider: ProviderProfile,
+  added: HarnessId[],
+  statuses: ReadonlyMap<HarnessId, HarnessStatus>,
+): Promise<boolean> => {
   const others = added.filter((id) => id !== "claude-code");
   if (added.includes("claude-code")) {
     const scope = await chooseClaudeScope();
@@ -108,11 +125,7 @@ const connectAdded = async (provider: ProviderProfile, added: HarnessId[], label
     }
   }
   if (others.length === 0) return true;
-  const defaultModel = await chooseDefaultModel(
-    provider,
-    others.map((id) => labels.get(id) ?? id),
-    false,
-  );
+  const defaultModel = await chooseSharedDefaultModel(provider, others, statuses);
   if (defaultModel === null) return false;
   reportOutcomes(await connectHarnesses(provider.name, others, { defaultModel }), "Connected");
   return true;
@@ -121,7 +134,7 @@ const connectAdded = async (provider: ProviderProfile, added: HarnessId[], label
 export const manageProviderHarnesses = async (name: string): Promise<void> => {
   const provider = await loadProvider(name);
   const statuses = await harnessStatuses(provider);
-  const labels = new Map(statuses.map((status) => [status.id, status.label]));
+  const statusById = new Map(statuses.map((status) => [status.id, status]));
   const connected = linkedHarnessIds(provider, statuses);
 
   const selected = await promptMultiSelect<HarnessId>({
@@ -143,7 +156,7 @@ export const manageProviderHarnesses = async (name: string): Promise<void> => {
   }
 
   if (removed.length > 0) reportOutcomes(await disconnectHarnesses(name, removed), "Disconnected from");
-  if (added.length > 0 && !(await connectAdded(provider, added, labels))) {
+  if (added.length > 0 && !(await connectAdded(provider, added, statusById))) {
     cancel("Stopped before connecting.");
     return;
   }

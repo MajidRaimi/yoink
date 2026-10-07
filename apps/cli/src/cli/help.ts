@@ -11,7 +11,7 @@ ${pc.bold("USAGE")}
   yoink edit ${theme.accent("<name>")}     Edit a profile (name, or provider/URL/key/model)
   yoink save ${theme.accent("<name>")}     Snapshot your current login as a profile (--tool ${theme.accent("<tool>")} for other CLIs)
   yoink use ${theme.accent("<name>")}      Switch to a saved profile inside its own tool (--force skips the running check)
-  yoink connect ${theme.accent("<name>")}  Connect a provider to harnesses (pi, opencode, omp, codex, claude-code)
+  yoink connect ${theme.accent("<name>")}  Connect a provider to harnesses (--to pi,opencode,codex,...)
   yoink disconnect ${theme.accent("<name>")} Remove a provider from harnesses
   yoink models ${theme.accent("<name>")}   Choose which models a provider exposes, then re-sync
   yoink harnesses       Show detected harnesses and their providers

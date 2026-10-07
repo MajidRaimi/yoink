@@ -26,3 +26,11 @@ test("countFailures counts failed outcomes", () => {
   expect(countFailures(outcomes)).toBe(1);
   expect(countFailures([])).toBe(0);
 });
+
+test("formatOutcome keeps a connect notice on successful outcomes", () => {
+  expect(formatOutcome({ id: "zed", ok: true, notice: "Set FUSE_API_KEY" }, "Connected")).toEqual({
+    ok: true,
+    text: `Connected ${harnessLabel("zed")}`,
+    notice: "Set FUSE_API_KEY",
+  });
+});

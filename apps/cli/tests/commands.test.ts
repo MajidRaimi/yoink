@@ -1,33 +1,19 @@
-import { afterEach, beforeEach, expect, test } from "bun:test";
+import { afterEach, beforeEach, expect, setDefaultTimeout, test } from "bun:test";
 import { existsSync } from "node:fs";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { makeTempDir, readText, removeTempDir } from "./support/provider-fixture";
+import { CLI_TEST_TIMEOUT_MS, runCli as runCliIn, type CliResult } from "./support/run-cli";
 
-type CliResult = { exitCode: number; stdout: string; stderr: string };
+setDefaultTimeout(CLI_TEST_TIMEOUT_MS);
 
 type StoredProfile = { name: string; connections?: Record<string, unknown> };
 
 type StoredStore = { current: string | null; profiles: Record<string, StoredProfile> };
 
-const ENTRY = join(import.meta.dir, "..", "src", "index.ts");
-
 let home: string;
 
-const runCli = async (args: readonly string[], stdin?: string): Promise<CliResult> => {
-  const child = Bun.spawn([process.execPath, ENTRY, ...args], {
-    env: { PATH: process.env.PATH ?? "", HOME: home, NO_COLOR: "1" },
-    stdin: stdin === undefined ? "ignore" : new TextEncoder().encode(stdin),
-    stdout: "pipe",
-    stderr: "pipe",
-  });
-  const [stdout, stderr, exitCode] = await Promise.all([
-    new Response(child.stdout).text(),
-    new Response(child.stderr).text(),
-    child.exited,
-  ]);
-  return { exitCode, stdout, stderr };
-};
+const runCli = (args: readonly string[], stdin?: string): Promise<CliResult> => runCliIn(home, args, stdin);
 
 const piModelsPath = (): string => join(home, ".pi", "agent", "models.json");
 
@@ -163,4 +149,12 @@ test("edit --name accepts a valid id and renames the pi entry", async () => {
   expect(result.exitCode).toBe(0);
   const models = JSON.parse(await readText(piModelsPath())) as { providers: Record<string, unknown> };
   expect(Object.keys(models.providers)).toEqual(["fuse-two"]);
+});
+
+test("the shared runner spawns the CLI against the scratch home", async () => {
+  const result = await runCli(["--help"]);
+
+  expect(result.exitCode).toBe(0);
+  expect(result.stdout.length).toBeGreaterThan(0);
+  expect(existsSync(join(home, ".config", "yoink", "profiles.json"))).toBe(false);
 });

@@ -2,6 +2,7 @@ import type { ReactElement } from "react";
 import type { HarnessStatus, ModelRef } from "@/shared/types";
 import { CheckMark } from "@/shared/ui/check-mark";
 import { cn } from "@/shared/ui/cn";
+import { ExperimentalTag } from "@/shared/ui/experimental-tag";
 import { Select } from "@/shared/ui/input";
 import { useScrollIntoView } from "@/shared/ui/use-scroll-into-view";
 import { protocolRequirement } from "./harness-catalog";
@@ -65,6 +66,7 @@ export const HarnessRow = ({
               {status.label}
             </span>
             {status.exclusive && <span className="shrink-0 text-[10px] text-faint">one at a time</span>}
+            <ExperimentalTag experimental={status.experimental} />
           </span>
           <span className="block truncate text-[11px] text-faint">
             <bdi>{detailLine(status)}</bdi>
@@ -81,7 +83,10 @@ export const HarnessRow = ({
           </span>
         )}
       </button>
-      {status.connected && models.length > 0 && (
+      {status.connected && !pending && status.notice !== null && (
+        <p className="mt-1 pl-6 text-[11px] leading-snug text-muted">{status.notice}</p>
+      )}
+      {status.connected && status.setsDefaultModel && models.length > 0 && (
         <div className="mt-1.5 flex items-center gap-2 pl-6">
           <span className="shrink-0 text-[11px] text-faint">Default</span>
           <div className="min-w-0 flex-1">

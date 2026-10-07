@@ -1,5 +1,7 @@
 export type CliResult = { exitCode: number; stdout: string; stderr: string };
 
+export const CLI_TEST_TIMEOUT_MS = 30_000;
+
 const ENTRY = new URL("../../src/index.ts", import.meta.url).pathname;
 
 export const runCli = async (home: string, args: readonly string[], stdin?: string): Promise<CliResult> => {

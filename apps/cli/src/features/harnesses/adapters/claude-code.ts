@@ -9,25 +9,16 @@ import {
   readExternalEnv,
 } from "../../../shared/claude-settings";
 import { loadStore, saveStore } from "../../profiles/store";
-import { claudeCodeModel } from "../../profiles/default-model";
 import { findClaudeProfileByEmail } from "../../profiles/lookup";
 import type { ProviderProfile } from "../../profiles/types";
 import { selectedDefaultModel } from "../../profiles/default-model";
 import { switchTo } from "../../switch/service";
-import { pickEndpoint, normalizeEndpointUrl } from "../endpoint";
+import { hostSlug, pickEndpoint, normalizeEndpointUrl } from "../endpoint";
 import type { HarnessAdapter, ImportedProvider } from "../types";
 
 const PROTOCOLS = ["anthropic-messages"] as const;
 const DEFAULT_CONTEXT_WINDOW = 200000;
 const DEFAULT_MAX_OUTPUT = 32000;
-
-const hostSlug = (url: string): string => {
-  try {
-    return new URL(url).hostname.replace(/^api\./, "").split(".")[0] ?? "provider";
-  } catch {
-    return "provider";
-  }
-};
 
 const resolveModel = (provider: ProviderProfile, requested: string | undefined): string => {
   const model =
@@ -96,6 +87,8 @@ export const claudeCodeAdapter: HarnessAdapter = {
   label: "Claude Code",
   protocols: PROTOCOLS,
   exclusive: true,
+  experimental: false,
+  setsDefaultModel: true,
   detect: async () => ({
     installed: Bun.which("claude") !== null || existsSync(claudeConfigDir()),
     configPath: GLOBAL_SETTINGS_PATH,

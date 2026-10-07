@@ -36,6 +36,7 @@ const statusLine = (status: ProviderHarnessStatus): string =>
   formatHarnessLine({
     active: status.connected,
     label: status.label,
+    experimental: status.experimental,
     state: statusState(status),
     configPath: status.configPath,
   });

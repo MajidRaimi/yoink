@@ -1,6 +1,8 @@
-import { afterEach, beforeEach, expect, test } from "bun:test";
+import { afterEach, beforeEach, expect, setDefaultTimeout, test } from "bun:test";
 import { makeTempDir, removeTempDir } from "./support/provider-fixture";
-import { runCli, type CliResult } from "./support/run-cli";
+import { CLI_TEST_TIMEOUT_MS, runCli, type CliResult } from "./support/run-cli";
+
+setDefaultTimeout(CLI_TEST_TIMEOUT_MS);
 
 let home: string;
 
@@ -51,12 +53,48 @@ test("status --json reports every harness for a provider with its recorded defau
   expect(result.exitCode).toBe(0);
   expect(result.stdout).not.toContain("FAKEKEY");
   const statuses = JSON.parse(result.stdout) as Record<string, unknown>[];
-  expect(statuses.map((entry) => entry.id).sort()).toEqual(["claude-code", "codex", "omp", "opencode", "pi"]);
+  expect(statuses.map((entry) => entry.id).sort()).toEqual([
+    "claude-code",
+    "claude-desktop",
+    "codex",
+    "continue",
+    "crush",
+    "droid",
+    "goose",
+    "kilo",
+    "omp",
+    "opencode",
+    "pi",
+    "qwen",
+    "zed",
+  ]);
   const pi = statuses.find((entry) => entry.id === "pi");
-  expect(pi).toMatchObject({ connected: true, compatible: true, exclusive: false, defaultModel: "m2", parseError: null });
-  expect(Object.keys(pi ?? {}).sort()).toEqual(
-    ["compatible", "configPath", "connected", "defaultModel", "exclusive", "id", "installed", "label", "parseError"],
-  );
+  expect(pi).toMatchObject({
+    connected: true,
+    compatible: true,
+    exclusive: false,
+    experimental: false,
+    notice: null,
+    defaultModel: "m2",
+    parseError: null,
+  });
+  expect(Object.keys(pi ?? {}).sort()).toEqual([
+    "compatible",
+    "configPath",
+    "connected",
+    "defaultModel",
+    "exclusive",
+    "experimental",
+    "id",
+    "installed",
+    "label",
+    "notice",
+    "parseError",
+    "setsDefaultModel",
+  ]);
+  expect(statuses.find((entry) => entry.id === "goose")).toMatchObject({ experimental: true });
+  expect(pi).toMatchObject({ setsDefaultModel: true });
+  expect(statuses.find((entry) => entry.id === "droid")).toMatchObject({ setsDefaultModel: false, defaultModel: null });
   expect(statuses.find((entry) => entry.id === "codex")).toMatchObject({ compatible: false, connected: false });
 });
 

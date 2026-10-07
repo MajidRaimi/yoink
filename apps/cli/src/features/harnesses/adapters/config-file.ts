@@ -1,14 +1,28 @@
-import { mkdir } from "node:fs/promises";
+import { mkdir, rm } from "node:fs/promises";
 import { dirname } from "node:path";
 import { writeSecretFileAtomic } from "../../../shared/atomic-write";
-import { ensureBackup } from "../../../shared/backup";
+import { BACKUP_SUFFIX, ensureBackup } from "../../../shared/backup";
 
 const CONFIG_DIR_MODE = 0o700;
 
-export const writeConfigFile = async (path: string, contents: string): Promise<void> => {
+const ensureConfigDir = async (path: string): Promise<void> => {
   await mkdir(dirname(path), { recursive: true, mode: CONFIG_DIR_MODE });
+};
+
+export const writeConfigFile = async (path: string, contents: string): Promise<void> => {
+  await ensureConfigDir(path);
   await ensureBackup(path);
   await writeSecretFileAtomic(path, contents);
+};
+
+export const writeOwnedConfigFile = async (path: string, contents: string): Promise<void> => {
+  await ensureConfigDir(path);
+  await writeSecretFileAtomic(path, contents);
+};
+
+export const removeOwnedConfigFile = async (path: string): Promise<void> => {
+  await rm(path, { force: true });
+  await rm(`${path}${BACKUP_SUFFIX}`, { force: true });
 };
 
 export const firstExisting = async (candidates: readonly string[]): Promise<string | undefined> => {

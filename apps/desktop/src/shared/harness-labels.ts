@@ -6,6 +6,14 @@ export const HARNESS_LABELS: Record<HarnessId, string> = {
   omp: "omp",
   opencode: "opencode",
   codex: "codex",
+  qwen: "Qwen Code",
+  kilo: "Kilo Code",
+  droid: "Droid",
+  crush: "Crush",
+  goose: "Goose",
+  zed: "Zed",
+  continue: "Continue",
+  "claude-desktop": "Claude Desktop",
 };
 
 export const harnessLabel = (id: HarnessId): string => HARNESS_LABELS[id] ?? id;

@@ -111,7 +111,15 @@ export const handleHarnesses = async (args: string[]): Promise<void> => {
     const linked = report.providers.length > 0 ? theme.accent(report.providers.join(", ")) : pc.dim("no providers");
     const installedStatus = report.error ? theme.warn(`unreadable: ${report.error}`) : linked;
     const status = report.installed ? installedStatus : pc.dim("not installed");
-    console.log(formatHarnessLine({ active: report.installed, label: report.label, state: status, configPath: report.configPath }));
+    console.log(
+      formatHarnessLine({
+        active: report.installed,
+        label: report.label,
+        experimental: report.experimental,
+        state: status,
+        configPath: report.configPath,
+      }),
+    );
   }
 };
 

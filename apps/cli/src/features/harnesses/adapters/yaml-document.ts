@@ -1,6 +1,7 @@
 import { LineCounter, parseDocument, type Document, type YAMLError } from "yaml";
 import { ConfigParseError } from "../../../shared/errors";
 import { readTextFile } from "../../../shared/json-file";
+import { writeConfigFile } from "./config-file";
 
 const describeYamlError = (error: YAMLError, lineCounter: LineCounter): string => {
   const { line, col } = lineCounter.linePos(error.pos[0]);
@@ -19,3 +20,9 @@ export const readYamlDocument = async (path: string): Promise<Document | null> =
   const text = await readTextFile(path);
   return text === null ? null : parseYamlDocument(path, text);
 };
+
+export const loadYamlDocument = async (path: string): Promise<Document> =>
+  (await readYamlDocument(path)) ?? parseYamlDocument(path, "");
+
+export const writeYamlDocument = (path: string, document: Document): Promise<void> =>
+  writeConfigFile(path, String(document));

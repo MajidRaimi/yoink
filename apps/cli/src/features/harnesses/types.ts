@@ -23,6 +23,9 @@ export type HarnessAdapter = {
   label: string;
   protocols: readonly Protocol[];
   exclusive: boolean;
+  experimental: boolean;
+  setsDefaultModel: boolean;
+  connectNotice?: (provider: ProviderProfile) => string | undefined;
   detect: () => Promise<HarnessDetection>;
   readProviders: () => Promise<ImportedProvider[]>;
   isConnected: (providerId: string) => Promise<boolean>;

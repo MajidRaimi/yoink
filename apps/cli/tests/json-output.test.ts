@@ -21,8 +21,16 @@ test("printJson writes one pretty-printed JSON document", () => {
 });
 
 test("formatHarnessLine pads the label and marks active harnesses", () => {
-  const active = stripAnsi(formatHarnessLine({ active: true, label: "pi", state: "connected", configPath: "/x/models.json" }));
-  const idle = stripAnsi(formatHarnessLine({ active: false, label: "pi", state: "available", configPath: "/x/models.json" }));
-  expect(active).toBe(`● ${"pi".padEnd(12)} connected  /x/models.json`);
-  expect(idle).toBe(`○ ${"pi".padEnd(12)} available  /x/models.json`);
+  const line = { label: "pi", experimental: false, configPath: "/x/models.json" };
+  const active = stripAnsi(formatHarnessLine({ ...line, active: true, state: "connected" }));
+  const idle = stripAnsi(formatHarnessLine({ ...line, active: false, state: "available" }));
+  expect(active).toBe(`● ${"pi".padEnd(14)} connected  /x/models.json`);
+  expect(idle).toBe(`○ ${"pi".padEnd(14)} available  /x/models.json`);
+});
+
+test("formatHarnessLine tags experimental harnesses after the state", () => {
+  const line = stripAnsi(
+    formatHarnessLine({ active: false, label: "goose", experimental: true, state: "available", configPath: "/x/config.yaml" }),
+  );
+  expect(line).toBe(`○ ${"goose".padEnd(14)} available experimental  /x/config.yaml`);
 });

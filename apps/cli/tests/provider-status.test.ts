@@ -11,6 +11,9 @@ const status = (overrides: Partial<HarnessStatus> & Pick<HarnessStatus, "id" | "
   connected: false,
   parseError: null,
   exclusive: false,
+  experimental: false,
+  setsDefaultModel: true,
+  notice: null,
   ...overrides,
 });
 
@@ -45,6 +48,9 @@ test("providerHarnessStatuses adds the recorded default model and passes parse e
       connected: true,
       parseError: null,
       exclusive: false,
+      experimental: false,
+      setsDefaultModel: true,
+      notice: null,
       defaultModel: visionModel.id,
     },
     {
@@ -56,6 +62,9 @@ test("providerHarnessStatuses adds the recorded default model and passes parse e
       connected: true,
       parseError: "bad json",
       exclusive: false,
+      experimental: false,
+      setsDefaultModel: true,
+      notice: null,
       defaultModel: null,
     },
     {
@@ -67,6 +76,9 @@ test("providerHarnessStatuses adds the recorded default model and passes parse e
       connected: false,
       parseError: null,
       exclusive: false,
+      experimental: false,
+      setsDefaultModel: true,
+      notice: null,
       defaultModel: null,
     },
     {
@@ -78,6 +90,9 @@ test("providerHarnessStatuses adds the recorded default model and passes parse e
       connected: false,
       parseError: null,
       exclusive: true,
+      experimental: false,
+      setsDefaultModel: true,
+      notice: null,
       defaultModel: null,
     },
   ]);
@@ -96,4 +111,27 @@ test("providerHarnessStatuses ignores stale defaults and defaults of disconnecte
     depsFor(provider, [status({ id: "pi", label: "pi", connected: true }), status({ id: "omp", label: "omp" })]),
   );
   expect(result.map((entry) => entry.defaultModel)).toEqual([null, null]);
+});
+
+test("providerHarnessStatuses passes the experimental flag and connect notice through", async () => {
+  const provider = makeProvider({ connections: { zed: { connectedAt: "2026-01-01T00:00:00.000Z" } } });
+  const result = await providerHarnessStatuses(
+    "fuse",
+    depsFor(provider, [
+      status({ id: "zed", label: "Zed", connected: true, experimental: true, notice: "Set FUSE_API_KEY" }),
+    ]),
+  );
+  expect(result[0]).toMatchObject({ experimental: true, notice: "Set FUSE_API_KEY" });
+});
+
+test("providerHarnessStatuses reports no default for harnesses that cannot set one", async () => {
+  const provider = makeProvider({
+    models: [kimiModel],
+    connections: { droid: { connectedAt: "2026-01-01T00:00:00.000Z", defaultModel: kimiModel.id } },
+  });
+  const result = await providerHarnessStatuses(
+    "fuse",
+    depsFor(provider, [status({ id: "droid", label: "Droid", connected: true, setsDefaultModel: false })]),
+  );
+  expect(result[0]).toMatchObject({ setsDefaultModel: false, defaultModel: null });
 });

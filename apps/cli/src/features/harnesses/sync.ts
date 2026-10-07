@@ -15,6 +15,9 @@ export type HarnessStatus = {
   connected: boolean;
   parseError: string | null;
   exclusive: boolean;
+  experimental: boolean;
+  setsDefaultModel: boolean;
+  notice: string | null;
 };
 
 export type ConnectionProbe = {
@@ -22,7 +25,9 @@ export type ConnectionProbe = {
   error: string | null;
 };
 
-export type HarnessOutcome = { id: HarnessId; ok: true } | { id: HarnessId; ok: false; message: string };
+export type HarnessOutcome =
+  | { id: HarnessId; ok: true; notice?: string }
+  | { id: HarnessId; ok: false; message: string };
 
 export type ConnectRequest = {
   defaultModel?: string;
@@ -57,6 +62,9 @@ const assertSelectedModel = (provider: ProviderProfile, model: string | undefine
 const connectionRecord = (connectedAt: string, defaultModel: string | undefined): Connection =>
   defaultModel ? { connectedAt, defaultModel } : { connectedAt };
 
+const recordedDefault = (adapter: HarnessAdapter | undefined, model: string | undefined): string | undefined =>
+  adapter?.setsDefaultModel ? model : undefined;
+
 const runForHarness = async (id: HarnessId, action: () => Promise<void>): Promise<HarnessOutcome> => {
   try {
     await action();
@@ -65,6 +73,12 @@ const runForHarness = async (id: HarnessId, action: () => Promise<void>): Promis
     return { id, ok: false, message: errorMessage(error) };
   }
 };
+
+const withNotice = (outcome: HarnessOutcome, notice: string | undefined): HarnessOutcome =>
+  outcome.ok && notice ? { id: outcome.id, ok: true, notice } : outcome;
+
+export const connectNoticeFor = (adapter: HarnessAdapter | undefined, provider: ProviderProfile): string | undefined =>
+  adapter?.connectNotice?.(provider);
 
 export const probeConnection = async (adapter: HarnessAdapter, providerId: string): Promise<ConnectionProbe> => {
   try {
@@ -89,11 +103,19 @@ const resyncDefaultModel = (provider: ProviderProfile, id: HarnessId, live: stri
 };
 
 export const createHarnessSync = ({ adapters, store }: HarnessSyncDeps): HarnessSync => {
+  const findAdapter = (id: HarnessId): HarnessAdapter | undefined => adapters.find((candidate) => candidate.id === id);
+
   const requireAdapter = (id: HarnessId): HarnessAdapter => {
-    const adapter = adapters.find((candidate) => candidate.id === id);
+    const adapter = findAdapter(id);
     if (!adapter) throw new YoinkError(`Unknown harness "${id}".`);
     return adapter;
   };
+
+  const connectOne = async (
+    id: HarnessId,
+    provider: ProviderProfile,
+    options: ConnectRequest,
+  ): Promise<HarnessOutcome> => runForHarness(id, () => requireAdapter(id).connect(provider, options));
 
   const loadProvider = async (name: string): Promise<ProviderProfile> => {
     const profile = (await store.loadStore()).profiles[name];
@@ -124,6 +146,9 @@ export const createHarnessSync = ({ adapters, store }: HarnessSyncDeps): Harness
       connected: probe.connected,
       parseError: probe.error,
       exclusive: adapter.exclusive,
+      experimental: adapter.experimental,
+      setsDefaultModel: adapter.setsDefaultModel,
+      notice: probe.connected ? (connectNoticeFor(adapter, provider) ?? null) : null,
     };
   };
 
@@ -139,14 +164,14 @@ export const createHarnessSync = ({ adapters, store }: HarnessSyncDeps): Harness
     const outcomes: HarnessOutcome[] = [];
     for (const id of ids) {
       const provider = await loadProvider(name);
-      const outcome = await runForHarness(id, () => requireAdapter(id).connect(provider, request));
+      const outcome = await connectOne(id, provider, request);
       if (outcome.ok) {
         await updateConnections(name, (connections) => {
           const defaultModel = request.defaultModel ?? selectedModel(provider, connections[id]?.defaultModel);
-          connections[id] = connectionRecord(nowIso(), defaultModel);
+          connections[id] = connectionRecord(nowIso(), recordedDefault(findAdapter(id), defaultModel));
         });
       }
-      outcomes.push(outcome);
+      outcomes.push(withNotice(outcome, outcome.ok ? connectNoticeFor(findAdapter(id), provider) : undefined));
     }
     return outcomes;
   };
@@ -197,10 +222,10 @@ export const createHarnessSync = ({ adapters, store }: HarnessSyncDeps): Harness
     }
     if (adapter.exclusive && !(await adapter.isConnected(provider.name))) return outcomes;
     const defaultModel = resyncDefaultModel(provider, id, live);
-    const outcome = await runForHarness(id, () => adapter.connect(provider, { defaultModel }));
+    const outcome = await connectOne(id, provider, { defaultModel });
     if (outcome.ok) {
       await updateConnections(provider.name, (connections) => {
-        connections[id] = connectionRecord(connections[id]?.connectedAt ?? nowIso(), defaultModel);
+        connections[id] = connectionRecord(connections[id]?.connectedAt ?? nowIso(), recordedDefault(adapter, defaultModel));
       });
     }
     return [...outcomes, outcome];

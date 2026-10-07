@@ -11,6 +11,9 @@ export type ProviderHarnessStatus = {
   connected: boolean;
   parseError: string | null;
   exclusive: boolean;
+  experimental: boolean;
+  setsDefaultModel: boolean;
+  notice: string | null;
   defaultModel: string | null;
 };
 
@@ -33,6 +36,9 @@ export const providerHarnessStatuses = async (
     connected: status.connected,
     parseError: status.parseError,
     exclusive: status.exclusive,
-    defaultModel: status.connected ? (selectedDefaultModel(provider, status.id) ?? null) : null,
+    experimental: status.experimental,
+    setsDefaultModel: status.setsDefaultModel,
+    notice: status.notice,
+    defaultModel: status.connected && status.setsDefaultModel ? (selectedDefaultModel(provider, status.id) ?? null) : null,
   }));
 };

@@ -105,6 +105,8 @@ export const createPiAdapter = (paths: PiPaths, probes: DetectionProbes = defaul
   label: LABEL,
   protocols: PI_PROTOCOLS,
   exclusive: false,
+  experimental: false,
+  setsDefaultModel: true,
   detect: () => detect(paths, probes),
   readProviders: () => readProviders(paths),
   isConnected: (providerId) => isConnected(paths, providerId),

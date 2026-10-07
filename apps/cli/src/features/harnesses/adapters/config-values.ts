@@ -16,3 +16,14 @@ export const readBoolean = (value: unknown): boolean | undefined => (typeof valu
 
 export const omitKeys = (record: ConfigRecord, keys: readonly string[]): ConfigRecord =>
   Object.fromEntries(Object.entries(record).filter(([key]) => !keys.includes(key)));
+
+export const existingModelsById = (entry: unknown): Map<string, ConfigRecord> => {
+  const models = asRecord(entry).models;
+  if (!Array.isArray(models)) return new Map();
+  return new Map(
+    models.filter(isRecord).flatMap((model) => {
+      const id = readString(model.id);
+      return id ? [[id, model] as const] : [];
+    }),
+  );
+};

@@ -1,8 +1,10 @@
-import { afterEach, beforeEach, expect, test } from "bun:test";
+import { afterEach, beforeEach, expect, setDefaultTimeout, test } from "bun:test";
 import { chmod, mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { makeTempDir, readText, removeTempDir } from "./support/provider-fixture";
-import { runCli, type CliResult } from "./support/run-cli";
+import { CLI_TEST_TIMEOUT_MS, runCli, type CliResult } from "./support/run-cli";
+
+setDefaultTimeout(CLI_TEST_TIMEOUT_MS);
 
 type StoredProfile = { name: string; model?: string; connections?: Record<string, unknown> };
 

@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, expect, test } from "bun:test";
 import { join } from "node:path";
 import { createCodexAdapter } from "../src/features/harnesses/adapters/codex";
+import { createDroidAdapter } from "../src/features/harnesses/adapters/droid";
 import { createOmpAdapter } from "../src/features/harnesses/adapters/omp";
 import { createOpencodeAdapter } from "../src/features/harnesses/adapters/opencode";
 import { createPiAdapter } from "../src/features/harnesses/adapters/pi";
@@ -31,6 +32,8 @@ const createExclusiveAdapter = (state: ExclusiveState): HarnessAdapter => ({
   label: "Claude Code",
   protocols: ["anthropic-messages", "openai-chat", "openai-responses"],
   exclusive: true,
+  experimental: false,
+  setsDefaultModel: true,
   detect: async () => ({ installed: true, configPath: "/fake/settings.json" }),
   readProviders: async () => [],
   isConnected: async (providerId) => state.current === providerId,
@@ -222,4 +225,61 @@ test("connectHarnesses records a valid default model", async () => {
 
   expect(await piSettings()).toEqual({ defaultProvider: "fuse", defaultModel: `fuse/${visionModel.id}` });
   expect((await storedProvider(provider.name)).connections.pi?.defaultModel).toBe(visionModel.id);
+});
+
+test("a successful connect carries the adapter notice and the status reports it while connected", async () => {
+  const provider = makeProvider();
+  await saveProvider(provider);
+  const pi = findFileAdapter("pi");
+  const noticed: HarnessAdapter = { ...pi, experimental: true, connectNotice: (target) => `Restart pi for ${target.name}` };
+  const noticeSync = createHarnessSync({ adapters: [noticed], store });
+
+  const before = await noticeSync.harnessStatuses(provider);
+  expect(before[0]).toMatchObject({ experimental: true, connected: false, notice: null });
+
+  const outcomes = await noticeSync.connectHarnesses(provider.name, ["pi"], {});
+  expect(outcomes).toEqual([{ id: "pi", ok: true, notice: "Restart pi for fuse" }]);
+
+  const after = await noticeSync.harnessStatuses(provider);
+  expect(after[0]).toMatchObject({ connected: true, notice: "Restart pi for fuse" });
+});
+
+test("a failed connect never carries a notice", async () => {
+  const provider = makeProvider({ endpoints: [{ protocol: "anthropic-messages", baseUrl: "https://api.fuse.test" }] });
+  await saveProvider(provider);
+  const codex = findFileAdapter("codex");
+  const noticed: HarnessAdapter = { ...codex, connectNotice: () => "unused" };
+  const outcomes = await createHarnessSync({ adapters: [noticed], store }).connectHarnesses(provider.name, ["codex"], {});
+  expect(outcomes[0]?.ok).toBe(false);
+  expect(outcomes[0]).not.toHaveProperty("notice");
+});
+
+test("a re-sync after connect never repeats the adapter notice", async () => {
+  const provider = makeProvider();
+  await saveProvider(provider);
+  const pi = findFileAdapter("pi");
+  const noticed: HarnessAdapter = { ...pi, connectNotice: (target) => `Restart pi for ${target.name}` };
+  const noticeSync = createHarnessSync({ adapters: [noticed], store });
+
+  const connected = await noticeSync.connectHarnesses(provider.name, ["pi"], {});
+  expect(connected).toEqual([{ id: "pi", ok: true, notice: "Restart pi for fuse" }]);
+
+  const resynced = await noticeSync.resyncProvider(await noticeSync.loadProvider(provider.name));
+  expect(resynced).toEqual([{ id: "pi", ok: true }]);
+});
+
+test("a harness that cannot set a default never records one on connect or resync", async () => {
+  const provider = makeProvider();
+  await saveProvider(provider);
+  const droid = createDroidAdapter({ configDir: join(root, "droid") }, probesWith([]));
+  const droidSync = createHarnessSync({ adapters: [droid], store });
+
+  const outcomes = await droidSync.connectHarnesses(provider.name, ["droid"], { defaultModel: visionModel.id });
+  expect(outcomes).toEqual([{ id: "droid", ok: true }]);
+  expect((await storedProvider(provider.name)).connections.droid).toEqual({ connectedAt: expect.any(String) });
+
+  await droidSync.resyncProvider(await storedProvider(provider.name));
+  expect((await storedProvider(provider.name)).connections.droid?.defaultModel).toBeUndefined();
+  const statuses = await droidSync.harnessStatuses(await storedProvider(provider.name));
+  expect(statuses[0]).toMatchObject({ connected: true, setsDefaultModel: false });
 });

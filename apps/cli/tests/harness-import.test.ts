@@ -91,6 +91,8 @@ const fakeAdapter = (id: HarnessAdapter["id"], read: () => Promise<ImportedProvi
   label: id,
   protocols: ["openai-chat"],
   exclusive: false,
+  experimental: false,
+  setsDefaultModel: true,
   detect: async () => ({ installed: true, configPath: `/tmp/${id}` }),
   readProviders: read,
   isConnected: async () => {

@@ -1,3 +1,4 @@
+import { slugify } from "../profiles/naming";
 import type { Endpoint, Protocol, ProviderProfile } from "../profiles/types";
 
 const TRAILING_SLASHES = /\/+$/;
@@ -14,6 +15,9 @@ const parseUrl = (url: string): URL | null => {
     return null;
   }
 };
+
+export const hostSlug = (url: string): string =>
+  slugify(parseUrl(url)?.hostname.replace(/^api\./, "").split(".")[0] ?? "");
 
 const stripOperationPath = (path: string): string =>
   stripTrailingSlashes(stripTrailingSlashes(path).replace(TRAILING_OPERATION, ""));

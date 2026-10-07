@@ -1,10 +1,12 @@
-import { afterEach, beforeEach, expect, test } from "bun:test";
+import { afterEach, beforeEach, expect, setDefaultTimeout, test } from "bun:test";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import type { ProfileStore } from "../src/features/profiles/types";
 import { CODEX_SECRET, KIMI_SECRET, mixedStore } from "./support/account-fixture";
 import { makeTempDir, removeTempDir } from "./support/provider-fixture";
-import { runCli, type CliResult } from "./support/run-cli";
+import { CLI_TEST_TIMEOUT_MS, runCli, type CliResult } from "./support/run-cli";
+
+setDefaultTimeout(CLI_TEST_TIMEOUT_MS);
 
 type Summary = { name: string; type: string; label: string; current: boolean };
 

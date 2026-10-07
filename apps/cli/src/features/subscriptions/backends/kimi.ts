@@ -1,4 +1,4 @@
-import { readdir, rename, rm, stat } from "node:fs/promises";
+import { readdir, rename, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { errorMessage, YoinkError } from "../../../shared/errors";
 import { parseJsonOrNull, pathExists } from "../../../shared/fs-errors";

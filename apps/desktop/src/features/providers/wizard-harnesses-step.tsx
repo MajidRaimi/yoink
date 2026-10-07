@@ -3,6 +3,7 @@ import type { Endpoint, HarnessId } from "@/shared/types";
 import { Button } from "@/shared/ui/button";
 import { CheckMark } from "@/shared/ui/check-mark";
 import { cn } from "@/shared/ui/cn";
+import { ExperimentalTag } from "@/shared/ui/experimental-tag";
 import { Field } from "@/shared/ui/field";
 import { Select } from "@/shared/ui/input";
 import { useAutoFocus } from "@/shared/ui/use-auto-focus";
@@ -38,8 +39,11 @@ const WizardHarnessRow = ({ harness, compatible, checked, active, onHover, onTog
   >
     <CheckMark checked={checked} disabled={!compatible} />
     <span className="min-w-0 flex-1">
-      <span className={cn("block truncate font-mono text-[13px]", compatible ? "text-foreground" : "text-faint")}>
-        {harness.label}
+      <span className="flex items-baseline gap-1.5">
+        <span className={cn("truncate font-mono text-[13px]", compatible ? "text-foreground" : "text-faint")}>
+          {harness.label}
+        </span>
+        <ExperimentalTag experimental={harness.experimental} />
       </span>
       <span className="block truncate text-[11px] text-faint">
         {compatible ? (harness.exclusive ? "One provider at a time" : "Adds alongside other providers") : protocolRequirement(harness.id)}
@@ -68,6 +72,7 @@ export const WizardHarnessesStep = (): ReactElement => {
     onActivate: (index) => toggleIfCompatible(HARNESSES[index]),
   });
   const isChecked = (id: HarnessId): boolean => harnesses.includes(id);
+  const offersDefaultModel = HARNESSES.some((harness) => harness.setsDefaultModel && isChecked(harness.id));
 
   return (
     <WizardStepLayout
@@ -108,7 +113,7 @@ export const WizardHarnessesStep = (): ReactElement => {
           />
         ))}
       </div>
-      {harnesses.length > 0 && (
+      {offersDefaultModel && (
         <Field label="Default model" hint="for the harnesses above">
           <Select
             value={defaultModel ?? ""}

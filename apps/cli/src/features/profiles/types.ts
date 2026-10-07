@@ -3,7 +3,21 @@ import type { OauthAccount } from "../../shared/claude-config";
 export const PROTOCOLS = ["anthropic-messages", "openai-chat", "openai-responses"] as const;
 export type Protocol = (typeof PROTOCOLS)[number];
 
-export const HARNESS_IDS = ["claude-code", "pi", "omp", "opencode", "codex"] as const;
+export const HARNESS_IDS = [
+  "claude-code",
+  "pi",
+  "omp",
+  "opencode",
+  "codex",
+  "qwen",
+  "kilo",
+  "droid",
+  "crush",
+  "goose",
+  "zed",
+  "continue",
+  "claude-desktop",
+] as const;
 export type HarnessId = (typeof HARNESS_IDS)[number];
 
 export type Endpoint = {

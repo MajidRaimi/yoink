@@ -2,7 +2,7 @@ import { afterEach, beforeEach, expect, test } from "bun:test";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { parse } from "jsonc-parser";
-import { createOpencodeAdapter } from "../src/features/harnesses/adapters/opencode";
+import { createOpencodeAdapter, defaultOpencodePaths } from "../src/features/harnesses/adapters/opencode";
 import type { HarnessAdapter } from "../src/features/harnesses/types";
 import { fileMode, kimiModel, makeProvider, makeTempDir, probesWith, readText, removeTempDir } from "./support/provider-fixture";
 
@@ -261,4 +261,19 @@ test("connect writes a Gemini style baseURL as stored and readProviders returns 
   expect(config.provider.fuse?.options.baseURL).toBe(gemini);
   const imported = await adapter.readProviders();
   expect(imported.find((provider) => provider.id === "fuse")?.endpoints).toEqual([{ protocol: "openai-chat", baseUrl: gemini }]);
+});
+
+test("default opencode detection covers the Linux and Windows desktop installs", () => {
+  const previous = process.env.LOCALAPPDATA;
+  process.env.LOCALAPPDATA = "C:\\Users\\me\\AppData\\Local";
+  try {
+    const bundles = defaultOpencodePaths().appBundles;
+    expect(bundles).toContain("/Applications/OpenCode.app");
+    expect(bundles).toContain("/opt/OpenCode");
+    expect(bundles).toContain("/usr/share/applications/ai.opencode.desktop.desktop");
+    expect(bundles).toContain(join("C:\\Users\\me\\AppData\\Local", "Programs", "OpenCode", "OpenCode.exe"));
+  } finally {
+    if (previous === undefined) delete process.env.LOCALAPPDATA;
+    else process.env.LOCALAPPDATA = previous;
+  }
 });

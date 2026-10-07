@@ -1,6 +1,7 @@
 import { expect, test } from "bun:test";
 import {
   canonicalBaseUrl,
+  hostSlug,
   normalizeEndpointUrl,
   openaiBaseCandidates,
   sdkBaseUrl,
@@ -91,4 +92,15 @@ test("openaiBaseCandidates tries the raw URL before the /v1 fallback", () => {
   expect(openaiBaseCandidates(CLOUDFLARE)).toEqual([CLOUDFLARE, `${CLOUDFLARE}/v1`]);
   expect(openaiBaseCandidates(GEMINI)).toEqual([GEMINI]);
   expect(openaiBaseCandidates("https://api.example.com/v1/chat/completions")).toEqual(["https://api.example.com/v1"]);
+});
+
+test("hostSlug drops the api prefix and slugifies the first host label", () => {
+  expect(hostSlug("https://api.My_Host.example/v1")).toBe("my-host");
+  expect(hostSlug("https://api.deepseek.com")).toBe("deepseek");
+  expect(hostSlug("https://openrouter.ai/api/v1")).toBe("openrouter");
+});
+
+test("hostSlug falls back to provider for unparseable urls", () => {
+  expect(hostSlug("not a url")).toBe("provider");
+  expect(hostSlug("")).toBe("provider");
 });

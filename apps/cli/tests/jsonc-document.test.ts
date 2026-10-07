@@ -1,28 +1,39 @@
-import { expect, test } from "bun:test";
-import { parseJsoncObject } from "../src/features/harnesses/adapters/jsonc-document";
-import { ConfigParseError, YoinkError } from "../src/shared/errors";
+import { afterEach, beforeEach, expect, test } from "bun:test";
+import { writeFile } from "node:fs/promises";
+import { join } from "node:path";
+import { loadJsoncDocument, seedJsoncText } from "../src/features/harnesses/adapters/jsonc-document";
+import { makeTempDir, removeTempDir } from "./support/provider-fixture";
 
-const path = "/scratch/opencode.json";
+let root: string;
 
-test.each(["", "   \n\t", "// only a comment\n", "/* block */\n// line\n"])(
-  "a document without a value parses as an empty object: %p",
-  (text) => {
-    expect(parseJsoncObject(path, text)).toEqual({});
-  },
-);
-
-test("an unterminated comment still raises a parse error", () => {
-  expect(() => parseJsoncObject(path, "/* never closed")).toThrow(ConfigParseError);
+beforeEach(async () => {
+  root = await makeTempDir();
 });
 
-test("malformed jsonc raises a parse error", () => {
-  expect(() => parseJsoncObject(path, '{ "a": ')).toThrow(ConfigParseError);
+afterEach(async () => {
+  await removeTempDir(root);
 });
 
-test("a non-object value is rejected", () => {
-  expect(() => parseJsoncObject(path, "[1, 2]")).toThrow(YoinkError);
+test("loadJsoncDocument returns null for a missing file", async () => {
+  expect(await loadJsoncDocument(join(root, "missing.json"))).toBeNull();
 });
 
-test("comments and trailing commas are accepted", () => {
-  expect(parseJsoncObject(path, '{\n  // note\n  "a": 1,\n}\n')).toEqual({ a: 1 });
+test("loadJsoncDocument keeps the path, raw text and parsed object", async () => {
+  const path = join(root, "settings.json");
+  const text = '{\n  // note\n  "a": 1,\n}\n';
+  await writeFile(path, text);
+  expect(await loadJsoncDocument(path)).toEqual({ path, text, config: { a: 1 } });
+});
+
+test("loadJsoncDocument treats a whitespace-only file as an empty object", async () => {
+  const path = join(root, "blank.json");
+  await writeFile(path, "  \n");
+  expect(await loadJsoncDocument(path)).toEqual({ path, text: "  \n", config: {} });
+});
+
+test("seedJsoncText falls back for missing or blank documents and keeps real text", () => {
+  expect(seedJsoncText(null)).toBe("{}\n");
+  expect(seedJsoncText(null, '{ "$schema": "x" }\n')).toBe('{ "$schema": "x" }\n');
+  expect(seedJsoncText({ path: "p", text: " \n", config: {} })).toBe("{}\n");
+  expect(seedJsoncText({ path: "p", text: '{"a":1}', config: { a: 1 } })).toBe('{"a":1}');
 });

@@ -1,6 +1,19 @@
 export type Protocol = "anthropic-messages" | "openai-chat" | "openai-responses";
 
-export type HarnessId = "claude-code" | "pi" | "omp" | "opencode" | "codex";
+export type HarnessId =
+  | "claude-code"
+  | "pi"
+  | "omp"
+  | "opencode"
+  | "codex"
+  | "qwen"
+  | "kilo"
+  | "droid"
+  | "crush"
+  | "goose"
+  | "zed"
+  | "continue"
+  | "claude-desktop";
 
 export type Endpoint = {
   protocol: Protocol;
@@ -73,6 +86,9 @@ export type HarnessStatus = {
   connected: boolean;
   parseError: string | null;
   exclusive: boolean;
+  experimental: boolean;
+  setsDefaultModel: boolean;
+  notice: string | null;
   defaultModel: string | null;
 };
 

@@ -4,7 +4,8 @@ import { join } from "node:path";
 import { parse } from "yaml";
 import { createContinueAdapter } from "../src/features/harnesses/adapters/continue";
 import type { HarnessAdapter } from "../src/features/harnesses/types";
-import { fileMode, kimiModel, makeProvider, makeTempDir, probesWith, readText, removeTempDir, visionModel } from "./support/provider-fixture";
+import { kimiModel, makeProvider, makeTempDir, probesWith, readText, removeTempDir, visionModel } from "./support/provider-fixture";
+import { expectMode } from "./support/posix";
 
 let root: string;
 let dir: string;
@@ -58,7 +59,7 @@ afterEach(async () => {
 
 test("connect creates config.yaml with mode 0600, header and openai entries", async () => {
   await adapter.connect(makeProvider(), {});
-  expect(await fileMode(configPath)).toBe(0o600);
+  await expectMode(configPath, 0o600);
   const config = await readConfig();
   expect(config).toMatchObject({ name: "Local Config", version: "1.0.0", schema: "v1" });
   expect(await readModels()).toEqual([

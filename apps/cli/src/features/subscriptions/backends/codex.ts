@@ -12,6 +12,7 @@ import { parseJsonText } from "../../../shared/json-file";
 import { ConfigParseError, YoinkError } from "../../../shared/errors";
 import { pathExists, readOptionalText } from "../../../shared/fs-errors";
 import { isRecord } from "../../../shared/guards";
+import { parseToml } from "../../../shared/toml";
 import { createDefaultBackendDeps } from "../deps";
 import { decodeJwtPayload, stringClaim, type JwtClaims } from "../shared/jwt-claims";
 import { isKeyringSupported } from "../shared/keyring";
@@ -40,9 +41,9 @@ export const parseCodexStorageMode = (configText: string | null, configPath: str
   if (configText === null) return "file";
   let parsed: unknown;
   try {
-    parsed = Bun.TOML.parse(configText);
-  } catch (error) {
-    throw new ConfigParseError(configPath, error);
+    parsed = parseToml(configText);
+  } catch {
+    throw new ConfigParseError(configPath, new Error("TOML syntax error"));
   }
   const mode = isRecord(parsed) ? parsed.cli_auth_credentials_store : undefined;
   if (mode === undefined) return "file";

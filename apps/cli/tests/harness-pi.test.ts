@@ -3,7 +3,8 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { createPiAdapter } from "../src/features/harnesses/adapters/pi";
 import type { HarnessAdapter } from "../src/features/harnesses/types";
-import { fileMode, kimiModel, makeProvider, makeTempDir, probesWith, readText, removeTempDir } from "./support/provider-fixture";
+import { kimiModel, makeProvider, makeTempDir, probesWith, readText, removeTempDir } from "./support/provider-fixture";
+import { expectMode } from "./support/posix";
 
 let dir: string;
 let adapter: HarnessAdapter;
@@ -69,7 +70,7 @@ afterEach(async () => {
 
 test("connect creates models.json with mode 0600 and the full provider entry", async () => {
   await adapter.connect(makeProvider(), {});
-  expect(await fileMode(modelsPath)).toBe(0o600);
+  await expectMode(modelsPath, 0o600);
   const config = await readJson(modelsPath);
   expect(config).toEqual({
     providers: {
@@ -213,7 +214,7 @@ test("backup is taken once before the first write to an existing file", async ()
   await adapter.connect(makeProvider(), {});
   await adapter.connect(makeProvider({ token: "sk-second" }), {});
   expect(await readJson(`${modelsPath}.yoink.bak`)).toEqual(realisticModels);
-  if (process.platform !== "win32") expect(await fileMode(`${modelsPath}.yoink.bak`)).toBe(0o600);
+  await expectMode(`${modelsPath}.yoink.bak`, 0o600);
 });
 
 test("detect reports installed via binary or config dir", async () => {

@@ -6,7 +6,6 @@ import { createQwenAdapter } from "../src/features/harnesses/adapters/qwen";
 import { ownedEnvKey } from "../src/features/harnesses/adapters/qwen-schema";
 import type { HarnessAdapter } from "../src/features/harnesses/types";
 import {
-  fileMode,
   kimiModel,
   makeProvider,
   makeTempDir,
@@ -15,6 +14,7 @@ import {
   removeTempDir,
   visionModel,
 } from "./support/provider-fixture";
+import { expectMode } from "./support/posix";
 
 let root: string;
 let dir: string;
@@ -98,7 +98,7 @@ afterEach(async () => {
 
 test("connect creates settings.json with mode 0600, env key and chat-completions entries", async () => {
   await adapter.connect(makeProvider(), {});
-  expect(await fileMode(settingsPath)).toBe(0o600);
+  await expectMode(settingsPath, 0o600);
   expect(await readSettings()).toEqual({
     modelProviders: {
       openai: [

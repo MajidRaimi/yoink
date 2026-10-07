@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { isRecord, type UnknownRecord } from "./guards";
+import { parseToml } from "./toml";
 
 export const CODEX_CONFIG_FILE = "config.toml";
 export const CODEX_AUTH_FILE = "auth.json";
@@ -30,7 +31,7 @@ const parseRecordSync = (path: string, parse: (text: string) => unknown): Unknow
 export const codexConfigPath = (codexHome: string): string => join(codexHome, CODEX_CONFIG_FILE);
 
 export const codexOverridingModelProvider = (codexHome: string): string | null => {
-  const config = parseRecordSync(codexConfigPath(codexHome), (text) => Bun.TOML.parse(text));
+  const config = parseRecordSync(codexConfigPath(codexHome), parseToml);
   const provider = config?.[MODEL_PROVIDER_KEY];
   return typeof provider === "string" && provider.length > 0 && provider !== BUILT_IN_OPENAI_PROVIDER ? provider : null;
 };

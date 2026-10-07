@@ -1,8 +1,9 @@
 import { afterEach, beforeEach, expect, test } from "bun:test";
-import { chmod, lstat, mkdir, mkdtemp, readdir, rm, stat, symlink } from "node:fs/promises";
+import { chmod, lstat, mkdir, mkdtemp, readdir, rm, symlink } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { writeFileAtomic, writeSecretFileAtomic } from "../src/shared/atomic-write";
+import { expectMode, isPosix } from "./support/posix";
 
 let dir: string;
 
@@ -27,22 +28,21 @@ test("writeFileAtomic replaces an existing file", async () => {
   expect(await Bun.file(path).text()).toBe("new contents");
 });
 
-test.if(process.platform !== "win32")("writeFileAtomic applies the requested mode", async () => {
+test.if(isPosix)("writeFileAtomic applies the requested mode", async () => {
   const path = join(dir, "secret.json");
   await writeFileAtomic(path, "token", 0o600);
-  const info = await stat(path);
-  expect(info.mode & 0o777).toBe(0o600);
+  await expectMode(path, 0o600);
 });
 
-test.if(process.platform !== "win32")("writeFileAtomic keeps the existing mode when none is given", async () => {
+test.if(isPosix)("writeFileAtomic keeps the existing mode when none is given", async () => {
   const path = join(dir, "shared.json");
   await Bun.write(path, "old");
   await chmod(path, 0o640);
   await writeFileAtomic(path, "new");
-  expect((await stat(path)).mode & 0o777).toBe(0o640);
+  await expectMode(path, 0o640);
 });
 
-test.if(process.platform !== "win32")("writeFileAtomic writes through a symlink and keeps the link", async () => {
+test.if(isPosix)("writeFileAtomic writes through a symlink and keeps the link", async () => {
   const real = join(dir, "real.json");
   const link = join(dir, "link.json");
   await Bun.write(real, "old");
@@ -52,21 +52,21 @@ test.if(process.platform !== "win32")("writeFileAtomic writes through a symlink 
   expect(await Bun.file(real).text()).toBe("new");
 });
 
-test.if(process.platform !== "win32")("writeSecretFileAtomic creates new files as 0600", async () => {
+test.if(isPosix)("writeSecretFileAtomic creates new files as 0600", async () => {
   const path = join(dir, "secret-new.json");
   await writeSecretFileAtomic(path, "token");
-  expect((await stat(path)).mode & 0o777).toBe(0o600);
+  await expectMode(path, 0o600);
 });
 
-test.if(process.platform !== "win32")("writeSecretFileAtomic strips group and other bits from existing files", async () => {
+test.if(isPosix)("writeSecretFileAtomic strips group and other bits from existing files", async () => {
   const path = join(dir, "settings.json");
   await Bun.write(path, "{}");
   await chmod(path, 0o644);
   await writeSecretFileAtomic(path, "token");
-  expect((await stat(path)).mode & 0o777).toBe(0o600);
+  await expectMode(path, 0o600);
 });
 
-test.if(process.platform !== "win32")("writeFileAtomic writes through a dangling relative symlink and keeps the link", async () => {
+test.if(isPosix)("writeFileAtomic writes through a dangling relative symlink and keeps the link", async () => {
   const link = join(dir, "opencode.json");
   const real = join(dir, "dots", "opencode.json");
   await symlink(join("dots", "opencode.json"), link);
@@ -76,7 +76,7 @@ test.if(process.platform !== "win32")("writeFileAtomic writes through a dangling
   expect(await Bun.file(link).text()).toBe("new");
 });
 
-test.if(process.platform !== "win32")("writeFileAtomic follows a chain of dangling symlinks to the final target", async () => {
+test.if(isPosix)("writeFileAtomic follows a chain of dangling symlinks to the final target", async () => {
   const first = join(dir, "first.json");
   const second = join(dir, "second.json");
   const real = join(dir, "nested", "deeper", "real.json");
@@ -88,18 +88,18 @@ test.if(process.platform !== "win32")("writeFileAtomic follows a chain of dangli
   expect(await Bun.file(real).text()).toBe("chained");
 });
 
-test.if(process.platform !== "win32")("writeSecretFileAtomic writes a dangling symlink target as 0600 and keeps the link", async () => {
+test.if(isPosix)("writeSecretFileAtomic writes a dangling symlink target as 0600 and keeps the link", async () => {
   await mkdir(join(dir, "dots"));
   const link = join(dir, "settings.json");
   const real = join(dir, "dots", "settings.json");
   await symlink(real, link);
   await writeSecretFileAtomic(link, "token");
   expect((await lstat(link)).isSymbolicLink()).toBe(true);
-  expect((await stat(real)).mode & 0o777).toBe(0o600);
+  await expectMode(real, 0o600);
   expect(await readdir(join(dir, "dots"))).toEqual(["settings.json"]);
 });
 
-test.if(process.platform !== "win32")("writeFileAtomic rejects a symlink loop without replacing the link", async () => {
+test.if(isPosix)("writeFileAtomic rejects a symlink loop without replacing the link", async () => {
   const a = join(dir, "a.json");
   const b = join(dir, "b.json");
   await symlink(b, a);

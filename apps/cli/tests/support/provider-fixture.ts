@@ -1,4 +1,4 @@
-import { mkdtemp, rm, stat } from "node:fs/promises";
+import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { DetectionProbes } from "../../src/features/harnesses/adapters/detection";
@@ -39,8 +39,6 @@ export const makeProvider = (overrides: Partial<ProviderProfile> = {}): Provider
   connections: {},
   ...overrides,
 });
-
-export const fileMode = async (path: string): Promise<number> => (await stat(path)).mode & 0o777;
 
 export const makeTempDir = (): Promise<string> => mkdtemp(join(tmpdir(), "yoink-harness-"));
 

@@ -10,7 +10,8 @@ import { createHarnessSync, type HarnessSync } from "../src/features/harnesses/s
 import { createProfileStore, type ProfileStoreRepository } from "../src/features/profiles/store";
 import type { HarnessId, ProviderProfile } from "../src/features/profiles/types";
 import { backupPathFor, ensureBackup, retiredSecret, scrubbingBackups } from "../src/shared/backup";
-import { fileMode, makeProvider, makeTempDir, probesWith, readText, removeTempDir } from "./support/provider-fixture";
+import { makeProvider, makeTempDir, probesWith, readText, removeTempDir } from "./support/provider-fixture";
+import { expectMode } from "./support/posix";
 
 const OLD_TOKEN = "sk-old-rotated-away";
 const NEW_TOKEN = "sk-new-current";
@@ -67,7 +68,7 @@ test("a backup of a file yoink created stays an empty sentinel across later writ
   await writeConfigFile(path, `{"key":"${OLD_TOKEN}"}`);
   await writeConfigFile(path, `{"key":"${NEW_TOKEN}"}`);
   expect(await readText(backupPathFor(path))).toBe("");
-  if (process.platform !== "win32") expect(await fileMode(backupPathFor(path))).toBe(0o600);
+  await expectMode(backupPathFor(path), 0o600);
 });
 
 test("the backup keeps the user's pre-yoink original", async () => {

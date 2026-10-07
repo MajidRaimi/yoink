@@ -4,7 +4,8 @@ import { join } from "node:path";
 import { parse } from "yaml";
 import { createOmpAdapter } from "../src/features/harnesses/adapters/omp";
 import type { HarnessAdapter } from "../src/features/harnesses/types";
-import { fileMode, kimiModel, makeProvider, makeTempDir, probesWith, readText, removeTempDir } from "./support/provider-fixture";
+import { kimiModel, makeProvider, makeTempDir, probesWith, readText, removeTempDir } from "./support/provider-fixture";
+import { expectMode } from "./support/posix";
 
 let root: string;
 let dir: string;
@@ -53,7 +54,7 @@ afterEach(async () => {
 
 test("connect creates models.yml with mode 0600 in pi schema", async () => {
   await adapter.connect(makeProvider(), {});
-  expect(await fileMode(modelsPath)).toBe(0o600);
+  await expectMode(modelsPath, 0o600);
   const config = await readYaml(modelsPath);
   const fuse = (config.providers as Record<string, Record<string, unknown>>).fuse;
   expect(fuse).toMatchObject({ name: "Fuse", baseUrl: "https://api.fuse.test/v1", api: "openai-completions", apiKey: "sk-test-fuse" });

@@ -5,7 +5,8 @@ import { parse } from "jsonc-parser";
 import { createKiloAdapter, defaultKiloPaths } from "../src/features/harnesses/adapters/kilo";
 import { findAdapter } from "../src/features/harnesses/registry";
 import type { HarnessAdapter } from "../src/features/harnesses/types";
-import { fileMode, kimiModel, makeProvider, makeTempDir, probesWith, readText, removeTempDir } from "./support/provider-fixture";
+import { kimiModel, makeProvider, makeTempDir, probesWith, readText, removeTempDir } from "./support/provider-fixture";
+import { expectMode } from "./support/posix";
 
 let root: string;
 let dir: string;
@@ -97,7 +98,7 @@ test("registry exposes the kilo adapter", () => {
 
 test("connect creates kilo.json with mode 0600 and the provider block", async () => {
   await adapter.connect(makeProvider(), {});
-  expect(await fileMode(jsonPath)).toBe(0o600);
+  await expectMode(jsonPath, 0o600);
   expect(await readJsonc(jsonPath)).toEqual({
     provider: {
       fuse: {
@@ -148,7 +149,7 @@ test("connect preserves comments and other providers in kilo.jsonc", async () =>
   expect(config.model).toBe("fuse/moonshotai/Kimi-K3");
   expect(Object.keys(config.provider as object)).toEqual(["local", "fuse"]);
   expect(await readText(`${jsoncPath}.yoink.bak`)).toBe(commentedJsonc);
-  expect(await fileMode(jsoncPath)).toBe(0o600);
+  await expectMode(jsoncPath, 0o600);
 });
 
 test("kilo.json wins over kilo.jsonc when both exist", async () => {

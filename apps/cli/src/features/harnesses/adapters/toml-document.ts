@@ -1,6 +1,7 @@
 import { parse as parseWithPatcher, patch } from "@decimalturn/toml-patch";
 import { ConfigParseError, YoinkError } from "../../../shared/errors";
 import { readOptionalText } from "../../../shared/fs-errors";
+import { parseToml } from "../../../shared/toml";
 import { asRecord, type ConfigRecord } from "./config-values";
 
 export type TomlEdit = {
@@ -10,7 +11,7 @@ export type TomlEdit = {
 
 export const parseTomlObject = (path: string, text: string): ConfigRecord => {
   try {
-    return asRecord(Bun.TOML.parse(text));
+    return asRecord(parseToml(text));
   } catch {
     throw new ConfigParseError(path, new Error("TOML syntax error"));
   }
@@ -23,7 +24,7 @@ export const readTomlObject = async (path: string): Promise<ConfigRecord | null>
 
 const matchesExpected = (text: string, expected: ConfigRecord): boolean => {
   try {
-    return Bun.deepEquals(Bun.TOML.parse(text), expected);
+    return Bun.deepEquals(parseToml(text), expected);
   } catch {
     return false;
   }

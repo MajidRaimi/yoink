@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, expect, setDefaultTimeout, test } from "bun:test";
 import { writeFile } from "node:fs/promises";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { makeTempDir, readText, removeTempDir } from "./support/provider-fixture";
 import { CLI_TEST_TIMEOUT_MS, runCli } from "./support/run-cli";
 
@@ -15,7 +16,7 @@ type StoredStore = {
 
 const ANTHROPIC_URL = "https://example.invalid";
 const OPENAI_URL = "https://example.invalid/openai/v1";
-const SERVICE_ENTRY = new URL("../src/features/providers/service.ts", import.meta.url).pathname;
+const SERVICE_ENTRY = fileURLToPath(new URL("../src/features/providers/service.ts", import.meta.url));
 
 let home: string;
 

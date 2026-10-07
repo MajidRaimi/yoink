@@ -9,7 +9,6 @@ import type { HarnessAdapter } from "../src/features/harnesses/types";
 import type { ModelInput, ModelSpec } from "../src/features/profiles/types";
 import { MODEL_SPEC_DEFAULTS } from "../src/features/profiles/model-spec";
 import {
-  fileMode,
   kimiModel,
   makeProvider,
   makeTempDir,
@@ -18,6 +17,7 @@ import {
   removeTempDir,
   visionModel,
 } from "./support/provider-fixture";
+import { expectMode } from "./support/posix";
 
 type DroidEntry = Record<string, unknown>;
 
@@ -125,7 +125,7 @@ afterEach(async () => {
 
 test("connect creates settings.json with mode 0600 and tagged anthropic entries", async () => {
   await adapter.connect(makeProvider(), {});
-  expect(await fileMode(settingsPath)).toBe(0o600);
+  await expectMode(settingsPath, 0o600);
   expect(await readSettings()).toEqual({ customModels: expectedEntries() });
   expect(await adapter.isConnected("fuse")).toBe(true);
 });

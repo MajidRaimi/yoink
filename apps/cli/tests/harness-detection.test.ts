@@ -24,7 +24,7 @@ test("defaultProbes.exists reports present and missing paths", async () => {
   expect(await defaultProbes.exists(join(file, "nested"))).toBe(false);
 });
 
-test.skipIf(process.getuid?.() === 0)("defaultProbes.exists treats unreadable paths as not installed", async () => {
+test.skipIf(process.platform === "win32" || process.getuid?.() === 0)("defaultProbes.exists treats unreadable paths as not installed", async () => {
   const locked = join(root, "locked");
   await mkdir(locked);
   await writeFile(join(locked, "settings.json"), "{}");

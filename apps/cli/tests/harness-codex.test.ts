@@ -3,7 +3,8 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { createCodexAdapter } from "../src/features/harnesses/adapters/codex";
 import type { HarnessAdapter } from "../src/features/harnesses/types";
-import { fileMode, kimiModel, makeProvider, makeTempDir, probesWith, readText, removeTempDir } from "./support/provider-fixture";
+import { kimiModel, makeProvider, makeTempDir, probesWith, readText, removeTempDir } from "./support/provider-fixture";
+import { expectMode } from "./support/posix";
 
 let root: string;
 let dir: string;
@@ -69,7 +70,7 @@ afterEach(async () => {
 
 test("connect creates config.toml with mode 0600 and a responses provider", async () => {
   await adapter.connect(makeProvider(), {});
-  expect(await fileMode(configPath)).toBe(0o600);
+  await expectMode(configPath, 0o600);
   expect(await readText(configPath)).toBe(`[model_providers.fuse]
 name = "Fuse"
 base_url = "https://api.fuse.test/v1"

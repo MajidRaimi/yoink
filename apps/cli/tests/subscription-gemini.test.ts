@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, expect, spyOn, test } from "bun:test";
-import { mkdtemp, rm, stat } from "node:fs/promises";
+import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createGeminiBackend, geminiIdentityFromFiles } from "../src/features/subscriptions/backends/gemini";
@@ -7,8 +7,7 @@ import { matchesProcess } from "../src/shared/processes/process-detection";
 import type { SubscriptionBackend, SubscriptionEnv } from "../src/features/subscriptions/types";
 import { YoinkError } from "../src/shared/errors";
 import { fakeJwt } from "./support/fake-jwt";
-
-const posix = process.platform !== "win32";
+import { expectMode } from "./support/posix";
 
 let homeDir: string;
 
@@ -126,11 +125,9 @@ test("restore writes the snapshot files with mode 0600", async () => {
     },
   });
   expect(JSON.parse(await readGemini("google_accounts.json"))).toEqual({ active: "ada@example.com", old: [] });
-  if (posix) {
-    expect((await stat(geminiPath("oauth_creds.json"))).mode & 0o777).toBe(0o600);
-    expect((await stat(geminiPath("google_accounts.json"))).mode & 0o777).toBe(0o600);
-    expect((await stat(join(homeDir, ".gemini"))).mode & 0o777).toBe(0o700);
-  }
+  await expectMode(geminiPath("oauth_creds.json"), 0o600);
+  await expectMode(geminiPath("google_accounts.json"), 0o600);
+  await expectMode(join(homeDir, ".gemini"), 0o700);
 });
 
 test("restore leaves unrelated files in the gemini home untouched", async () => {

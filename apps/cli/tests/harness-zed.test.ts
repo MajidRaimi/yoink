@@ -5,7 +5,6 @@ import { parse } from "jsonc-parser";
 import { createZedAdapter, zedApiKeyVariable, zedConfigDirFor } from "../src/features/harnesses/adapters/zed";
 import type { HarnessAdapter } from "../src/features/harnesses/types";
 import {
-  fileMode,
   kimiModel,
   makeProvider,
   makeTempDir,
@@ -14,6 +13,7 @@ import {
   removeTempDir,
   visionModel,
 } from "./support/provider-fixture";
+import { expectMode } from "./support/posix";
 
 type ZedModelEntry = { name: string; capabilities?: Record<string, unknown> };
 
@@ -107,7 +107,7 @@ afterEach(async () => {
 
 test("connect creates settings.json with mode 0600 and an openai_compatible entry without a key", async () => {
   await adapter.connect(makeProvider(), {});
-  expect(await fileMode(settingsPath)).toBe(0o600);
+  await expectMode(settingsPath, 0o600);
   expect(await readSettings()).toEqual({
     language_models: {
       openai_compatible: {

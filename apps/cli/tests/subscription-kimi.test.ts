@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, expect, test } from "bun:test";
-import { mkdir, mkdtemp, readdir, rm, stat } from "node:fs/promises";
+import { mkdir, mkdtemp, readdir, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
@@ -12,8 +12,8 @@ import { createUnsupportedKeyring } from "../src/features/subscriptions/shared/k
 import type { SubscriptionBackendDeps, SubscriptionEnv } from "../src/features/subscriptions/types";
 import { YoinkError } from "../src/shared/errors";
 import { fakeJwt } from "./support/fake-jwt";
+import { expectMode } from "./support/posix";
 
-const posix = process.platform !== "win32";
 const FIXED_NOW = new Date("2026-10-07T12:34:56.789Z");
 
 let userHome: string;
@@ -128,15 +128,13 @@ test("restore writes 0600 credential files, removes stale ones and leaves unrela
   expect(await readKimi("credentials/notes.txt")).toBe("keep");
   expect(await readKimi("config.toml")).toBe("keep-config");
   expect(await readKimi("sessions/log.json")).toBe("keep-session");
-  if (posix) expect((await stat(join(kimiHome, "credentials/kimi-code.json"))).mode & 0o777).toBe(0o600);
+  await expectMode(join(kimiHome, "credentials/kimi-code.json"), 0o600);
 });
 
 test("restore into a missing home creates a private credentials directory", async () => {
   await backendFor().restore({ files: { "credentials/kimi-code.json": credentialFor({ user_id: "u" }) } });
-  if (posix) {
-    expect((await stat(join(kimiHome, "credentials"))).mode & 0o777).toBe(0o700);
-    expect((await stat(join(kimiHome, "credentials/kimi-code.json"))).mode & 0o777).toBe(0o600);
-  }
+  await expectMode(join(kimiHome, "credentials"), 0o700);
+  await expectMode(join(kimiHome, "credentials/kimi-code.json"), 0o600);
 });
 
 test("restore refuses paths outside the credential files before writing anything", async () => {

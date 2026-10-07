@@ -4,7 +4,8 @@ import { join } from "node:path";
 import { parse } from "yaml";
 import { createGooseAdapter } from "../src/features/harnesses/adapters/goose";
 import type { HarnessAdapter } from "../src/features/harnesses/types";
-import { fileMode, kimiModel, makeProvider, makeTempDir, probesWith, readText, removeTempDir } from "./support/provider-fixture";
+import { kimiModel, makeProvider, makeTempDir, probesWith, readText, removeTempDir } from "./support/provider-fixture";
+import { expectMode } from "./support/posix";
 
 let root: string;
 let dir: string;
@@ -76,7 +77,7 @@ afterEach(async () => {
 
 test("connect creates the custom provider file 0600 with an env key reference and no literal key", async () => {
   await adapter.connect(makeProvider(), {});
-  expect(await fileMode(providerPath)).toBe(0o600);
+  await expectMode(providerPath, 0o600);
   const entry = await readJson(providerPath);
   expect(entry).toMatchObject({
     name: "custom_fuse",
@@ -144,7 +145,7 @@ test("connect sets the default model and preserves comments in config.yaml", asy
   expect(await readYaml(configPath)).toMatchObject({ GOOSE_PROVIDER: "custom_fuse", GOOSE_MODEL: kimiModel.id });
   expect(await adapter.readDefaultModel("fuse")).toBe(kimiModel.id);
   expect(await adapter.readDefaultModel("other")).toBeNull();
-  expect(await fileMode(configPath)).toBe(0o600);
+  await expectMode(configPath, 0o600);
 });
 
 test("connect without a default model leaves config.yaml untouched", async () => {
@@ -163,14 +164,14 @@ test("connect writes the key into secrets.yaml only when the keyring is disabled
   expect(text).toContain("# goose secrets");
   expect(text).not.toContain("sk-first");
   expect(await readYaml(secretsPath)).toEqual({ OPENAI_API_KEY: "sk-openai-keep", CUSTOM_FUSE_API_KEY: "sk-test-fuse" });
-  expect(await fileMode(secretsPath)).toBe(0o600);
+  await expectMode(secretsPath, 0o600);
 });
 
 test("connect creates secrets.yaml 0600 when the keyring is disabled with a string flag", async () => {
   await writeConfigFixture(configPath, "GOOSE_DISABLE_KEYRING: \"1\"\n");
   await adapter.connect(makeProvider(), {});
   expect(await readYaml(secretsPath)).toEqual({ CUSTOM_FUSE_API_KEY: "sk-test-fuse" });
-  expect(await fileMode(secretsPath)).toBe(0o600);
+  await expectMode(secretsPath, 0o600);
 });
 
 test("connectNotice tells the user to export the variable unless the keyring is disabled", async () => {
@@ -188,7 +189,7 @@ test("connect writes the key into secrets.yaml when GOOSE_DISABLE_KEYRING is exp
   process.env.GOOSE_DISABLE_KEYRING = "yes";
   await adapter.connect(makeProvider(), {});
   expect(await readYaml(secretsPath)).toEqual({ CUSTOM_FUSE_API_KEY: "sk-test-fuse" });
-  expect(await fileMode(secretsPath)).toBe(0o600);
+  await expectMode(secretsPath, 0o600);
 });
 
 test("connectNotice is silent when GOOSE_DISABLE_KEYRING is exported without a config file", () => {

@@ -1,12 +1,14 @@
 # Getting started
 
-yoink switches between Claude Code accounts from your terminal. It reads and writes the login that Claude Code keeps on your machine (the macOS Keychain, or `~/.claude/.credentials.json` on Linux and Windows), so you can keep a work account and a personal account side by side and move between them in one command.
+yoink switches between Claude Code accounts from your terminal, and manages API-key providers across your coding harnesses. It reads and writes the login that Claude Code keeps on your machine (the macOS Keychain, or `~/.claude/.credentials.json` on Linux and Windows), so you can keep a work account and a personal account side by side and move between them in one command.
 
 ## Supported platforms
 
 - **macOS** (Apple Silicon and Intel). Claude Code stores your login in the Keychain under the service `Claude Code-credentials`, and yoink reads and writes it through the `security` CLI.
-- **Linux** (x64 and arm64, glibc). Claude Code stores the same credential blob in a plaintext file at `~/.claude/.credentials.json`, and yoink reads and writes that file atomically with owner-only permissions (`0600`).
-- **Windows** (x64). Same as Linux: the credential lives at `~/.claude/.credentials.json`, and the file inherits the user profile's ACLs, the same protection Claude Code itself applies. Windows arm64 is not supported.
+- **Linux** (x64 and arm64, glibc and musl/Alpine). Claude Code stores the same credential blob in a plaintext file at `~/.claude/.credentials.json`, and yoink reads and writes that file atomically with owner-only permissions (`0600`).
+- **Windows** (x64 and arm64). Same as Linux: the credential lives at `~/.claude/.credentials.json`, and the file inherits the user profile's ACLs, the same protection Claude Code itself applies.
+
+On bare Alpine, run `apk add libstdc++ libgcc` once (the same runtime libraries Node needs there).
 
 If `CLAUDE_CONFIG_DIR` is set, yoink follows it for `.credentials.json`, `.claude.json`, and `settings.json`, matching Claude Code.
 
@@ -57,7 +59,7 @@ Make sure `~/.local/bin` is on your `PATH`, then run `yoink version` to confirm.
 
 ## Add your accounts
 
-`yoink add` (alias: `yoink login`) captures your Claude Code logins as named profiles. It needs an interactive terminal.
+`yoink add` (alias: `yoink login`) captures your Claude Code logins as named profiles. Adding a Claude account needs an interactive terminal, because it runs the Claude sign-in.
 
 When you run it, yoink:
 
@@ -72,7 +74,7 @@ A common setup is one profile for work and one for personal use:
 yoink add
 ```
 
-Sign in to your work account, name the profile `work`, then when yoink asks, add another and sign in to your personal account as `personal`. You can also add an external provider (OpenRouter, Ollama, z.ai, DeepSeek, Moonshot, or any Anthropic-compatible endpoint) from the same menu. See [Usage](./usage.md) for the external-provider flow.
+Sign in to your work account, name the profile `work`, then when yoink asks, add another and sign in to your personal account as `personal`. You can also add an API-key provider (OpenAI, Kimi Code, Moonshot, OpenRouter, DeepSeek, Z.ai, Ollama, or any OpenAI- or Anthropic-compatible API) from the same menu and connect it to any of the 13 supported harnesses. See [Providers](./providers.md) and [Harnesses](./harnesses.md).
 
 List what you have saved at any time:
 

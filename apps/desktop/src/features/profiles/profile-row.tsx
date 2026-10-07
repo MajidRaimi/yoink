@@ -1,7 +1,9 @@
-import { useEffect, useRef, useState, type KeyboardEvent, type MouseEvent, type ReactNode } from "react";
+import { useState, type KeyboardEvent, type MouseEvent, type ReactElement, type ReactNode } from "react";
+import { HarnessChips } from "@/shared/ui/harness-chips";
 import type { Profile } from "@/shared/types";
 import { cn } from "@/shared/ui/cn";
 import { PencilIcon, SlidersIcon, TrashIcon } from "@/shared/ui/icons";
+import { useScrollIntoView } from "@/shared/ui/use-scroll-into-view";
 
 type ProfileRowProps = {
   profile: Profile;
@@ -9,14 +11,25 @@ type ProfileRowProps = {
   selected: boolean;
   index: number;
   onHover: () => void;
-  onSwitch: () => void;
+  onActivate: () => void;
   onRename: (to: string) => void;
   onEdit: (() => void) | null;
   onDelete: () => void;
 };
 
+const modelSummary = (count: number): string => `${count} ${count === 1 ? "model" : "models"}`;
+
 const secondaryLine = (profile: Profile): string =>
-  profile.type === "claude" ? (profile.email ?? "no email saved") : `${profile.provider} · ${profile.model}`;
+  profile.type === "claude" ? (profile.email ?? "no email saved") : `${profile.provider} · ${modelSummary(profile.models.length)}`;
+
+const SecondaryLine = ({ profile }: { profile: Profile }): ReactElement => (
+  <div className="flex min-w-0 items-center gap-1.5">
+    <p className="min-w-0 truncate text-[11px] text-faint">
+      <bdi>{secondaryLine(profile)}</bdi>
+    </p>
+    {profile.type === "external" && <HarnessChips connections={profile.connections} />}
+  </div>
+);
 
 const useInlineRename = (name: string, onRename: (to: string) => void) => {
   const [renaming, setRenaming] = useState(false);
@@ -63,17 +76,13 @@ export const ProfileRow = ({
   selected,
   index,
   onHover,
-  onSwitch,
+  onActivate,
   onRename,
   onEdit,
   onDelete,
-}: ProfileRowProps) => {
-  const rowRef = useRef<HTMLDivElement>(null);
+}: ProfileRowProps): ReactElement => {
+  const rowRef = useScrollIntoView<HTMLDivElement>(selected);
   const rename = useInlineRename(profile.name, onRename);
-
-  useEffect(() => {
-    if (selected) rowRef.current?.scrollIntoView({ block: "nearest" });
-  }, [selected]);
 
   const handleRenameKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     event.stopPropagation();
@@ -96,7 +105,7 @@ export const ProfileRow = ({
       style={{ animationDelay: `${Math.min(index * 25, 200)}ms` }}
       onMouseEnter={onHover}
       onClick={() => {
-        if (!rename.renaming) onSwitch();
+        if (!rename.renaming) onActivate();
       }}
     >
       <span
@@ -118,7 +127,7 @@ export const ProfileRow = ({
             <p className={cn("truncate font-mono text-[13px]", active ? "text-brand-text" : "text-foreground")}>
               {profile.name}
             </p>
-            <p className="truncate text-[11px] text-faint">{secondaryLine(profile)}</p>
+            <SecondaryLine profile={profile} />
           </>
         )}
       </div>
@@ -133,7 +142,7 @@ export const ProfileRow = ({
             <PencilIcon size={12} />
           </RowAction>
           {onEdit && (
-            <RowAction label="Edit" onClick={stopThen(onEdit)}>
+            <RowAction label="Edit name and key" onClick={stopThen(onEdit)}>
               <SlidersIcon size={12} />
             </RowAction>
           )}

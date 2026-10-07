@@ -4,12 +4,12 @@
 
 <h1>Yoink</h1>
 
-<p><strong>Switch between Claude Code accounts from your macOS menu bar or terminal, fast.</strong></p>
+<p><strong>Switch Claude Code accounts and manage API-key providers across every coding harness, fast.</strong></p>
 
 <p>
-Snapshot each login into a named profile, swap them in a single keystroke from the menu bar app or the
-CLI, and run OpenRouter, Ollama, or any Anthropic-compatible model through the same Claude Code harness.
-No browser, no re-login.
+Snapshot each Claude login into a named profile and swap them in a single keystroke from the menu bar app or the
+CLI. Add an API key once (OpenAI, Kimi, OpenRouter, Ollama, or any compatible API) and yoink writes it into
+pi, omp, opencode, codex, Claude Code, Qwen Code, Kilo Code, Droid, Crush, Goose, Zed, Continue, and Claude Desktop, and keeps them in sync. No browser, no re-login, no hand-edited configs.
 </p>
 
 <p>
@@ -100,7 +100,7 @@ Run `yoink` with no arguments for a keyboard-driven list of your accounts:
 | --- | --- |
 | `↑` `↓` / `j` `k` | Move between accounts |
 | `↵` | Switch to the highlighted account |
-| `n` | Add a new account (Claude sign-in or external provider) |
+| `n` | Add a new account (Claude sign-in or API-key provider) |
 | `e` | Edit the highlighted profile |
 | `s` | Save your current login as a profile |
 | `d` | Delete the highlighted profile (after a confirm) |
@@ -112,9 +112,13 @@ Actions loop back to the list, so you can switch, add, and prune in one sitting,
 
 - **Instant switching.** Each profile stores the credential blob (macOS Keychain on macOS, `~/.claude/.credentials.json` on Linux/Windows) plus the `oauthAccount` identity, so a swap is a keystroke, not a browser round-trip.
 - **Never loses a token.** Every switch re-snapshots the active profile from the live credential store first, so a background token refresh is never dropped.
-- **External providers.** Register OpenRouter, Ollama, z.ai, DeepSeek, Moonshot, or any Anthropic-compatible endpoint as a switchable profile, with a searchable model picker.
-- **Per-project overrides.** Apply a provider globally, or scope it to one repo via `./.claude/settings.local.json`, which yoink adds to your `.gitignore` before writing.
-- **Nothing leaks.** yoink only ever touches seven managed `ANTHROPIC_*` / `CLAUDE_CODE_SUBAGENT_MODEL` keys, warns before writing a token into a git-tracked file, and writes every file atomically.
+- **One key, every harness.** Add a provider once and connect it to pi, omp, opencode, codex, Claude Code, Qwen Code, Kilo Code, Droid, Crush, Goose, Zed, Continue, and Claude Desktop. Rotate the key or change the model list and yoink re-syncs every harness it is connected to.
+- **Subscription logins beyond Claude.** Save and switch ChatGPT (Codex), Kimi Code, Gemini, and GitHub Copilot logins too. Each tool switches inside itself only, so a subscription token never leaks into another tool. See [subscriptions](./docs/subscriptions.md).
+- **Presets and custom providers.** OpenAI, Kimi Code, Moonshot, OpenRouter, DeepSeek, Z.ai, and Ollama are built in. For anything else, yoink probes the base URL to find which of OpenAI Chat, OpenAI Responses, and Anthropic Messages it speaks.
+- **Real model metadata.** Pick as many models as you like from the provider's live list; context windows, output limits, reasoning, and image support come from [models.dev](https://models.dev).
+- **Import what you already have.** `yoink import` finds providers you set up by hand in your harness configs and brings them under management.
+- **Per-project overrides.** Apply a provider to Claude Code globally, or scope it to one repo via `./.claude/settings.local.json`, which yoink offers to add to your `.gitignore` before writing.
+- **Nothing leaks.** Harness configs are written atomically with owner-only permissions and backed up once to `<file>.yoink.bak` (except the per-provider Goose and Claude Desktop files, which yoink owns and deletes on disconnect). In Claude Code, yoink only ever touches seven managed `ANTHROPIC_*` / `CLAUDE_CODE_SUBAGENT_MODEL` keys and warns before writing a key into a git-tracked file.
 - **One binary.** `bun build --compile` bakes the CLI, its deps, and the runtime into a single file. No Node, no runtime to install.
 
 ## Commands
@@ -123,22 +127,71 @@ Actions loop back to the list, so you can switch, add, and prune in one sitting,
 | --- | --- | --- |
 | `yoink` | | Open the interactive account menu |
 | `yoink <name>` | | Switch straight to a saved profile |
-| `yoink add` | `login` | Add an account: Claude sign-in or an external provider |
-| `yoink edit <name>` | | Edit a profile (name, or provider / URL / key / model) |
-| `yoink save <name>` | | Snapshot the current login as a profile |
-| `yoink use <name>` | `switch` | Switch to a saved profile |
-| `yoink list` | `ls` | List all saved profiles |
-| `yoink current` | `who` | Show the active profile |
+| `yoink add` | `login` | Add a Claude account, a Codex, Kimi, Gemini, or Copilot login, or an API-key provider |
+| `yoink edit <name>` | | Edit a profile (name, or a provider's harnesses / models / key / endpoints) |
+| `yoink save <name>` | | Snapshot the current login as a profile (`--tool codex\|kimi\|gemini\|copilot` for other tools) |
+| `yoink use <name>` | `switch` | Switch to a saved profile in the tool it belongs to (`--force` if the tool is running) |
+| `yoink connect <name>` | | Connect a provider to harnesses (pi, omp, opencode, codex, claude-code, qwen, kilo, droid, crush, goose, zed, continue, claude-desktop) |
+| `yoink disconnect <name>` | | Remove a provider from harnesses |
+| `yoink models <name>` | | Choose which models a provider exposes, then re-sync |
+| `yoink harnesses` | | Show detected harnesses and their providers |
+| `yoink import` | | Import providers already configured in your harnesses |
+| `yoink list` | `ls` | List all saved profiles, grouped by tool (`--json` for scripts) |
+| `yoink current` | `who` | Show the active profile (`--tool <tool>` for one tool) |
 | `yoink rename <a> <b>` | | Rename a profile |
 | `yoink remove <name>` | `rm` | Delete a profile |
 | `yoink version` | `-v` | Print the version |
 | `yoink help` | `-h` | Print help |
 
-## External providers
+## Providers across harnesses
 
-`yoink add` also registers any Anthropic-compatible provider. Pick **External provider** and give it a name, a base URL (e.g. `https://openrouter.ai/api`), and an API key. yoink validates the key against `${baseURL}/v1/models`, then shows a searchable picker; the model you choose fills every Claude Code model tier. Switching to a Claude account strips the provider `env` block again so your subscription takes back over.
+Run `yoink add`, pick **Provider (API key)**, choose a preset or **Custom**, paste the key, pick models, and tick the harnesses to connect. Or do it in one line from a script, with the key on stdin:
 
-See [external providers](./docs/external-providers.md) for the full flow.
+```bash
+echo "$FUSE_API_KEY" | yoink add --external --name fuse --provider Fuse \
+  --base-url https://api.fuse.example/v1 --models claude-sonnet-4-5,gpt-5.2 \
+  --connect pi,opencode,omp --default claude-sonnet-4-5 --token-stdin
+
+yoink harnesses
+```
+
+```
+● Claude Code  no providers  /Users/you/.claude/settings.json
+● pi           fuse  /Users/you/.pi/agent/models.json
+● omp          fuse  /Users/you/.omp/agent/models.yml
+● opencode     fuse  /Users/you/.config/opencode/opencode.json
+○ codex        not installed  /Users/you/.codex/config.toml
+```
+
+yoink probed the URL, found which protocols Fuse speaks, looked the two models up on models.dev, and wrote a provider entry into each harness with `claude-sonnet-4-5` as the default. Later changes follow everywhere:
+
+```bash
+yoink models fuse --set claude-sonnet-4-5,gpt-5.2,kimi-k2   # re-syncs pi, omp, opencode
+yoink connect fuse --to claude-code                         # makes Fuse Claude Code's backend
+yoink disconnect fuse --from opencode
+```
+
+codex only connects to providers with an OpenAI Responses endpoint, and Claude Code holds one backend at a time, so connecting a provider there switches the active profile. Goose, Zed, and Claude Desktop are experimental: yoink writes their config, then prints a short notice when one more step is needed, such as exporting the key or selecting the config inside the app. See [providers](./docs/providers.md) and [harnesses](./docs/harnesses.md) for the full flow.
+
+### Supported harnesses
+
+| Harness | Id | Config | Protocols |
+| --- | --- | --- | --- |
+| pi | `pi` | `~/.pi/agent/models.json` | Chat, Responses, Messages |
+| omp | `omp` | `~/.omp/agent/models.yml` | Chat, Responses, Messages |
+| opencode | `opencode` | `~/.config/opencode/opencode.json` | Chat, Messages, Responses |
+| codex | `codex` | `~/.codex/config.toml` | Responses only |
+| Claude Code | `claude-code` | `~/.claude/settings.json` | Messages only |
+| Qwen Code | `qwen` | `~/.qwen/settings.json` | Chat, Responses, Messages |
+| Kilo Code | `kilo` | `~/.config/kilo/kilo.json` | Chat, Messages, Responses |
+| Droid | `droid` | `~/.factory/settings.json` | Messages, Responses, Chat |
+| Crush | `crush` | `~/.config/crush/crush.json` | Chat, Messages |
+| Goose (experimental) | `goose` | `~/.config/goose/custom_providers/` | Chat, Messages |
+| Zed (experimental) | `zed` | `~/.config/zed/settings.json` | Chat, Responses, Messages |
+| Continue | `continue` | `~/.continue/config.yaml` | Chat, Messages |
+| Claude Desktop (experimental) | `claude-desktop` | `Claude-3p/configLibrary/` | Messages only |
+
+Chat is OpenAI Chat Completions, Responses is the OpenAI Responses API, and Messages is Anthropic Messages, each listed in the harness's order of preference.
 
 ## How it works
 
@@ -161,7 +214,9 @@ Full guides live at [yoink.codes](https://yoink.codes) and in [`docs/`](./docs):
 - [Getting started](./docs/getting-started.md)
 - [Usage](./docs/usage.md)
 - [Interactive menu](./docs/interactive-menu.md)
-- [External providers](./docs/external-providers.md)
+- [Providers](./docs/providers.md)
+- [Harnesses](./docs/harnesses.md)
+- [Subscriptions](./docs/subscriptions.md)
 - [How it works](./docs/how-it-works.md)
 - [Development](./docs/development.md) · [Contributing](./docs/contributing.md)
 

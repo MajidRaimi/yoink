@@ -1,6 +1,6 @@
 import type { Route } from "next";
 import type { LucideIcon } from "lucide-react";
-import { BookText, Keyboard, PlugZap, Rocket, SquareTerminal, Workflow } from "lucide-react";
+import { BookText, KeyRound, Keyboard, Layers, PlugZap, Rocket, SquareTerminal, Workflow } from "lucide-react";
 
 export type DocLink = {
   title: string;
@@ -37,10 +37,22 @@ export const docsSections: DocSection[] = [
         icon: Keyboard,
       },
       {
-        title: "External providers",
-        href: "/docs/external-providers",
-        description: "Run OpenRouter, Ollama, or any Anthropic-compatible API.",
+        title: "Providers",
+        href: "/docs/providers",
+        description: "Add an API key once: OpenAI, Kimi, OpenRouter, Ollama, or any compatible API.",
         icon: PlugZap,
+      },
+      {
+        title: "Harnesses",
+        href: "/docs/harnesses",
+        description: "What Yoink writes into pi, opencode, codex, Claude Code, Qwen Code, Zed, and more.",
+        icon: Layers,
+      },
+      {
+        title: "Subscriptions",
+        href: "/docs/subscriptions",
+        description: "Switch ChatGPT (Codex), Kimi Code, Gemini, and GitHub Copilot logins.",
+        icon: KeyRound,
       },
       {
         title: "How it works",

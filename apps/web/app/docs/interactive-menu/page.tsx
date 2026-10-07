@@ -14,7 +14,7 @@ export const metadata = pageMetadata({
 const keymap = [
   { keys: ["↑", "↓"], alt: ["j", "k"], action: "Move between accounts" },
   { keys: ["↵"], action: "Switch to the highlighted account" },
-  { keys: ["n"], action: "Add a new account (Claude sign-in or external provider)" },
+  { keys: ["n"], action: "Add a new account (Claude sign-in or API-key provider)" },
   { keys: ["e"], action: "Edit the highlighted profile" },
   { keys: ["s"], action: "Save your current login as a profile" },
   { keys: ["d"], action: "Delete the highlighted profile, after a confirm" },
@@ -104,10 +104,10 @@ const InteractiveMenuPage = () => (
     <DocsSection heading="Editing from the menu" icon={SquarePen}>
       <p>
         <Kbd>e</Kbd> adapts to the profile type. A Claude account has one editable field, its name
-        (the credentials come from a real login, not from you). An external account opens a field
-        picker: name, provider, base URL, API key, and model, where changing the model re-fetches
-        the provider&apos;s catalog through the searchable picker. Editing the currently active
-        external account re-applies the change to live settings immediately.
+        (the credentials come from a real login, not from you). A provider opens a field picker:
+        harnesses, models, profile id, display name, API key, and endpoints, where changing the
+        models re-fetches the provider&apos;s catalog through the searchable picker. Every change
+        is re-synced into the harnesses the provider is connected to immediately.
       </p>
     </DocsSection>
   </DocsPage>

@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useState, type ReactElement } from "react";
 import { ExternalForm } from "@/features/profiles/external-form";
+import { HarnessChecklist } from "@/features/providers/harness-checklist";
+import { ProviderWizard } from "@/features/providers/provider-wizard";
 import { ProfileList } from "@/features/profiles/profile-list";
 import { useSaveCurrentForm } from "@/features/profiles/save-current-form";
 import { SettingsView } from "@/features/settings/settings-view";
@@ -7,17 +9,17 @@ import { LoginTerminal } from "@/features/terminal/login-terminal";
 import { IconButton } from "@/shared/ui/button";
 import { GearIcon, PlusIcon, YoinkGlyph } from "@/shared/ui/icons";
 import { Kbd } from "@/shared/ui/kbd";
-import { useViewStore } from "@/shared/view-store";
+import { useViewStore, type View } from "@/shared/view-store";
 
 const AddMenu = () => {
   const [open, setOpen] = useState(false);
   const setView = useViewStore((state) => state.setView);
-  const openExternalForm = useViewStore((state) => state.openExternalForm);
+  const openProviderWizard = useViewStore((state) => state.openProviderWizard);
   const showSaveForm = useSaveCurrentForm((state) => state.show);
 
   const items = [
     { label: "Add Claude account", action: () => setView("login") },
-    { label: "Add external provider", action: () => openExternalForm() },
+    { label: "Add provider", action: () => openProviderWizard() },
     {
       label: "Save current login",
       action: () => {
@@ -76,27 +78,51 @@ const Header = () => {
   );
 };
 
-const Footer = () => (
-  <footer className="flex shrink-0 items-center gap-3 border-t border-hairline px-3.5 py-2 font-mono text-[11px] text-faint">
-    <span className="flex items-center gap-1.5">
-      <span className="flex items-center gap-0.5">
-        <Kbd>↑</Kbd>
-        <Kbd>↓</Kbd>
-      </span>
-      navigate
-    </span>
-    <span className="flex items-center gap-1.5">
-      <Kbd>↵</Kbd>
-      switch
-    </span>
-    <span className="flex items-center gap-1.5">
-      <Kbd>esc</Kbd>
-      close
-    </span>
-  </footer>
-);
+type Hint = { keys: readonly string[]; label: string };
 
-export const App = () => {
+const FOOTER_HINTS: Record<View, readonly Hint[]> = {
+  list: [
+    { keys: ["↑", "↓"], label: "navigate" },
+    { keys: ["↵"], label: "open" },
+    { keys: ["esc"], label: "close" },
+  ],
+  harnesses: [
+    { keys: ["↑", "↓"], label: "navigate" },
+    { keys: ["space"], label: "toggle" },
+    { keys: ["esc"], label: "back" },
+  ],
+  "provider-wizard": [
+    { keys: ["↵"], label: "select" },
+    { keys: ["⌘↵"], label: "continue" },
+    { keys: ["esc"], label: "back" },
+  ],
+  external: [
+    { keys: ["↵"], label: "save" },
+    { keys: ["esc"], label: "back" },
+  ],
+  settings: [{ keys: ["esc"], label: "close" }],
+  login: [{ keys: ["esc"], label: "close" }],
+};
+
+const Footer = () => {
+  const view = useViewStore((state) => state.view);
+  return (
+    <footer className="flex shrink-0 items-center gap-3 border-t border-hairline px-3.5 py-2 font-mono text-[11px] text-faint">
+      {FOOTER_HINTS[view].map((hint) => (
+        <span key={hint.label} className="flex items-center gap-1.5">
+          <span className="flex items-center gap-0.5">
+            {hint.keys.map((key) => (
+              <Kbd key={key}>{key}</Kbd>
+            ))}
+          </span>
+          {hint.label}
+        </span>
+      ))}
+    </footer>
+  );
+};
+
+export const App = (): ReactElement => {
   const view = useViewStore((state) => state.view);
   return (
     <main className="relative flex h-full flex-col">
@@ -106,6 +132,8 @@ export const App = () => {
         {view === "settings" && <SettingsView />}
         {view === "login" && <LoginTerminal />}
         {view === "external" && <ExternalForm />}
+        {view === "provider-wizard" && <ProviderWizard />}
+        {view === "harnesses" && <HarnessChecklist />}
       </div>
       <Footer />
     </main>

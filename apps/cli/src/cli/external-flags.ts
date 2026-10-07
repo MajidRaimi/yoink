@@ -1,6 +1,7 @@
 import { YoinkError } from "../shared/errors";
 import { validateHttpUrl } from "../shared/validators";
-import { normalizeBaseUrl } from "../features/provider/service";
+import { stripTrailingSlashes } from "../features/harnesses/endpoint";
+import { parseRawFlags } from "./provider-flags";
 
 export type ExternalAddArgs = {
   name: string;
@@ -18,45 +19,16 @@ export type ExternalEditArgs = {
   tokenFromStdin: boolean;
 };
 
-const VALUE_FLAGS = {
-  "--name": "name",
-  "--provider": "provider",
-  "--base-url": "baseUrl",
-  "--model": "model",
-} as const;
+const TOKEN_STDIN_FLAG = "--token-stdin";
 
-type ValueFlag = keyof typeof VALUE_FLAGS;
-type ValueField = (typeof VALUE_FLAGS)[ValueFlag];
+const EXTERNAL_VALUE_FLAGS: ReadonlySet<string> = new Set(["--name", "--provider", "--base-url", "--model"]);
 
-type ParsedFlags = {
-  values: Partial<Record<ValueField, string>>;
-  tokenFromStdin: boolean;
-};
+const ADD_SWITCH_FLAGS: ReadonlySet<string> = new Set(["--external", TOKEN_STDIN_FLAG]);
 
-const isValueFlag = (arg: string): arg is ValueFlag => arg in VALUE_FLAGS;
+const EDIT_SWITCH_FLAGS: ReadonlySet<string> = new Set([TOKEN_STDIN_FLAG]);
 
-const parseFlags = (args: string[], booleanFlags: ReadonlySet<string>): ParsedFlags => {
-  const values: Partial<Record<ValueField, string>> = {};
-  let tokenFromStdin = false;
-  for (let index = 0; index < args.length; index++) {
-    const arg = args[index];
-    if (arg === undefined) continue;
-    if (arg === "--token-stdin") {
-      tokenFromStdin = true;
-      continue;
-    }
-    if (booleanFlags.has(arg)) continue;
-    if (!isValueFlag(arg)) throw new YoinkError(`Unknown flag "${arg}".`);
-    const value = args[index + 1]?.trim();
-    if (!value || value.startsWith("--")) throw new YoinkError(`Flag ${arg} needs a value.`);
-    values[VALUE_FLAGS[arg]] = value;
-    index++;
-  }
-  return { values, tokenFromStdin };
-};
-
-const requireValue = (values: ParsedFlags["values"], flag: ValueFlag): string => {
-  const value = values[VALUE_FLAGS[flag]];
+const requireValue = (values: ReadonlyMap<string, string>, flag: string): string => {
+  const value = values.get(flag);
   if (!value) throw new YoinkError(`Missing required flag ${flag}.`);
   return value;
 };
@@ -64,32 +36,33 @@ const requireValue = (values: ParsedFlags["values"], flag: ValueFlag): string =>
 const normalizedBaseUrlOrThrow = (raw: string): string => {
   const error = validateHttpUrl(raw);
   if (error) throw new YoinkError(`Invalid --base-url: ${error}`);
-  return normalizeBaseUrl(raw);
+  return stripTrailingSlashes(raw);
 };
 
-export const isExternalAddInvocation = (args: string[]): boolean => args.includes("--external");
+export const isExternalAddInvocation = (args: readonly string[]): boolean => args.includes("--external");
 
-export const hasExternalEditFlags = (args: string[]): boolean =>
-  args.some((arg) => arg === "--token-stdin" || isValueFlag(arg));
+export const hasExternalEditFlags = (args: readonly string[]): boolean =>
+  args.some((arg) => EDIT_SWITCH_FLAGS.has(arg) || EXTERNAL_VALUE_FLAGS.has(arg));
 
-export const parseExternalAddArgs = (args: string[]): ExternalAddArgs => {
-  const { values, tokenFromStdin } = parseFlags(args, new Set(["--external"]));
+export const parseExternalAddArgs = (args: readonly string[]): ExternalAddArgs => {
+  const { values, switches } = parseRawFlags(args, EXTERNAL_VALUE_FLAGS, ADD_SWITCH_FLAGS);
   return {
     name: requireValue(values, "--name"),
     provider: requireValue(values, "--provider"),
     baseUrl: normalizedBaseUrlOrThrow(requireValue(values, "--base-url")),
     model: requireValue(values, "--model"),
-    tokenFromStdin,
+    tokenFromStdin: switches.has(TOKEN_STDIN_FLAG),
   };
 };
 
-export const parseExternalEditArgs = (args: string[]): ExternalEditArgs => {
-  const { values, tokenFromStdin } = parseFlags(args, new Set());
+export const parseExternalEditArgs = (args: readonly string[]): ExternalEditArgs => {
+  const { values, switches } = parseRawFlags(args, EXTERNAL_VALUE_FLAGS, EDIT_SWITCH_FLAGS);
+  const baseUrl = values.get("--base-url");
   return {
-    name: values.name,
-    provider: values.provider,
-    baseUrl: values.baseUrl === undefined ? undefined : normalizedBaseUrlOrThrow(values.baseUrl),
-    model: values.model,
-    tokenFromStdin,
+    name: values.get("--name"),
+    provider: values.get("--provider"),
+    baseUrl: baseUrl === undefined ? undefined : normalizedBaseUrlOrThrow(baseUrl),
+    model: values.get("--model"),
+    tokenFromStdin: switches.has(TOKEN_STDIN_FLAG),
   };
 };

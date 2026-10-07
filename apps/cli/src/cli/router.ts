@@ -3,16 +3,10 @@ import { theme } from "../shared/theme";
 import { runMenu } from "../features/menu/run-menu";
 import { printHelp } from "./help";
 import { VERSION } from "./version";
-import {
-  handleAdd,
-  handleCurrent,
-  handleEdit,
-  handleList,
-  handleRemove,
-  handleRename,
-  handleSave,
-  handleUse,
-} from "./commands";
+import { handleAdd, handleEdit, handleRemove, handleRename } from "./commands";
+import { handleCurrent, handleList, handleSave, handleUse } from "./account-commands";
+import { handlePresets, handleProbe, handleStatus } from "./json-commands";
+import { handleConnect, handleDisconnect, handleHarnesses, handleImport, handleModels } from "./provider-commands";
 
 export const run = async (argv: string[]): Promise<void> => {
   const [command, ...rest] = argv;
@@ -37,11 +31,12 @@ export const run = async (argv: string[]): Promise<void> => {
         break;
       case "list":
       case "ls":
-        await handleList();
+      case "accounts":
+        await handleList(rest);
         break;
       case "current":
       case "who":
-        await handleCurrent();
+        await handleCurrent(rest);
         break;
       case "rename":
         await handleRename(rest);
@@ -49,6 +44,30 @@ export const run = async (argv: string[]): Promise<void> => {
       case "remove":
       case "rm":
         await handleRemove(rest);
+        break;
+      case "connect":
+        await handleConnect(rest);
+        break;
+      case "disconnect":
+        await handleDisconnect(rest);
+        break;
+      case "harnesses":
+        await handleHarnesses(rest);
+        break;
+      case "models":
+        await handleModels(rest);
+        break;
+      case "import":
+        await handleImport(rest);
+        break;
+      case "presets":
+        handlePresets(rest);
+        break;
+      case "probe":
+        await handleProbe(rest);
+        break;
+      case "status":
+        await handleStatus(rest);
         break;
       case "help":
       case "-h":

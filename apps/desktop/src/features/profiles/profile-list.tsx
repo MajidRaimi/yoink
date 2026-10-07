@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useEffectEvent, useMemo, useRef, useState, type ReactElement, type RefCallback } from "react";
 import { ipc, onPanelShown } from "@/shared/ipc";
 import type { Profile } from "@/shared/types";
+import { useTauriEvent } from "@/shared/use-tauri-event";
 import { ConfirmDialog } from "@/shared/ui/dialog";
 import { Input } from "@/shared/ui/input";
 import { useViewStore } from "@/shared/view-store";
@@ -27,14 +28,61 @@ const EmptyState = () => (
   </div>
 );
 
-export const ProfileList = () => {
+const useSearchFocus = (): RefCallback<HTMLInputElement> => {
+  const searchRef = useRef<HTMLInputElement | null>(null);
+
+  useTauriEvent<void>(onPanelShown, () => {
+    searchRef.current?.focus();
+    searchRef.current?.select();
+  });
+
+  return useCallback((node: HTMLInputElement | null) => {
+    searchRef.current = node;
+    node?.focus();
+  }, []);
+};
+
+type ProfileListKeyActions = {
+  enabled: boolean;
+  onStep: (delta: number) => void;
+  onActivate: () => void;
+  onEscape: () => void;
+};
+
+const useProfileListKeys = (actions: ProfileListKeyActions): void => {
+  const onKeyDown = useEffectEvent((event: KeyboardEvent) => {
+    if (!actions.enabled) return;
+    const typing = event.target instanceof HTMLInputElement;
+    if (event.key === "ArrowDown" || (!typing && event.key === "j")) {
+      event.preventDefault();
+      actions.onStep(1);
+    } else if (event.key === "ArrowUp" || (!typing && event.key === "k")) {
+      event.preventDefault();
+      actions.onStep(-1);
+    } else if (event.key === "Enter") {
+      if (event.target instanceof HTMLButtonElement) return;
+      actions.onActivate();
+    } else if (event.key === "Escape") {
+      actions.onEscape();
+    }
+  });
+
+  useEffect(() => {
+    const handler = (event: KeyboardEvent): void => onKeyDown(event);
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
+};
+
+export const ProfileList = (): ReactElement => {
   const { store, error, switchTo, rename, remove, saveCurrent } = useProfiles();
   const openExternalForm = useViewStore((state) => state.openExternalForm);
+  const openHarnesses = useViewStore((state) => state.openHarnesses);
   const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [pendingSwitch, setPendingSwitch] = useState<string | null>(null);
   const [pendingDelete, setPendingDelete] = useState<string | null>(null);
-  const searchRef = useRef<HTMLInputElement>(null);
+  const searchRef = useSearchFocus();
 
   const filtered = useMemo(() => {
     const term = query.trim().toLowerCase();
@@ -46,17 +94,6 @@ export const ProfileList = () => {
   const selected = filtered.length === 0 ? -1 : Math.min(selectedIndex, filtered.length - 1);
   const dialogOpen = pendingSwitch !== null || pendingDelete !== null;
 
-  useEffect(() => {
-    searchRef.current?.focus();
-    const unlisten = onPanelShown(() => {
-      searchRef.current?.focus();
-      searchRef.current?.select();
-    });
-    return () => {
-      void unlisten.then((fn) => fn());
-    };
-  }, []);
-
   const requestSwitch = async (name: string) => {
     if (name === store.current) return;
     const running = await ipc.isClaudeRunning().catch(() => false);
@@ -64,27 +101,22 @@ export const ProfileList = () => {
     else void switchTo(name);
   };
 
-  useEffect(() => {
-    const handler = (event: KeyboardEvent) => {
-      if (dialogOpen) return;
-      const typing = event.target instanceof HTMLInputElement;
-      if (event.key === "ArrowDown" || (!typing && event.key === "j")) {
-        event.preventDefault();
-        setSelectedIndex(Math.min(selected + 1, filtered.length - 1));
-      } else if (event.key === "ArrowUp" || (!typing && event.key === "k")) {
-        event.preventDefault();
-        setSelectedIndex(Math.max(selected - 1, 0));
-      } else if (event.key === "Enter") {
-        if (event.target instanceof HTMLButtonElement) return;
-        const profile = filtered[selected];
-        if (profile) void requestSwitch(profile.name);
-      } else if (event.key === "Escape") {
-        if (query.length > 0) setQuery("");
-        else void ipc.hidePanel();
-      }
-    };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
+  const activate = (profile: Profile): void => {
+    if (profile.type === "external") openHarnesses(profile.name);
+    else void requestSwitch(profile.name);
+  };
+
+  useProfileListKeys({
+    enabled: !dialogOpen,
+    onStep: (delta) => setSelectedIndex(Math.max(0, Math.min(selected + delta, filtered.length - 1))),
+    onActivate: () => {
+      const profile = filtered[selected];
+      if (profile) activate(profile);
+    },
+    onEscape: () => {
+      if (query.length > 0) setQuery("");
+      else void ipc.hidePanel();
+    },
   });
 
   return (
@@ -116,7 +148,7 @@ export const ProfileList = () => {
               selected={index === selected}
               index={index}
               onHover={() => setSelectedIndex(index)}
-              onSwitch={() => void requestSwitch(profile.name)}
+              onActivate={() => activate(profile)}
               onRename={(to) => void rename(profile.name, to)}
               onEdit={profile.type === "external" ? () => openExternalForm(profile.name) : null}
               onDelete={() => setPendingDelete(profile.name)}

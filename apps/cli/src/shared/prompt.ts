@@ -1,9 +1,19 @@
-import { confirm, isCancel, type Option, password, select, text } from "@clack/prompts";
+import {
+  autocompleteMultiselect,
+  confirm,
+  isCancel,
+  multiselect,
+  type Option,
+  password,
+  select,
+  text,
+} from "@clack/prompts";
 
-type TextOptions = Parameters<typeof text>[0];
-type PasswordOptions = Parameters<typeof password>[0];
+export type Validator = (value: string) => string | undefined;
+
+type TextOptions = Omit<Parameters<typeof text>[0], "validate"> & { validate?: Validator };
+type PasswordOptions = Omit<Parameters<typeof password>[0], "validate"> & { validate?: Validator };
 type ConfirmOptions = Parameters<typeof confirm>[0];
-type Validator = NonNullable<TextOptions["validate"]>;
 
 type PromptSelectOptions<T extends string> = {
   message: string;
@@ -14,8 +24,8 @@ type PromptSelectOptions<T extends string> = {
 
 export const normalizePromptValue = (value: string | undefined): string => value?.trim() ?? "";
 
-const withNormalizedInput = (validate: Validator | undefined): Validator | undefined =>
-  validate && ((value) => validate(normalizePromptValue(value)));
+const withNormalizedInput = (validate: Validator | undefined) =>
+  validate && ((value: string | undefined) => validate(normalizePromptValue(value)));
 
 export const promptText = async (options: TextOptions): Promise<string | null> => {
   const value = await text({ ...options, validate: withNormalizedInput(options.validate) });
@@ -36,5 +46,27 @@ export const promptSelect = async <const T extends string>(
   options: PromptSelectOptions<T>,
 ): Promise<T | null> => {
   const value = await select<T>({ ...options, options: [...options.options] });
+  return isCancel(value) ? null : value;
+};
+
+type PromptMultiSelectOptions<T extends string> = {
+  message: string;
+  options: ReadonlyArray<Option<T>>;
+  initialValues?: T[];
+  maxItems?: number;
+  required?: boolean;
+};
+
+export const promptMultiSelect = async <const T extends string>(
+  options: PromptMultiSelectOptions<T>,
+): Promise<T[] | null> => {
+  const value = await multiselect<T>({ ...options, options: [...options.options] });
+  return isCancel(value) ? null : value;
+};
+
+export const promptSearchMultiSelect = async <const T extends string>(
+  options: PromptMultiSelectOptions<T> & { placeholder?: string },
+): Promise<T[] | null> => {
+  const value = await autocompleteMultiselect<T>({ ...options, options: [...options.options] });
   return isCancel(value) ? null : value;
 };

@@ -1,5 +1,6 @@
 import { cancel, note, outro, spinner } from "@clack/prompts";
 import pc from "picocolors";
+import { errorMessage } from "../../../shared/errors";
 import { theme } from "../../../shared/theme";
 import { promptConfirm } from "../../../shared/prompt";
 import { syncCurrentProfile } from "../../switch/service";
@@ -9,11 +10,12 @@ import {
   runClaudeLogin,
   type LiveLogin,
 } from "../../login/service";
-import { listProfiles, saveProfile } from "../../profiles/service";
+import { claudeSaveConflict, listProfiles, saveProfile } from "../../profiles/service";
 import { accountLabel } from "../../profiles/format";
 import { findClaudeProfileByEmail, hasProfileForEmail } from "../../profiles/lookup";
 import { uniqueName } from "../../profiles/naming";
 import type { Profile } from "../../profiles/types";
+import { preservedLoginNote } from "./preserved-login-note";
 import { promptProfileName } from "./prompt-name";
 
 const preserveCurrentLogin = async (before: LiveLogin, profiles: Profile[]): Promise<void> => {
@@ -21,9 +23,7 @@ const preserveCurrentLogin = async (before: LiveLogin, profiles: Profile[]): Pro
   const loader = spinner();
   loader.start("Saving your current login first");
   const saved = await saveProfile(uniqueName(profiles, defaultNameFromEmail(before.email)));
-  loader.stop(
-    `Saved current login as ${theme.accent(saved.name)} ${pc.dim(`(${accountLabel(saved)})`)} — rename it anytime with \`yoink rename\`.`,
-  );
+  loader.stop(preservedLoginNote(saved));
 };
 
 export const addAccountFlow = async (): Promise<void> => {
@@ -37,7 +37,7 @@ export const addAccountFlow = async (): Promise<void> => {
     try {
       await runClaudeLogin();
     } catch (error) {
-      cancel(error instanceof Error ? error.message : "Login failed.");
+      cancel(errorMessage(error, "Login failed."));
       return;
     }
 
@@ -56,7 +56,7 @@ export const addAccountFlow = async (): Promise<void> => {
     const defaultName = existing
       ? existing.name
       : uniqueName(currentProfiles, defaultNameFromEmail(after.email));
-    const name = await promptProfileName(defaultName);
+    const name = await promptProfileName(defaultName, (value) => claudeSaveConflict(currentProfiles, value));
     if (name === null) {
       cancel("Cancelled.");
       return;

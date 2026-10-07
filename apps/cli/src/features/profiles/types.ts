@@ -1,5 +1,48 @@
 import type { OauthAccount } from "../../shared/claude-config";
 
+export const PROTOCOLS = ["anthropic-messages", "openai-chat", "openai-responses"] as const;
+export type Protocol = (typeof PROTOCOLS)[number];
+
+export const HARNESS_IDS = [
+  "claude-code",
+  "pi",
+  "omp",
+  "opencode",
+  "codex",
+  "qwen",
+  "kilo",
+  "droid",
+  "crush",
+  "goose",
+  "zed",
+  "continue",
+  "claude-desktop",
+] as const;
+export type HarnessId = (typeof HARNESS_IDS)[number];
+
+export type Endpoint = {
+  protocol: Protocol;
+  baseUrl: string;
+};
+
+export type ModelInput = "text" | "image";
+
+export type ModelSpec = {
+  id: string;
+  name: string;
+  contextWindow: number;
+  maxOutput: number;
+  reasoning: boolean;
+  input: ModelInput[];
+};
+
+export type Connection = {
+  connectedAt: string;
+  defaultModel?: string;
+};
+
+export type Connections = Partial<Record<HarnessId, Connection>>;
+
 export type ClaudeProfile = {
   type: "claude";
   name: string;
@@ -16,11 +59,61 @@ export type ExternalProfile = {
   token: string;
   model: string;
   updatedAt: string;
+  presetId?: string;
+  endpoints?: Endpoint[];
+  models?: ModelSpec[];
+  connections?: Connections;
 };
 
-export type Profile = ClaudeProfile | ExternalProfile;
+export type ProviderProfile = ExternalProfile & {
+  endpoints: Endpoint[];
+  models: ModelSpec[];
+  connections: Connections;
+};
+
+export const SUBSCRIPTION_TOOLS = ["codex", "kimi", "gemini", "copilot"] as const;
+export type SubscriptionTool = (typeof SUBSCRIPTION_TOOLS)[number];
+
+export type SubscriptionSnapshot = {
+  files: Record<string, string>;
+  keyring?: Record<string, string>;
+};
+
+export type SubscriptionIdentity = {
+  label: string;
+  email?: string;
+  plan?: string;
+  accountId?: string;
+};
+
+export type SubscriptionProfile = {
+  type: SubscriptionTool;
+  name: string;
+  snapshot: SubscriptionSnapshot;
+  identity: SubscriptionIdentity;
+  updatedAt: string;
+};
+
+export type SharedProfile = ClaudeProfile | ExternalProfile;
+
+export type Profile = SharedProfile | SubscriptionProfile;
+
+export const STORE_SCHEMA_VERSION = 2;
+
+export const SUBSCRIPTION_STORE_SCHEMA_VERSION = 1;
+
+export type CurrentByTool = Partial<Record<SubscriptionTool, string>>;
+
+export type SubscriptionStore = {
+  schemaVersion: number;
+  currentByTool: CurrentByTool;
+  profiles: Record<string, SubscriptionProfile>;
+};
 
 export type ProfileStore = {
+  schemaVersion?: number;
   current: string | null;
+  importOffered?: boolean;
+  currentByTool?: CurrentByTool;
   profiles: Record<string, Profile>;
 };

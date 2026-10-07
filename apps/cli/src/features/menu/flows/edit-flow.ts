@@ -1,12 +1,13 @@
 import { cancel, outro } from "@clack/prompts";
+import { errorMessage } from "../../../shared/errors";
 import { theme } from "../../../shared/theme";
 import { assertNever } from "../../../shared/assert-never";
 import { listProfiles, updateProfile } from "../../profiles/service";
-import type { ClaudeProfile } from "../../profiles/types";
+import type { ClaudeProfile, SubscriptionProfile } from "../../profiles/types";
 import { editExternalProfile } from "./edit-external-flow";
 import { promptProfileName } from "./prompt-name";
 
-const editClaudeProfile = async (profile: ClaudeProfile): Promise<void> => {
+const renameAccountProfile = async (profile: ClaudeProfile | SubscriptionProfile): Promise<void> => {
   const newName = await promptProfileName(profile.name);
   if (newName === null) {
     cancel("Cancelled.");
@@ -19,14 +20,14 @@ const editClaudeProfile = async (profile: ClaudeProfile): Promise<void> => {
   try {
     await updateProfile(profile.name, { ...profile, name: newName });
   } catch (error) {
-    cancel(error instanceof Error ? error.message : "Could not rename.");
+    cancel(errorMessage(error, "Could not rename."));
     return;
   }
   outro(`${theme.success("✔")} Renamed to ${theme.accent(newName)}`);
 };
 
 export const editProfileFlow = async (name: string): Promise<void> => {
-  const { current, profiles } = await listProfiles();
+  const { profiles } = await listProfiles();
   const profile = profiles.find((candidate) => candidate.name === name);
   if (!profile) {
     cancel(`No profile named "${name}".`);
@@ -35,10 +36,14 @@ export const editProfileFlow = async (name: string): Promise<void> => {
 
   switch (profile.type) {
     case "external":
-      await editExternalProfile(profile, current === profile.name);
+      await editExternalProfile(profile);
       return;
     case "claude":
-      await editClaudeProfile(profile);
+    case "codex":
+    case "kimi":
+    case "gemini":
+    case "copilot":
+      await renameAccountProfile(profile);
       return;
     default:
       assertNever(profile);

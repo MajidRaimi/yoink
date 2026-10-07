@@ -1,6 +1,6 @@
 import { readClaudeCredentials } from "../../shared/credentials";
 import { readOauthAccount } from "../../shared/claude-config";
-import { YoinkError } from "../../shared/errors";
+import { runInteractiveCommand, wrapForPlatform } from "../../shared/interactive-command";
 
 export type LiveLogin = {
   keychain: string | null;
@@ -18,24 +18,13 @@ export const defaultNameFromEmail = (email: string | null): string => {
   return local && local.length > 0 ? local : "account";
 };
 
-export const buildClaudeLoginCommand = (platform: NodeJS.Platform): string[] =>
-  platform === "win32"
-    ? ["cmd", "/c", "claude", "auth", "login", "--claudeai"]
-    : ["claude", "auth", "login", "--claudeai"];
+const CLAUDE_LOGIN_ARGV = ["claude", "auth", "login", "--claudeai"] as const;
 
-export const runClaudeLogin = async (): Promise<void> => {
-  let proc: ReturnType<typeof Bun.spawn>;
-  try {
-    proc = Bun.spawn(buildClaudeLoginCommand(process.platform), {
-      stdin: "inherit",
-      stdout: "inherit",
-      stderr: "inherit",
-    });
-  } catch {
-    throw new YoinkError("Claude Code CLI not found on PATH. Install Claude Code first.");
-  }
-  const exitCode = await proc.exited;
-  if (exitCode !== 0) {
-    throw new YoinkError("`claude auth login` did not complete successfully.");
-  }
-};
+export const buildClaudeLoginCommand = (platform: NodeJS.Platform): string[] =>
+  wrapForPlatform(CLAUDE_LOGIN_ARGV, platform);
+
+export const runClaudeLogin = async (): Promise<void> =>
+  runInteractiveCommand(CLAUDE_LOGIN_ARGV, {
+    notFound: "Claude Code CLI not found on PATH. Install Claude Code first.",
+    failed: "`claude auth login` did not complete successfully.",
+  });

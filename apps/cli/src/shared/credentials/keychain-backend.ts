@@ -1,5 +1,10 @@
 import { userInfo } from "node:os";
-import { YoinkError } from "../errors";
+import {
+  assertKeychainWriteSucceeded,
+  interpretKeychainRead,
+  planKeychainWrite,
+  type KeychainWritePlan,
+} from "./keychain-command";
 import type { CredentialBackend } from "./types";
 
 const SERVICE = "Claude Code-credentials";
@@ -14,24 +19,29 @@ const read = async (): Promise<string | null> => {
   const [output, exitCode] = await Promise.all([
     new Response(proc.stdout).text(),
     proc.exited,
+    new Response(proc.stderr).text(),
   ]);
-  if (exitCode !== 0) return null;
-  const trimmed = output.trim();
-  return trimmed.length > 0 ? trimmed : null;
+  return interpretKeychainRead(exitCode, output);
 };
 
-const write = async (blob: string): Promise<void> => {
-  const proc = Bun.spawn(
-    ["security", "add-generic-password", "-U", "-s", SERVICE, "-a", account(), "-w", blob],
-    { stdout: "pipe", stderr: "pipe" },
-  );
+const spawnWrite = async (plan: KeychainWritePlan): Promise<{ errorOutput: string; exitCode: number }> => {
+  const proc = Bun.spawn(plan.argv, {
+    stdin: "pipe",
+    stdout: "ignore",
+    stderr: "pipe",
+  });
+  proc.stdin.write(plan.stdin);
+  await proc.stdin.end();
   const [errorOutput, exitCode] = await Promise.all([
     new Response(proc.stderr).text(),
     proc.exited,
   ]);
-  if (exitCode !== 0) {
-    throw new YoinkError(`Failed to write credentials to Keychain: ${errorOutput.trim()}`);
-  }
+  return { errorOutput, exitCode };
+};
+
+const write = async (blob: string): Promise<void> => {
+  const { errorOutput, exitCode } = await spawnWrite(planKeychainWrite(SERVICE, account(), blob));
+  assertKeychainWriteSucceeded(exitCode, errorOutput);
 };
 
 export const keychainBackend: CredentialBackend = { read, write };

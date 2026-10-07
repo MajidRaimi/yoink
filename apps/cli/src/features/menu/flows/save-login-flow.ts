@@ -1,13 +1,14 @@
 import { spinner } from "@clack/prompts";
 import pc from "picocolors";
 import { theme } from "../../../shared/theme";
-import { saveProfile } from "../../profiles/service";
+import { claudeSaveConflict, listProfiles, saveProfile } from "../../profiles/service";
 import { accountLabel } from "../../profiles/format";
 import type { Profile } from "../../profiles/types";
 import { promptProfileName } from "./prompt-name";
 
 export const saveCurrentLogin = async (defaultName: string): Promise<Profile | null> => {
-  const name = await promptProfileName(defaultName);
+  const { profiles } = await listProfiles();
+  const name = await promptProfileName(defaultName, (value) => claudeSaveConflict(profiles, value));
   if (name === null) return null;
   const loader = spinner();
   loader.start("Saving current login");

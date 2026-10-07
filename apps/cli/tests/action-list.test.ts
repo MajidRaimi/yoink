@@ -116,3 +116,39 @@ test("empty list ignores e, then n adds", async () => {
   const r = await drive([], [K.ch("e"), K.ch("n")]);
   expect(asResult(r).action).toBe("add");
 });
+
+const GROUPED: ListOption[] = [
+  { name: "work", label: "work", hint: "work@example.com", isCurrent: true, group: "Claude Code" },
+  { name: "cx-a", label: "cx-a", hint: "a@example.com", isCurrent: false, group: "ChatGPT (Codex)" },
+  { name: "cx-b", label: "cx-b", hint: "b@example.com", isCurrent: true, group: "ChatGPT (Codex)" },
+];
+
+const capture = (): { stream: Writable; text: () => string } => {
+  const chunks: string[] = [];
+  return {
+    stream: new Writable({
+      write(chunk, _enc, cb) {
+        chunks.push(String(chunk));
+        cb();
+      },
+    }),
+    text: () => Bun.stripANSI(chunks.join("")),
+  };
+};
+
+test("grouped rows skip section headers when moving", async () => {
+  const r = await drive(GROUPED, [K.down, K.enter], "work");
+  expect(asResult(r)).toEqual({ action: "switch", name: "cx-a" });
+});
+
+test("grouped rows render one header per tool", async () => {
+  const input = new PassThrough();
+  (input as unknown as { isTTY: boolean }).isTTY = false;
+  const output = capture();
+  const promise = actionList({ options: GROUPED, initialName: "work", input, output: output.stream });
+  input.emit("keypress", "q", { name: "q" });
+  await withTimeout(promise, 3000);
+  const text = output.text();
+  expect(text).toContain("Claude Code");
+  expect(text.split("ChatGPT (Codex)").length - 1).toBe(1);
+});

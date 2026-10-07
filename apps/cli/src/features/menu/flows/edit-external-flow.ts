@@ -1,124 +1,127 @@
-import { note, outro, spinner } from "@clack/prompts";
-import pc from "picocolors";
+import { note, outro } from "@clack/prompts";
+import { errorMessage } from "../../../shared/errors";
 import { theme } from "../../../shared/theme";
 import { promptPassword, promptSelect, promptText } from "../../../shared/prompt";
-import { requireNonEmpty, validateHttpUrl } from "../../../shared/validators";
-import {
-  applyExternalEnv,
-  GLOBAL_SETTINGS_PATH,
-  localSettingsPath,
-  readExternalEnv,
-} from "../../../shared/claude-settings";
-import { fetchModels, normalizeBaseUrl } from "../../provider/service";
-import { pickModel } from "../../provider/pick-model";
-import type { ProviderModel } from "../../provider/types";
-import { updateProfile } from "../../profiles/service";
-import type { ExternalProfile } from "../../profiles/types";
-import { promptProfileName } from "./prompt-name";
+import { withSpinner } from "../../../shared/spinner";
+import { requireNonEmpty, validateHttpUrl, validateProviderId } from "../../../shared/validators";
+import { loadProvider } from "../../harnesses/sync";
+import type { ExternalProfile, ProviderProfile } from "../../profiles/types";
+import { fetchProviderModels, probeProvider } from "../../providers/probe";
+import { lookupModelSpecs } from "../../providers/catalog";
+import { updateProvider, type ProviderPatch } from "../../providers/service";
+import type { ProviderModel } from "../../providers/types";
+import { manageProviderHarnesses } from "./harness-flow";
+import { pickModelSelection } from "./pick-models-flow";
+import { reportOutcomes } from "./report-outcomes";
 
-type FieldChoice = "name" | "provider" | "baseUrl" | "token" | "model" | "done";
+type FieldChoice = "name" | "provider" | "token" | "endpoints" | "models" | "harnesses" | "done";
 
-const nowIso = (): string => new Date().toISOString();
-
-const chooseModelId = async (draft: ExternalProfile): Promise<string | null> => {
-  const loader = spinner();
-  loader.start("Fetching models");
-  let models: ProviderModel[];
-  try {
-    models = await fetchModels(draft.baseUrl, draft.token);
-  } catch (error) {
-    loader.stop(theme.warn("Could not fetch models"));
-    note(theme.warn(error instanceof Error ? error.message : "Fetch failed."), "Model");
-    return null;
-  }
-  loader.stop(`Found ${theme.accent(String(models.length))} models`);
-  const model = await pickModel(models);
-  return model?.id ?? null;
+const warnProvider = (message: string): void => {
+  note(theme.warn(message), "Provider");
 };
 
-const reapplyExternalEdit = async (
-  original: ExternalProfile,
-  draft: ExternalProfile,
-  wasCurrent: boolean,
-): Promise<void> => {
-  if (wasCurrent) {
-    await applyExternalEnv(GLOBAL_SETTINGS_PATH, draft);
-    outro(`${theme.success("✔")} Updated ${theme.accent(draft.name)} ${pc.dim("(re-applied to ~/.claude/settings.json)")}`);
-    return;
-  }
+const withRequestSpinner = <T,>(message: string, task: () => Promise<T>): Promise<T | null> =>
+  withSpinner(message, task, warnProvider, "Request failed.");
 
-  const localPath = localSettingsPath(process.cwd());
-  const localEnv = await readExternalEnv(localPath);
-  const localPinnedToThisProfile =
-    localEnv?.ANTHROPIC_BASE_URL === original.baseUrl &&
-    localEnv?.ANTHROPIC_AUTH_TOKEN === original.token &&
-    localEnv?.ANTHROPIC_MODEL === original.model;
-  if (localPinnedToThisProfile) {
-    await applyExternalEnv(localPath, draft);
-    outro(`${theme.success("✔")} Updated ${theme.accent(draft.name)} ${pc.dim("(re-applied to ./.claude/settings.local.json)")}`);
-    return;
-  }
-
-  outro(`${theme.success("✔")} Updated ${theme.accent(draft.name)}. ${pc.dim("Switch to it (or re-run in its project) to apply the new settings.")}`);
+const listAvailableModels = async (draft: ProviderProfile): Promise<ProviderModel[] | null> => {
+  const endpoint = draft.endpoints[0];
+  if (!endpoint) return null;
+  return withRequestSpinner("Fetching models", () => fetchProviderModels(endpoint, draft.token));
 };
 
-export const editExternalProfile = async (
-  original: ExternalProfile,
-  wasCurrent: boolean,
-): Promise<void> => {
-  let draft: ExternalProfile = { ...original };
-  let key = original.name;
-  let changed = false;
+const promptModelsPatch = async (draft: ProviderProfile): Promise<ProviderPatch | null> => {
+  const available = await listAvailableModels(draft);
+  if (available === null) return null;
+  const ids = await pickModelSelection(
+    available,
+    draft.models.map((model) => model.id),
+  );
+  if (ids === null || ids.length === 0) return null;
+  const kept = draft.models.filter((model) => ids.includes(model.id));
+  const fresh = available.filter((model) => ids.includes(model.id) && !kept.some((existing) => existing.id === model.id));
+  const affinity = { presetId: draft.presetId, baseUrls: draft.endpoints.map((endpoint) => endpoint.baseUrl) };
+  const looked = await withRequestSpinner("Looking up context windows on models.dev", () =>
+    lookupModelSpecs(fresh, { affinity }),
+  );
+  if (looked === null) return null;
+  return { models: [...kept, ...looked] };
+};
 
-  const persist = async (next: ExternalProfile): Promise<void> => {
-    await updateProfile(key, next);
-    draft = next;
-    key = next.name;
-    changed = true;
-  };
+const promptEndpointsPatch = async (draft: ProviderProfile): Promise<ProviderPatch | null> => {
+  const baseUrl = await promptText({
+    message: "Base URL to probe",
+    initialValue: draft.endpoints[0]?.baseUrl ?? draft.baseUrl,
+    validate: validateHttpUrl,
+  });
+  if (baseUrl === null) return null;
+  const result = await withRequestSpinner("Probing endpoints", () => probeProvider({ baseUrl, token: draft.token }));
+  if (result === null) return null;
+  note(result.endpoints.map((endpoint) => `${endpoint.protocol}  ${endpoint.baseUrl}`).join("\n"), "Endpoints");
+  return { endpoints: result.endpoints };
+};
 
-  for (;;) {
-    const field = await promptSelect<FieldChoice>({
-      message: `Edit ${draft.name}`,
-      options: [
-        { value: "name", label: "Name", hint: draft.name },
-        { value: "provider", label: "Provider", hint: draft.provider },
-        { value: "baseUrl", label: "Base URL", hint: draft.baseUrl },
-        { value: "token", label: "API key", hint: "•••••• (hidden)" },
-        { value: "model", label: "Model", hint: draft.model },
-        { value: "done", label: theme.accent("Done") },
-      ],
-      initialValue: "name",
-    });
-    if (field === null || field === "done") break;
-
-    if (field === "name") {
-      const value = await promptProfileName(draft.name);
-      if (value !== null && value !== draft.name) {
-        try {
-          await persist({ ...draft, name: value, updatedAt: nowIso() });
-        } catch (error) {
-          note(theme.warn(error instanceof Error ? error.message : "Could not rename."), "Name");
-        }
-      }
-    } else if (field === "provider") {
-      const value = await promptText({ message: "Provider name", initialValue: draft.provider, validate: requireNonEmpty });
-      if (value !== null) await persist({ ...draft, provider: value, updatedAt: nowIso() });
-    } else if (field === "baseUrl") {
-      const value = await promptText({ message: "Base URL", initialValue: draft.baseUrl, validate: validateHttpUrl });
-      if (value !== null) await persist({ ...draft, baseUrl: normalizeBaseUrl(value), updatedAt: nowIso() });
-    } else if (field === "token") {
+const promptFieldPatch = async (field: FieldChoice, draft: ProviderProfile): Promise<ProviderPatch | null> => {
+  switch (field) {
+    case "name": {
+      const value = await promptText({ message: "Profile id", initialValue: draft.name, validate: validateProviderId });
+      return value === null || value === draft.name ? null : { name: value };
+    }
+    case "provider": {
+      const value = await promptText({ message: "Display name", initialValue: draft.provider, validate: requireNonEmpty });
+      return value === null ? null : { displayName: value };
+    }
+    case "token": {
       const value = await promptPassword({ message: "API key", validate: requireNonEmpty });
-      if (value !== null) await persist({ ...draft, token: value, updatedAt: nowIso() });
-    } else if (field === "model") {
-      const modelId = await chooseModelId(draft);
-      if (modelId !== null) await persist({ ...draft, model: modelId, updatedAt: nowIso() });
+      return value === null ? null : { token: value };
+    }
+    case "endpoints":
+      return promptEndpointsPatch(draft);
+    case "models":
+      return promptModelsPatch(draft);
+    default:
+      return null;
+  }
+};
+
+const fieldOptions = (draft: ProviderProfile) => [
+  { value: "harnesses" as const, label: theme.accent("Harnesses"), hint: Object.keys(draft.connections).join(", ") || "none" },
+  { value: "models" as const, label: "Models", hint: `${draft.models.length} selected` },
+  { value: "name" as const, label: "Profile id", hint: draft.name },
+  { value: "provider" as const, label: "Display name", hint: draft.provider },
+  { value: "token" as const, label: "API key", hint: "hidden" },
+  { value: "endpoints" as const, label: "Endpoints", hint: draft.endpoints.map((endpoint) => endpoint.protocol).join(", ") },
+  { value: "done" as const, label: theme.accent("Done") },
+];
+
+export const editExternalProfile = async (original: ExternalProfile): Promise<void> => {
+  let key = original.name;
+  for (;;) {
+    const draft = await loadProvider(key);
+    const field = await promptSelect<FieldChoice>({ message: `Edit ${draft.name}`, options: fieldOptions(draft) });
+    if (field === null || field === "done") break;
+    if (field === "harnesses") {
+      await manageProviderHarnesses(key);
+      continue;
+    }
+    const patch = await promptFieldPatch(field, draft);
+    if (patch === null) continue;
+    try {
+      reportOutcomes(await updateProvider(key, patch), "Re-synced");
+      key = patch.name ?? key;
+    } catch (error) {
+      warnProvider(errorMessage(error, "Could not save."));
     }
   }
+  outro("Done.");
+};
 
-  if (!changed) {
+export const editProviderModels = async (name: string): Promise<void> => {
+  const draft = await loadProvider(name);
+  const patch = await promptModelsPatch(draft);
+  if (patch === null) {
     outro("No changes.");
     return;
   }
-  await reapplyExternalEdit(original, draft, wasCurrent);
+  reportOutcomes(await updateProvider(name, patch), "Re-synced");
+  outro("Done.");
 };

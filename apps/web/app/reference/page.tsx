@@ -13,11 +13,25 @@ export const metadata = pageMetadata({
 
 const files = [
   { path: "~/.config/yoink/profiles.json", role: "profile store, chmod 600" },
+  { path: "~/.config/yoink/subscriptions.json", role: "subscription login snapshots, chmod 600" },
   { path: "Keychain · Claude Code-credentials", role: "the OAuth credential blob on macOS" },
   { path: "~/.claude/.credentials.json", role: "the OAuth credential blob on Linux and Windows" },
   { path: "~/.claude.json", role: "oauthAccount identity block" },
   { path: "~/.claude/settings.json", role: "global env overrides (7 managed keys)" },
   { path: "./.claude/settings.local.json", role: "project-scoped env overrides" },
+  { path: "~/.pi/agent/models.json", role: "pi providers (settings.json holds the default)" },
+  { path: "~/.omp/agent/models.yml", role: "omp providers (config.yml holds the default)" },
+  { path: "~/.config/opencode/opencode.json", role: "opencode providers and default model" },
+  { path: "~/.codex/config.toml", role: "codex model providers and default model" },
+  { path: "~/.qwen/settings.json", role: "Qwen Code model providers, key env, and default model" },
+  { path: "~/.config/kilo/kilo.json", role: "Kilo Code providers and default model" },
+  { path: "~/.factory/settings.json", role: "Droid custom models" },
+  { path: "~/.config/crush/crush.json", role: "Crush providers and large model" },
+  { path: "~/.config/goose/custom_providers/custom_<id>.json", role: "Goose custom provider (config.yaml holds the default)" },
+  { path: "~/.config/zed/settings.json", role: "Zed language models and agent default" },
+  { path: "~/.continue/config.yaml", role: "Continue models" },
+  { path: "Claude-3p/configLibrary/yoink-<id>.json", role: "Claude Desktop third-party inference config" },
+  { path: "<harness config>.yoink.bak", role: "one-time backup before the first change (not the yoink-owned Goose and Claude Desktop files)" },
 ];
 
 const ReferencePage = () => (
@@ -78,8 +92,9 @@ const ReferencePage = () => (
         </table>
       </div>
       <p>
-        Every write is atomic (temp file + rename). Only the seven managed env keys are ever added
-        to or removed from a settings file.
+        Every write is atomic (temp file + rename), and harness configs are written{" "}
+        <code>0600</code>. Only the seven managed env keys are ever added to or removed from a
+        Claude Code settings file.
       </p>
     </DocsSection>
   </DocsPage>

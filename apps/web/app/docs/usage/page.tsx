@@ -1,6 +1,7 @@
 import { pageMetadata } from "@/lib/seo";
 import { CodeBlock } from "@/components/custom/code-block";
-import { Eye, RefreshCw, Settings2, SquareTerminal } from "lucide-react";
+import Link from "next/link";
+import { Eye, Layers, RefreshCw, Settings2, SquareTerminal } from "lucide-react";
 import { DocsPage, DocsSection } from "@/components/custom/docs-page";
 
 export const metadata = pageMetadata({
@@ -12,7 +13,7 @@ export const metadata = pageMetadata({
 const UsagePage = () => (
   <DocsPage
     title="Usage"
-    description="Ten commands, most of which you will never need because the menu covers them."
+    description="Account switching, plus provider commands that work with or without a terminal UI."
     path="/docs/usage/"
   >
     <DocsSection heading="The two you will actually type" icon={SquareTerminal}>
@@ -33,16 +34,53 @@ yoink <name>`}
         prompt
         code={`yoink add
 yoink save ci-account
+yoink save codex-work --tool codex
 yoink edit work
 yoink rename work humain
 yoink remove old-account`}
       />
       <p>
-        <code>add</code> runs a fresh Claude sign-in or registers an external provider.{" "}
-        <code>save</code> snapshots whatever login is currently live under a name you choose.{" "}
-        <code>edit</code> renames a Claude profile, or changes any field of an external one (name,
-        provider, base URL, API key, model). <code>remove</code> deletes the snapshot only, never
-        your live login.
+        <code>add</code> runs a fresh Claude, Codex, Kimi, Gemini, or Copilot sign-in, or registers
+        an API-key provider. <code>save</code> snapshots whatever login is currently live under a
+        name you choose; add <code>--tool</code> for a{" "}
+        <Link href="/docs/subscriptions" className="text-brand-text underline-offset-2 hover:underline">
+          subscription
+        </Link>{" "}
+        tool.{" "}
+        <code>edit</code> renames a Claude profile, or changes a provider&apos;s harnesses, models,
+        id, display name, API key, or endpoints. <code>remove</code> deletes the snapshot only,
+        never your live login; a provider is disconnected from every harness first.
+      </p>
+    </DocsSection>
+
+    <DocsSection heading="Providers across harnesses" icon={Layers}>
+      <CodeBlock
+        prompt
+        code={`yoink connect fuse --to pi,opencode --default claude-sonnet-4-5
+yoink disconnect fuse --from opencode
+yoink models fuse --set claude-sonnet-4-5,gpt-5.2
+yoink harnesses
+yoink import`}
+      />
+      <p>
+        <code>connect</code> writes a provider into any of the 13 supported harnesses, and{" "}
+        <code>disconnect</code> takes it out. <code>models</code> changes which models it exposes
+        and re-syncs every connected harness. <code>harnesses</code> shows what is installed and
+        where its config lives, and <code>import</code> adopts providers you set up by hand. Each
+        opens a picker when you leave its flag off. Adding a Claude account needs an interactive
+        terminal, but providers can be added from a script with the key on stdin:
+      </p>
+      <CodeBlock
+        prompt
+        code={`echo "$KEY" | yoink add --external --name fuse --base-url https://api.fuse.example/v1 \\
+  --models claude-sonnet-4-5 --connect pi,omp --token-stdin`}
+      />
+      <p>
+        Every flag is listed under{" "}
+        <Link href="/docs/providers" className="text-brand-text underline-offset-2 hover:underline">
+          Providers
+        </Link>
+        .
       </p>
     </DocsSection>
 
@@ -50,11 +88,16 @@ yoink remove old-account`}
       <CodeBlock
         prompt
         code={`yoink list
-yoink current`}
+yoink current
+yoink current --tool codex
+yoink list --json`}
       />
       <p>
-        <code>list</code> prints every profile with its account label; the active one is marked.{" "}
-        <code>current</code> prints just the active profile. Profiles live in{" "}
+        <code>list</code> prints every profile grouped by tool with its account label; the active
+        one in each group is marked. <code>current</code> prints the active profile, or one
+        tool&apos;s with <code>--tool</code>, and <code>list --json</code> is for scripts. A
+        subscription switch from a script refuses while that tool is running unless you pass{" "}
+        <code>--force</code>. Profiles live in{" "}
         <code>~/.config/yoink/profiles.json</code> at chmod 600.
       </p>
     </DocsSection>

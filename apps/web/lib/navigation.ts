@@ -1,6 +1,6 @@
 import type { Route } from "next";
 import type { LucideIcon } from "lucide-react";
-import { BookText, Keyboard, Layers, PlugZap, Rocket, SquareTerminal, Workflow } from "lucide-react";
+import { BookText, KeyRound, Keyboard, Layers, PlugZap, Rocket, SquareTerminal, Workflow } from "lucide-react";
 
 export type DocLink = {
   title: string;
@@ -47,6 +47,12 @@ export const docsSections: DocSection[] = [
         href: "/docs/harnesses",
         description: "What Yoink writes into pi, omp, opencode, codex, and Claude Code.",
         icon: Layers,
+      },
+      {
+        title: "Subscriptions",
+        href: "/docs/subscriptions",
+        description: "Switch ChatGPT (Codex), Kimi Code, Gemini, and GitHub Copilot logins.",
+        icon: KeyRound,
       },
       {
         title: "How it works",

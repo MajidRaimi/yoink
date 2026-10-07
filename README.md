@@ -113,6 +113,7 @@ Actions loop back to the list, so you can switch, add, and prune in one sitting,
 - **Instant switching.** Each profile stores the credential blob (macOS Keychain on macOS, `~/.claude/.credentials.json` on Linux/Windows) plus the `oauthAccount` identity, so a swap is a keystroke, not a browser round-trip.
 - **Never loses a token.** Every switch re-snapshots the active profile from the live credential store first, so a background token refresh is never dropped.
 - **One key, every harness.** Add a provider once and connect it to pi, omp, opencode, codex, and Claude Code. Rotate the key or change the model list and yoink re-syncs every harness it is connected to.
+- **Subscription logins beyond Claude.** Save and switch ChatGPT (Codex), Kimi Code, Gemini, and GitHub Copilot logins too. Each tool switches inside itself only, so a subscription token never leaks into another tool. See [subscriptions](./docs/subscriptions.md).
 - **Presets and custom providers.** OpenAI, Kimi Code, Moonshot, OpenRouter, DeepSeek, Z.ai, and Ollama are built in. For anything else, yoink probes the base URL to find which of OpenAI Chat, OpenAI Responses, and Anthropic Messages it speaks.
 - **Real model metadata.** Pick as many models as you like from the provider's live list; context windows, output limits, reasoning, and image support come from [models.dev](https://models.dev).
 - **Import what you already have.** `yoink import` finds providers you set up by hand in your harness configs and brings them under management.
@@ -126,17 +127,17 @@ Actions loop back to the list, so you can switch, add, and prune in one sitting,
 | --- | --- | --- |
 | `yoink` | | Open the interactive account menu |
 | `yoink <name>` | | Switch straight to a saved profile |
-| `yoink add` | `login` | Add a Claude account or an API-key provider |
+| `yoink add` | `login` | Add a Claude account, a Codex, Kimi, Gemini, or Copilot login, or an API-key provider |
 | `yoink edit <name>` | | Edit a profile (name, or a provider's harnesses / models / key / endpoints) |
-| `yoink save <name>` | | Snapshot the current login as a profile |
-| `yoink use <name>` | `switch` | Switch Claude Code to a saved profile |
+| `yoink save <name>` | | Snapshot the current login as a profile (`--tool codex\|kimi\|gemini\|copilot` for other tools) |
+| `yoink use <name>` | `switch` | Switch to a saved profile in the tool it belongs to (`--force` if the tool is running) |
 | `yoink connect <name>` | | Connect a provider to harnesses (pi, omp, opencode, codex, claude-code) |
 | `yoink disconnect <name>` | | Remove a provider from harnesses |
 | `yoink models <name>` | | Choose which models a provider exposes, then re-sync |
 | `yoink harnesses` | | Show detected harnesses and their providers |
 | `yoink import` | | Import providers already configured in your harnesses |
-| `yoink list` | `ls` | List all saved profiles |
-| `yoink current` | `who` | Show the active profile |
+| `yoink list` | `ls` | List all saved profiles, grouped by tool (`--json` for scripts) |
+| `yoink current` | `who` | Show the active profile (`--tool <tool>` for one tool) |
 | `yoink rename <a> <b>` | | Rename a profile |
 | `yoink remove <name>` | `rm` | Delete a profile |
 | `yoink version` | `-v` | Print the version |
@@ -195,6 +196,7 @@ Full guides live at [yoink.codes](https://yoink.codes) and in [`docs/`](./docs):
 - [Interactive menu](./docs/interactive-menu.md)
 - [Providers](./docs/providers.md)
 - [Harnesses](./docs/harnesses.md)
+- [Subscriptions](./docs/subscriptions.md)
 - [How it works](./docs/how-it-works.md)
 - [Development](./docs/development.md) · [Contributing](./docs/contributing.md)
 

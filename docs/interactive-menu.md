@@ -20,11 +20,13 @@ The active profile is marked with a green dot. Highlighting a row and pressing `
 | --- | --- |
 | `↑` / `↓` or `j` / `k` | Move the highlight (wraps at the top and bottom) |
 | `Enter` | Switch to the highlighted profile |
-| `n` | Add a new account (Claude sign-in or an API-key provider) |
+| `n` | Add a new account (Claude sign-in, a Codex, Kimi, Gemini, or Copilot login, or an API-key provider) |
 | `e` | Edit the highlighted profile |
 | `s` | Save the current live login as a new profile |
 | `d` | Delete the highlighted profile (after a confirmation) |
 | `q` / `Esc` / `Ctrl-C` | Quit |
+
+With [subscription logins](./subscriptions.md) saved, rows are grouped by tool under a section header (Claude Code, ChatGPT (Codex), Kimi Code, Gemini, GitHub Copilot), each with its own active marker. `Enter` switches within the highlighted row's tool and leaves the others alone.
 
 Switching from the menu behaves the same as [`yoink use`](./usage.md): it warns if Claude Code is running, and no-ops if the highlighted profile is already active. See [How it works](./how-it-works.md) for what a switch changes on disk and in the credential store.
 

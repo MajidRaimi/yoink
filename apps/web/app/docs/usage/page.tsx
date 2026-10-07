@@ -34,13 +34,19 @@ yoink <name>`}
         prompt
         code={`yoink add
 yoink save ci-account
+yoink save codex-work --tool codex
 yoink edit work
 yoink rename work humain
 yoink remove old-account`}
       />
       <p>
-        <code>add</code> runs a fresh Claude sign-in or registers an API-key provider.{" "}
-        <code>save</code> snapshots whatever login is currently live under a name you choose.{" "}
+        <code>add</code> runs a fresh Claude, Codex, Kimi, Gemini, or Copilot sign-in, or registers
+        an API-key provider. <code>save</code> snapshots whatever login is currently live under a
+        name you choose; add <code>--tool</code> for a{" "}
+        <Link href="/docs/subscriptions" className="text-brand-text underline-offset-2 hover:underline">
+          subscription
+        </Link>{" "}
+        tool.{" "}
         <code>edit</code> renames a Claude profile, or changes a provider&apos;s harnesses, models,
         id, display name, API key, or endpoints. <code>remove</code> deletes the snapshot only,
         never your live login; a provider is disconnected from every harness first.
@@ -82,11 +88,16 @@ yoink import`}
       <CodeBlock
         prompt
         code={`yoink list
-yoink current`}
+yoink current
+yoink current --tool codex
+yoink list --json`}
       />
       <p>
-        <code>list</code> prints every profile with its account label; the active one is marked.{" "}
-        <code>current</code> prints just the active profile. Profiles live in{" "}
+        <code>list</code> prints every profile grouped by tool with its account label; the active
+        one in each group is marked. <code>current</code> prints the active profile, or one
+        tool&apos;s with <code>--tool</code>, and <code>list --json</code> is for scripts. A
+        subscription switch from a script refuses while that tool is running unless you pass{" "}
+        <code>--force</code>. Profiles live in{" "}
         <code>~/.config/yoink/profiles.json</code> at chmod 600.
       </p>
     </DocsSection>

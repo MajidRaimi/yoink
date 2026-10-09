@@ -1,14 +1,12 @@
 import type { Options } from "minisearch";
-import type { DocSection } from "@/shared/contract";
-import type { DocSlug } from "@/shared/lib/routes";
 
 export const SEARCH_INDEX_PATH = "/search-index.json";
 
 export type SearchSection = {
   id: string;
-  slug: DocSlug;
+  path: string;
   title: string;
-  section: DocSection;
+  group: string;
   heading: string;
   anchor: string;
   text: string;
@@ -18,7 +16,7 @@ export type SearchHit = Omit<SearchSection, "text">;
 
 export const SEARCH_OPTIONS: Options<SearchSection> = {
   fields: ["heading", "title", "text"],
-  storeFields: ["slug", "title", "section", "heading", "anchor"],
+  storeFields: ["path", "title", "group", "heading", "anchor"],
   searchOptions: {
     boost: { heading: 3, title: 2 },
     prefix: true,

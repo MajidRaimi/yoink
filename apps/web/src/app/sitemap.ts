@@ -1,12 +1,12 @@
 import type { MetadataRoute } from "next";
+import { indexablePaths } from "@/features/docs/collections";
 import { canonicalUrl } from "@/features/seo/metadata";
 import { pageDates } from "@/features/seo/page-dates";
-import { INDEXABLE_PATHS } from "@/shared/lib/routes";
 
 export const dynamic = "force-static";
 
 const sitemap = (): MetadataRoute.Sitemap =>
-  INDEXABLE_PATHS.map((path) => ({
+  indexablePaths().map((path) => ({
     url: canonicalUrl(path),
     lastModified: pageDates(path).modified,
   }));

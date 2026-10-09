@@ -5,7 +5,7 @@ import { markdownTwinPath, markdownTwins, type MarkdownTwin } from "@/features/s
 const WEB_ROOT = resolve(import.meta.dir, "..");
 
 export const twinFile = (outDir: string, twin: MarkdownTwin): string =>
-  join(outDir, ...markdownTwinPath(twin.slug).split("/").filter((part) => part.length > 0));
+  join(outDir, ...markdownTwinPath(twin.path).split("/").filter((part) => part.length > 0));
 
 export const writeMarkdownTwins = (outDir: string, twins: readonly MarkdownTwin[] = markdownTwins()): number => {
   if (!existsSync(outDir)) throw new Error(`write-markdown-twins: ${outDir} does not exist. Run next build first.`);

@@ -15,19 +15,19 @@ A harness is a coding agent (or an editor or desktop app with an agent) that rea
 
 | Harness | Id | Config yoink writes | Format | Protocols (in order of preference) | Default model |
 | --- | --- | --- | --- | --- | --- |
-| pi | `pi` | `~/.pi/agent/models.json` and `settings.json` | JSON | `openai-chat`, `openai-responses`, `anthropic-messages` | `defaultProvider` and `defaultModel: "<provider>/<model>"` in `settings.json` |
-| omp | `omp` | `~/.omp/agent/models.yml` and `config.yml` | YAML | `openai-chat`, `openai-responses`, `anthropic-messages` | `modelRoles.default: <provider>/<model>` in `config.yml` |
-| opencode | `opencode` | `~/.config/opencode/opencode.json` | JSON or JSONC | `openai-chat`, `anthropic-messages`, `openai-responses` | `"model": "<provider>/<model>"` |
-| codex | `codex` | `~/.codex/config.toml` | TOML | `openai-responses` only | `model = "<model>"` and `model_provider = "<provider>"` |
-| Claude Code | `claude-code` | `~/.claude/settings.json` | JSON (`env` block) | `anthropic-messages` only | `ANTHROPIC_MODEL` and every model tier |
-| Qwen Code | `qwen` | `~/.qwen/settings.json` | JSON | `openai-chat`, `openai-responses`, `anthropic-messages` | `model.name` and `security.auth.selectedType` |
-| Kilo Code | `kilo` | `~/.config/kilo/kilo.json` | JSON or JSONC | `openai-chat`, `anthropic-messages`, `openai-responses` | `"model": "<provider>/<model>"` |
-| Droid | `droid` | `~/.factory/settings.json` | JSON | `anthropic-messages`, `openai-responses`, `openai-chat` | not set |
-| Crush | `crush` | `~/.config/crush/crush.json` | JSON | `openai-chat`, `anthropic-messages` | `models.large: { provider, model }` |
-| Goose (experimental) | `goose` | `~/.config/goose/custom_providers/custom_<provider>.json` and `config.yaml` | JSON and YAML | `openai-chat`, `anthropic-messages` | `GOOSE_PROVIDER: custom_<provider>` and `GOOSE_MODEL` in `config.yaml` |
-| Zed (experimental) | `zed` | `~/.config/zed/settings.json` | JSONC | `openai-chat`, `openai-responses`, `anthropic-messages` | `agent.default_model: { provider, model }` |
-| Continue | `continue` | `~/.continue/config.yaml` | YAML | `openai-chat`, `anthropic-messages` | the chosen model moves to the top of `models` |
-| Claude Desktop (experimental) | `claude-desktop` | `Claude-3p/configLibrary/yoink-<provider>.json` | JSON | `anthropic-messages` only | first entry of `inferenceModels` |
+| [pi](./harnesses/pi.md) | `pi` | `~/.pi/agent/models.json` and `settings.json` | JSON | `openai-chat`, `openai-responses`, `anthropic-messages` | `defaultProvider` and `defaultModel: "<provider>/<model>"` in `settings.json` |
+| [omp](./harnesses/omp.md) | `omp` | `~/.omp/agent/models.yml` and `config.yml` | YAML | `openai-chat`, `openai-responses`, `anthropic-messages` | `modelRoles.default: <provider>/<model>` in `config.yml` |
+| [opencode](./harnesses/opencode.md) | `opencode` | `~/.config/opencode/opencode.json` | JSON or JSONC | `openai-chat`, `anthropic-messages`, `openai-responses` | `"model": "<provider>/<model>"` |
+| [codex](./harnesses/codex.md) | `codex` | `~/.codex/config.toml` | TOML | `openai-responses` only | `model = "<model>"` and `model_provider = "<provider>"` |
+| [Claude Code](./harnesses/claude-code.md) | `claude-code` | `~/.claude/settings.json` | JSON (`env` block) | `anthropic-messages` only | `ANTHROPIC_MODEL` and every model tier |
+| [Qwen Code](./harnesses/qwen.md) | `qwen` | `~/.qwen/settings.json` | JSON | `openai-chat`, `openai-responses`, `anthropic-messages` | `model.name` and `security.auth.selectedType` |
+| [Kilo Code](./harnesses/kilo.md) | `kilo` | `~/.config/kilo/kilo.json` | JSON or JSONC | `openai-chat`, `anthropic-messages`, `openai-responses` | `"model": "<provider>/<model>"` |
+| [Droid](./harnesses/droid.md) | `droid` | `~/.factory/settings.json` | JSON | `anthropic-messages`, `openai-responses`, `openai-chat` | not set |
+| [Crush](./harnesses/crush.md) | `crush` | `~/.config/crush/crush.json` | JSON | `openai-chat`, `anthropic-messages` | `models.large: { provider, model }` |
+| [Goose](./harnesses/goose.md) (experimental) | `goose` | `~/.config/goose/custom_providers/custom_<provider>.json` and `config.yaml` | JSON and YAML | `openai-chat`, `anthropic-messages` | `GOOSE_PROVIDER: custom_<provider>` and `GOOSE_MODEL` in `config.yaml` |
+| [Zed](./harnesses/zed.md) (experimental) | `zed` | `~/.config/zed/settings.json` | JSONC | `openai-chat`, `openai-responses`, `anthropic-messages` | `agent.default_model: { provider, model }` |
+| [Continue](./harnesses/continue.md) | `continue` | `~/.continue/config.yaml` | YAML | `openai-chat`, `anthropic-messages` | the chosen model moves to the top of `models` |
+| [Claude Desktop](./harnesses/claude-desktop.md) (experimental) | `claude-desktop` | `Claude-3p/configLibrary/yoink-<provider>.json` | JSON | `anthropic-messages` only | first entry of `inferenceModels` |
 
 yoink picks the first protocol in the harness's order that the provider supports. A harness the provider has no compatible endpoint for is shown but cannot be selected.
 
@@ -113,7 +113,7 @@ Write a provider into one or more harnesses. Without `--to`, it opens the harnes
 ```bash
 yoink connect fuse
 yoink connect fuse --to pi,opencode,omp --default claude-sonnet-4-5
-yoink connect openai --to codex --default gpt-5.2-codex
+yoink connect openai-api --to codex --default gpt-5.2-codex
 yoink connect fuse --to qwen,kilo,crush,continue
 ```
 

@@ -1,12 +1,12 @@
 "use client";
 
 import { useMemo } from "react";
-import { isDocSection } from "@/shared/contract";
-import { isDocSlug } from "@/shared/lib/routes";
 import { MIN_QUERY_LENGTH, SEARCH_RESULT_LIMIT, type SearchHit } from "./search-options";
 import type { SearchIndexState } from "./use-search-index";
 
 const textField = (value: unknown): string => (typeof value === "string" ? value : "");
+
+const isSitePath = (value: string): boolean => value.startsWith("/") && value.endsWith("/");
 
 export const useDocsSearch = (query: string, state: SearchIndexState): readonly SearchHit[] =>
   useMemo(() => {
@@ -16,15 +16,14 @@ export const useDocsSearch = (query: string, state: SearchIndexState): readonly 
       .search(term)
       .slice(0, SEARCH_RESULT_LIMIT)
       .flatMap((result): SearchHit[] => {
-        const slug = textField(result.slug);
-        const section: unknown = result.section;
-        if (!isDocSlug(slug) || !isDocSection(section)) return [];
+        const path = textField(result.path);
+        if (!isSitePath(path)) return [];
         return [
           {
             id: String(result.id),
-            slug,
+            path,
             title: textField(result.title),
-            section,
+            group: textField(result.group),
             heading: textField(result.heading),
             anchor: textField(result.anchor),
           },

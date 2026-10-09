@@ -5,8 +5,10 @@ import type { TreeNode } from "./syntax-tree";
 
 const parser = createProcessor({ format: "md", remarkPlugins: [remarkGfm] });
 
+export const parseMarkdown = (markdown: string): TreeNode => parser.parse(markdown);
+
 export const parseDocBody = (body: string): TreeNode => {
-  const tree: TreeNode = parser.parse(body);
+  const tree = parseMarkdown(body);
   dropLeadingH1(tree);
   return tree;
 };

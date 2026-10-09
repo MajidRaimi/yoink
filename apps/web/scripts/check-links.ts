@@ -1,7 +1,8 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { extname, join, relative, resolve, sep } from "node:path";
 import { site } from "../src/shared/brand/site";
-import { DOC_ALIASES, INDEXABLE_PATHS, type DocAlias } from "../src/shared/lib/routes";
+import { indexablePaths } from "../src/features/docs/collections";
+import { COLLECTION_ALIAS_TARGETS, DOC_ALIASES, type DocAlias } from "../src/shared/lib/routes";
 
 export type LinkKind = "href" | "src" | "srcset" | "og:image" | "twitter:image" | "canonical" | "sitemap";
 
@@ -32,7 +33,10 @@ const LOCAL_ORIGIN = "http://check-links.local";
 const SITE_ORIGIN = new URL(site.url).origin;
 const SKIPPED_PROTOCOLS: ReadonlySet<string> = new Set(["mailto:", "tel:", "javascript:", "data:", "blob:", "sms:"]);
 
-const ALIAS_PAGES: readonly string[] = (Object.keys(DOC_ALIASES) as DocAlias[]).map((alias) => `docs/${alias}/index.html`);
+const ALIAS_PAGES: readonly string[] = [
+  ...(Object.keys(DOC_ALIASES) as DocAlias[]).map((alias) => `docs/${alias}/index.html`),
+  ...Object.keys(COLLECTION_ALIAS_TARGETS).map((alias) => `${alias}/index.html`),
+];
 
 export const REQUIRED_FILES: readonly string[] = [
   "install.sh",
@@ -186,7 +190,7 @@ export type CheckLinksResult = {
 };
 
 export const checkLinks = async (outDir: string, options: CheckLinksOptions = {}): Promise<CheckLinksResult> => {
-  const { indexablePaths = INDEXABLE_PATHS } = options;
+  const indexable = options.indexablePaths ?? indexablePaths();
   const problems: LinkProblem[] = [];
   for (const required of REQUIRED_FILES) {
     if (!isFile(join(outDir, required))) {
@@ -206,7 +210,7 @@ export const checkLinks = async (outDir: string, options: CheckLinksOptions = {}
     return scan;
   };
 
-  for (const path of indexablePaths) {
+  for (const path of indexable) {
     const file = resolveToFile(outDir, path);
     if (file === null) {
       problems.push({ source: "out", kind: "indexable", value: path, reason: "indexable page is missing" });

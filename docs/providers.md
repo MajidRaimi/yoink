@@ -32,13 +32,13 @@ Presets know their endpoints, so yoink only needs a key. With a preset, yoink li
 
 | Preset id | Provider | Endpoints |
 | --- | --- | --- |
-| `openai` | OpenAI | `openai-responses` and `openai-chat` at `https://api.openai.com/v1` |
-| `kimi-code` | Kimi Code | `openai-chat` at `https://api.kimi.com/coding/v1`, `anthropic-messages` at `https://api.kimi.com/coding` |
-| `moonshot` | Moonshot AI | `openai-chat` at `https://api.moonshot.ai/v1`, `anthropic-messages` at `https://api.moonshot.ai/anthropic` |
-| `openrouter` | OpenRouter | `openai-chat` at `https://openrouter.ai/api/v1`, `anthropic-messages` at `https://openrouter.ai/api` |
-| `deepseek` | DeepSeek | `openai-chat` at `https://api.deepseek.com/v1`, `anthropic-messages` at `https://api.deepseek.com/anthropic` |
-| `zai` | Z.ai | `openai-chat` at `https://api.z.ai/api/paas/v4`, `anthropic-messages` at `https://api.z.ai/api/anthropic` |
-| `ollama` | Ollama (local) | `openai-chat` at `http://localhost:11434/v1` |
+| [`openai`](./providers/openai.md) | OpenAI | `openai-responses` and `openai-chat` at `https://api.openai.com/v1` |
+| [`kimi-code`](./providers/kimi-code.md) | Kimi Code | `openai-chat` at `https://api.kimi.com/coding/v1`, `anthropic-messages` at `https://api.kimi.com/coding` |
+| [`moonshot`](./providers/moonshot.md) | Moonshot AI | `openai-chat` at `https://api.moonshot.ai/v1`, `anthropic-messages` at `https://api.moonshot.ai/anthropic` |
+| [`openrouter`](./providers/openrouter.md) | OpenRouter | `openai-chat` at `https://openrouter.ai/api/v1`, `anthropic-messages` at `https://openrouter.ai/api` |
+| [`deepseek`](./providers/deepseek.md) | DeepSeek | `openai-chat` at `https://api.deepseek.com/v1`, `anthropic-messages` at `https://api.deepseek.com/anthropic` |
+| [`zai`](./providers/zai.md) | Z.ai | `openai-chat` at `https://api.z.ai/api/paas/v4`, `anthropic-messages` at `https://api.z.ai/api/anthropic` |
+| [`ollama`](./providers/ollama.md) | Ollama (local) | `openai-chat` at `http://localhost:11434/v1` |
 
 ### Custom providers and endpoint probing
 

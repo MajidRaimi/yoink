@@ -1,10 +1,20 @@
 import AxeBuilder from "@axe-core/playwright";
 import type { ConsoleMessage, Locator, Page } from "@playwright/test";
-import { DOC_ALIASES, INDEXABLE_PATHS, docPath, withTrailingSlash, type DocAlias } from "../src/shared/lib/routes";
+import { indexablePaths } from "../src/features/docs/collections";
+import {
+  canonicalPath,
+  COLLECTION_ALIAS_TARGETS,
+  DOC_ALIASES,
+  docPath,
+  withTrailingSlash,
+  type CollectionAlias,
+  type DocAlias,
+} from "../src/shared/lib/routes";
 
 export type AliasRoute = {
   path: string;
   target: string;
+  canonical: string;
 };
 
 export const VIEWPORT_WIDTHS: readonly number[] = [360, 375, 768, 1280];
@@ -13,14 +23,25 @@ export const VIEWPORT_HEIGHT = 900;
 
 export const NOT_FOUND_PATH = "/this-page-does-not-exist/";
 
-export const ALIAS_ROUTES: readonly AliasRoute[] = (Object.keys(DOC_ALIASES) as DocAlias[]).map((alias) => ({
+const DOC_ALIAS_ROUTES: readonly AliasRoute[] = (Object.keys(DOC_ALIASES) as DocAlias[]).map((alias) => ({
   path: withTrailingSlash(`/docs/${alias}`),
   target: docPath(DOC_ALIASES[alias]),
+  canonical: docPath(DOC_ALIASES[alias]),
 }));
 
-export const PAGE_PATHS: readonly string[] = INDEXABLE_PATHS;
+const COLLECTION_ALIAS_ROUTES: readonly AliasRoute[] = (Object.keys(COLLECTION_ALIAS_TARGETS) as CollectionAlias[]).map(
+  (alias) => ({
+    path: withTrailingSlash(`/${alias}`),
+    target: COLLECTION_ALIAS_TARGETS[alias],
+    canonical: canonicalPath(COLLECTION_ALIAS_TARGETS[alias]),
+  }),
+);
 
-export const DOC_PAGE_PATHS: readonly string[] = INDEXABLE_PATHS.filter((path) => path.startsWith("/docs/"));
+export const ALIAS_ROUTES: readonly AliasRoute[] = [...DOC_ALIAS_ROUTES, ...COLLECTION_ALIAS_ROUTES];
+
+export const PAGE_PATHS: readonly string[] = indexablePaths();
+
+export const DOC_PAGE_PATHS: readonly string[] = PAGE_PATHS.filter((path) => path.startsWith("/docs/"));
 
 export type ConsoleErrorTracker = {
   errors: () => readonly string[];

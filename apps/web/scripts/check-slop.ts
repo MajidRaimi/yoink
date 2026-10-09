@@ -43,6 +43,7 @@ const SOURCE_FILES: readonly string[] = [
 const PUBLIC_ROOT = join(WEB_ROOT, "public");
 const PUBLIC_EXTENSIONS: ReadonlySet<string> = new Set([".svg", ".webmanifest"]);
 const DOCS_ROOT = join(REPO_ROOT, "docs");
+const MARKDOWN_EXTENSIONS: ReadonlySet<string> = new Set([".md"]);
 const SKIPPED_DIRECTORIES: ReadonlySet<string> = new Set(["node_modules", ".next", "out", ".lighthouseci", "test-results"]);
 const SCANNED_EXTENSIONS: ReadonlySet<string> = new Set([
   ".ts",
@@ -389,11 +390,7 @@ export const collectSlopTargets = (): readonly string[] => {
   const sources = SOURCE_ROOTS.filter(exists).flatMap((root) => walk(root));
   const extras = SOURCE_FILES.filter(exists);
   const publicFiles = exists(PUBLIC_ROOT) ? walk(PUBLIC_ROOT, PUBLIC_EXTENSIONS) : [];
-  const docs = exists(DOCS_ROOT)
-    ? readdirSync(DOCS_ROOT)
-        .filter((name) => extname(name) === ".md")
-        .map((name) => join(DOCS_ROOT, name))
-    : [];
+  const docs = exists(DOCS_ROOT) ? walk(DOCS_ROOT, MARKDOWN_EXTENSIONS) : [];
   return [...new Set([...sources, ...extras, ...publicFiles, ...docs])].sort();
 };
 

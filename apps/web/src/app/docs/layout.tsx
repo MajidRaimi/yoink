@@ -1,11 +1,10 @@
 import type { ReactNode } from "react";
-import { DocsShell } from "@/features/docs/components/docs-shell";
-import "@/features/docs/docs.css";
+import { DocsLayout } from "@/features/docs/components/docs-layout";
 
-type DocsLayoutProps = {
+type DocsRouteLayoutProps = {
   children: ReactNode;
 };
 
-const DocsLayout = ({ children }: DocsLayoutProps): React.JSX.Element => <DocsShell>{children}</DocsShell>;
+const DocsRouteLayout = ({ children }: DocsRouteLayoutProps): React.JSX.Element => <DocsLayout>{children}</DocsLayout>;
 
-export default DocsLayout;
+export default DocsRouteLayout;

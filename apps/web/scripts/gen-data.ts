@@ -1,8 +1,11 @@
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { docsDir } from "@/features/docs/docs-dir";
+import { parseEnvOverrides, parseHarnessTable } from "@/features/docs/facts/harness-table";
 import { HARNESS_ADAPTERS } from "../../cli/src/features/harnesses/registry";
 import { PROFILE_GROUP_TITLES } from "../../cli/src/features/profiles/format";
-import { PROVIDER_PRESETS } from "../../cli/src/features/providers/presets";
+import { PROVIDER_PRESETS, type ProviderPreset } from "../../cli/src/features/providers/presets";
+import type { HarnessAdapter } from "../../cli/src/features/harnesses/types";
 import { SUBSCRIPTION_BACKENDS } from "../../cli/src/features/subscriptions/registry";
 
 export type LiteralValue = string | number | boolean | null | readonly LiteralValue[] | { readonly [key: string]: LiteralValue };
@@ -10,6 +13,7 @@ export type LiteralValue = string | number | boolean | null | readonly LiteralVa
 export type ModuleContract = {
   readonly imports: readonly string[];
   readonly satisfies: string;
+  readonly from?: string;
 };
 
 export type GeneratedModule = {
@@ -43,7 +47,7 @@ export const toLiteral = (value: LiteralValue, depth = 0): string => {
 const CONTRACT_MODULE = "@/shared/contract";
 
 const renderImports = (contract: ModuleContract | undefined): readonly string[] =>
-  contract ? [`import type { ${contract.imports.join(", ")} } from "${CONTRACT_MODULE}";`, ""] : [];
+  contract ? [`import type { ${contract.imports.join(", ")} } from "${contract.from ?? CONTRACT_MODULE}";`, ""] : [];
 
 const renderAssertion = (contract: ModuleContract | undefined): string =>
   contract ? `as const satisfies ${contract.satisfies}` : "as const";
@@ -61,6 +65,56 @@ export const renderModule = (
     ...typeLines,
     "",
   ].join("\n");
+
+const FACTS_MODULE = "@/features/docs/facts/types";
+
+export type HarnessSource = Pick<HarnessAdapter, "label" | "protocols" | "experimental" | "exclusive" | "setsDefaultModel"> & {
+  readonly id: string;
+};
+
+export type PresetSource = Pick<ProviderPreset, "id" | "label" | "endpoints" | "keyUrl">;
+
+export class FactsSourceError extends Error {
+  constructor(problem: string) {
+    super(`gen-data facts: ${problem}`);
+    this.name = "FactsSourceError";
+  }
+}
+
+export const buildHarnessFacts = (adapters: readonly HarnessSource[], harnessesMarkdown: string): LiteralValue => {
+  const rows = parseHarnessTable(harnessesMarkdown);
+  const overrides = parseEnvOverrides(harnessesMarkdown);
+  return adapters.map((adapter) => {
+    const row = rows.get(adapter.id);
+    if (row === undefined) throw new FactsSourceError(`docs/harnesses.md has no table row for "${adapter.id}"`);
+    return {
+      id: adapter.id,
+      label: adapter.label,
+      protocols: [...adapter.protocols],
+      experimental: adapter.experimental,
+      exclusive: adapter.exclusive,
+      setsDefaultModel: adapter.setsDefaultModel,
+      configPath: row.configPath,
+      format: row.format,
+      defaultModel: row.defaultModel,
+      envOverrides: [...(overrides.get(adapter.label) ?? [])],
+    };
+  });
+};
+
+export const buildPresetFacts = (presets: readonly PresetSource[], adapters: readonly HarnessSource[]): LiteralValue =>
+  presets.map((preset) => ({
+    id: preset.id,
+    label: preset.label,
+    keyUrl: preset.keyUrl ?? null,
+    endpoints: preset.endpoints.map((endpoint) => ({ protocol: endpoint.protocol, baseUrl: endpoint.baseUrl })),
+    reach: adapters.map((adapter) => ({
+      harness: adapter.id,
+      protocol: adapter.protocols.find((protocol) => preset.endpoints.some((endpoint) => endpoint.protocol === protocol)) ?? null,
+    })),
+  }));
+
+const readHarnessesDoc = (): string => readFileSync(join(docsDir(), "harnesses.md"), "utf8");
 
 export const buildModules = (): GeneratedModule[] => {
   const harnesses = HARNESS_ADAPTERS.map((adapter) => ({
@@ -120,6 +174,24 @@ export const buildModules = (): GeneratedModule[] => {
         groups,
         ["export type ProfileGroupTitle = (typeof PROFILE_GROUP_TITLES)[ProfileGroupKey];"],
         { imports: ["ProfileGroupData", "ProfileGroupKey"], satisfies: "ProfileGroupData" },
+      ),
+    },
+    {
+      fileName: "harness-facts.gen.ts",
+      source: renderModule(
+        "HARNESS_FACTS",
+        buildHarnessFacts(HARNESS_ADAPTERS, readHarnessesDoc()),
+        ["export type HarnessFactsId = (typeof HARNESS_FACTS)[number][\"id\"];"],
+        { imports: ["HarnessFactsData"], satisfies: "readonly HarnessFactsData[]", from: FACTS_MODULE },
+      ),
+    },
+    {
+      fileName: "preset-facts.gen.ts",
+      source: renderModule(
+        "PRESET_FACTS",
+        buildPresetFacts(PROVIDER_PRESETS, HARNESS_ADAPTERS),
+        ["export type PresetFactsId = (typeof PRESET_FACTS)[number][\"id\"];"],
+        { imports: ["PresetFactsData"], satisfies: "readonly PresetFactsData[]", from: FACTS_MODULE },
       ),
     },
   ];

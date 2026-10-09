@@ -2,6 +2,7 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import type { Endpoint, ModelSpec, Protocol, ProviderProfile } from "../../profiles/types";
 import { codexConfigPath, codexOverridingModelProvider, codexProviderOverrideNotice, hasCodexChatGptLogin } from "../../../shared/codex-config";
+import { YoinkError } from "../../../shared/errors";
 import { readOptionalText } from "../../../shared/fs-errors";
 import { normalizeEndpointUrl, sdkBaseUrl } from "../endpoint";
 import type { ConnectOptions, HarnessAdapter, HarnessDetection, ImportedProvider } from "../types";
@@ -68,7 +69,17 @@ const clearDefaultEdit: TomlEdit = {
 const applyEdits = (path: string, source: string, edits: readonly TomlEdit[]): string =>
   edits.reduce((text, edit) => applyTomlEdit(path, text, edit), source);
 
+export const CODEX_RESERVED_PROVIDER_IDS: readonly string[] = ["openai", "ollama", "lmstudio"];
+
+const assertNotReservedId = (providerId: string): void => {
+  if (!CODEX_RESERVED_PROVIDER_IDS.includes(providerId.toLowerCase())) return;
+  throw new YoinkError(
+    `codex reserves the provider id "${providerId}" for its built-in provider and ignores a [model_providers.${providerId}] table. Rename the profile first, for example: yoink rename ${providerId} ${providerId}-api`,
+  );
+};
+
 const connect = async (paths: CodexPaths, provider: ProviderProfile, options: ConnectOptions): Promise<void> => {
+  assertNotReservedId(provider.name);
   const endpoint = requireEndpoint(provider, CODEX_PROTOCOLS, LABEL);
   const path = configPath(paths);
   const source = (await readOptionalText(path)) ?? "";

@@ -79,6 +79,13 @@ experimental_bearer_token = "sk-test-fuse"
 `);
 });
 
+test("connect refuses provider ids that codex reserves for built-in providers", async () => {
+  for (const id of ["openai", "ollama", "LMStudio"]) {
+    await expect(adapter.connect(makeProvider({ name: id }), {})).rejects.toThrow(`codex reserves the provider id "${id}"`);
+  }
+  expect(await Bun.file(join(dir, "config.toml")).exists()).toBe(false);
+});
+
 test("connect requires an openai-responses endpoint", async () => {
   const chatOnly = makeProvider({ endpoints: [{ protocol: "openai-chat", baseUrl: "https://api.fuse.test/v1" }] });
   await expect(adapter.connect(chatOnly, {})).rejects.toThrow("no endpoint");

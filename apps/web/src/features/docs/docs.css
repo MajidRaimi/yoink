@@ -252,3 +252,31 @@ code[data-theme] span {
 .docs-search-dialog div:has(> .docs-search-input:focus-visible) {
   box-shadow: inset 0 -2px 0 var(--ring);
 }
+
+.doc-lead {
+  color: var(--muted);
+  font-size: var(--type-lg);
+}
+
+.doc-faq-item + .doc-faq-item {
+  border-top: 1px solid var(--hairline);
+  padding-top: 1em;
+}
+
+.doc-faq-item > h3 {
+  margin-top: 0;
+}
+
+.doc-faq-answer {
+  margin-top: 0.75em;
+}
+
+.doc-faq-answer > * + * {
+  margin-top: 1em;
+}
+
+.doc-table tbody th {
+  font-weight: 560;
+  text-align: left;
+  vertical-align: top;
+}

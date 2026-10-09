@@ -1,5 +1,4 @@
 import { site } from "@/shared/brand/site";
-import type { DocSlug } from "@/shared/lib/routes";
 import type { ExternalHref } from "@/shared/ui/href";
 
 const RAW_HOST: ExternalHref = `https://raw.githubusercontent.com${new URL(site.repo).pathname}`;
@@ -8,4 +7,4 @@ export const repoBlobUrl = (repoPath: string): ExternalHref => `${site.repo}/blo
 
 export const repoRawUrl = (repoPath: string): ExternalHref => `${RAW_HOST}/main/${repoPath}`;
 
-export const docEditUrl = (slug: DocSlug): ExternalHref => `${site.repo}/edit/main/docs/${slug}.md`;
+export const repoEditUrl = (repoPath: string): ExternalHref => `${site.repo}/edit/main/${repoPath}`;

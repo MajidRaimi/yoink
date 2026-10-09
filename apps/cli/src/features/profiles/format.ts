@@ -11,6 +11,17 @@ export const PROFILE_GROUP_TITLES: Readonly<Record<Profile["type"], string>> = {
   copilot: "GitHub Copilot",
 };
 
+const RESTART_TARGETS: Readonly<Record<Profile["type"], string>> = {
+  claude: "Claude Code",
+  external: "Claude Code",
+  codex: "Codex",
+  kimi: "Kimi Code",
+  gemini: "the Gemini CLI",
+  copilot: "the Copilot CLI",
+};
+
+export const restartHint = (profile: Profile): string => `Restart ${RESTART_TARGETS[profile.type]} to pick up the new login.`;
+
 const externalLabel = (profile: ExternalProfile): string => {
   const models = profile.models ?? [];
   if (models.length <= 1) return `${profile.provider} · ${models[0]?.id ?? profile.model}`;

@@ -17,6 +17,7 @@ export type ListOption = {
   hint: string;
   isCurrent: boolean;
   group?: string;
+  enterLabel?: string;
 };
 
 type ListEntry = { kind: "header"; title: string } | { kind: "option"; option: ListOption; index: number };
@@ -32,11 +33,17 @@ const BAR = pc.gray("│");
 const BAR_START = pc.gray("┌");
 const BAR_END = pc.gray("└");
 
-const helpLine = (): string => {
+const DEFAULT_ENTER_LABEL = "switch";
+const EMPTY_LIST_ENTER_LABEL = "new";
+
+export const enterLabelFor = (option: ListOption | undefined): string =>
+  option === undefined ? EMPTY_LIST_ENTER_LABEL : (option.enterLabel ?? DEFAULT_ENTER_LABEL);
+
+const helpLine = (enterLabel: string): string => {
   const key = (glyph: string) => theme.accent(glyph);
   const parts = [
     `${pc.dim("↑↓/jk")} ${pc.dim("move")}`,
-    `${key("↵")} ${pc.dim("switch")}`,
+    `${key("↵")} ${pc.dim(enterLabel)}`,
     `${key("n")} ${pc.dim("new")}`,
     `${key("e")} ${pc.dim("edit")}`,
     `${key("s")} ${pc.dim("save")}`,
@@ -96,7 +103,7 @@ const renderFrame = (self: ActionListPrompt): string => {
     if (hasBelow) lines.push(`${BAR}  ${pc.dim("↓ …")}`);
   }
 
-  lines.push(BAR, `${BAR_END}  ${helpLine()}`);
+  lines.push(BAR, `${BAR_END}  ${helpLine(enterLabelFor(self.options[self.cursor]))}`);
   return lines.join("\n");
 };
 

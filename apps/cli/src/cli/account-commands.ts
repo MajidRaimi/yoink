@@ -1,7 +1,7 @@
 import pc from "picocolors";
 import { theme } from "../shared/theme";
 import { saveProfile } from "../features/profiles/service";
-import { accountLabel, PROFILE_GROUP_TITLES, switchedLine } from "../features/profiles/format";
+import { accountLabel, PROFILE_GROUP_TITLES, restartHint, switchedLine } from "../features/profiles/format";
 import { groupedProfileLines } from "../features/profiles/grouped-lines";
 import { accountSummaries, currentOverview, loadProfileOverview } from "../features/profiles/overview";
 import type { Profile } from "../features/profiles/types";
@@ -35,6 +35,7 @@ export const handleUse = async (args: string[]): Promise<void> => {
       return;
     case "switched":
       console.log(switchedLine(outcome.profile));
+      console.log(pc.dim(restartHint(outcome.profile)));
       warnNotice(outcome.notice);
       return;
   }

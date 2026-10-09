@@ -1,4 +1,4 @@
-import { log } from "@clack/prompts";
+import { log, note } from "@clack/prompts";
 import pc from "picocolors";
 import { theme } from "../../../shared/theme";
 import { promptMultiSelect } from "../../../shared/prompt";
@@ -7,7 +7,11 @@ import { findAdapter } from "../../harnesses/registry";
 import { markImportOffered } from "../../profiles/import-flag";
 import { scanImportCandidates } from "../../providers/import-scan";
 import { importProvider } from "../../providers/service";
+import { introBanner } from "../banner";
 import { reportOutcomes } from "./report-outcomes";
+
+const FIRST_RUN_INTRO =
+  "yoink keeps your Claude logins and API-key providers in one place, and connects providers to coding tools like pi, opencode and Codex. It found some providers already set up on this machine.";
 
 const candidateKey = (candidate: ImportCandidate, index: number): string => `${index}:${candidate.id}`;
 
@@ -46,7 +50,10 @@ const warnReadFailures = (failures: HarnessReadFailure[]): void => {
 
 export const offerImport = async (): Promise<void> => {
   const { candidates, failures } = await scanImportCandidates();
+  if (candidates.length === 0 && failures.length === 0) return;
+  introBanner("welcome");
   warnReadFailures(failures);
   if (candidates.length === 0) return;
+  note(FIRST_RUN_INTRO, "First run");
   await importCandidatesFlow(candidates);
 };

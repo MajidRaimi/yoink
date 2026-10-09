@@ -1,6 +1,6 @@
 import { cn } from "@/shared/lib/cn";
 import { Line } from "@/features/demos/provider-add/parts/line";
-import { rowWindow } from "@/features/demos/provider-add/selectors";
+import { optionId, rowWindow } from "@/features/demos/provider-add/selectors";
 
 export type OptionKind = "radio" | "checkbox";
 
@@ -34,8 +34,6 @@ const markTone = (kind: OptionKind, row: OptionRow, active: boolean): string => 
   if (active || (kind === "checkbox" && row.checked === true)) return "text-brand-text";
   return "text-muted";
 };
-
-const optionId = (idPrefix: string, key: string): string => `${idPrefix}-option-${key}`;
 
 const MoreLine = ({ count }: { count: number }): React.JSX.Element | null =>
   count === 0 ? null : (

@@ -230,6 +230,14 @@ const switchAccount = (state: PanelState, name: string): PanelState => {
   };
 };
 
+export const withClaudeAccount = (state: PanelState, account: string): PanelState => {
+  const profile = PANEL_PROFILES.find((candidate) => candidate.name === account);
+  if (profile === undefined || state.current === account) return state;
+  const status = `Claude Code is on ${account}. The terminal switched it.`;
+  if (profile.type === "external") return { ...state, current: account, dialog: null, status };
+  return { ...switchAccount(state, account), status };
+};
+
 const openDialog = (state: PanelState, dialog: PanelDialog, status: string): PanelState => ({
   ...state,
   dialog,
@@ -239,7 +247,7 @@ const openDialog = (state: PanelState, dialog: PanelDialog, status: string): Pan
 
 const activateProfile = (state: PanelState): PanelState => {
   const profile = visibleProfiles(state)[selectedProfileIndex(state)];
-  if (profile === undefined) return state;
+  if (profile === undefined) return { ...state, status: `No profiles match "${state.query}".` };
   if (profile.type === "external") {
     return {
       ...state,

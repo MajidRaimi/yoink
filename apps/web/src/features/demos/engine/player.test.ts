@@ -54,4 +54,19 @@ describe("player", () => {
     expect(settled.mode).toBe("done");
     expect(settled.demo).toEqual(computeFinal(counterDemo));
   });
+
+  test("patch applies an outside update and hands control to the user", () => {
+    const started = reduce(initPlayer(counterDemo), { type: "start" });
+    const patched = reduce(started, { type: "patch", update: (state) => ({ ...state, index: 7 }) });
+    expect(patched.mode).toBe("user");
+    expect(patched.demo.index).toBe(7);
+  });
+
+  test("a patch that changes nothing still stops autoplay from taking over later", () => {
+    const idle = initPlayer(counterDemo);
+    const patched = reduce(idle, { type: "patch", update: (state) => state });
+    expect(patched.mode).toBe("user");
+    expect(patched.demo).toBe(idle.demo);
+    expect(reduce(patched, { type: "patch", update: (state) => state })).toBe(patched);
+  });
 });

@@ -4,14 +4,18 @@ import { useCallback, useId } from "react";
 import type { DemoEvent } from "@/shared/contract";
 import { useDemo } from "@/features/demos/engine/use-demo";
 import { menubarPanelDemo } from "@/features/demos/menubar-panel/definition";
+import { useLinkedAccount } from "@/features/demos/linked/use-linked-account";
+import type { DemoIslandProps } from "@/features/demos/linked/types";
+import { panelAccountAdapter } from "@/features/demos/menubar-panel/account";
 import { isTextMode } from "@/features/demos/menubar-panel/machine";
 import { MenubarPanelView } from "@/features/demos/menubar-panel/view";
 
 const DEMO_OPTIONS = { textMode: isTextMode } as const;
 
-const MenubarPanelIsland = (): React.JSX.Element => {
+const MenubarPanelIsland = ({ linked = false }: DemoIslandProps): React.JSX.Element => {
   const idPrefix = useId();
   const demo = useDemo(menubarPanelDemo, DEMO_OPTIONS);
+  useLinkedAccount(demo, panelAccountAdapter, linked);
   const { dispatch } = demo;
   const onInput = useCallback(
     (events: readonly DemoEvent[]): void => events.forEach((event) => dispatch(event)),

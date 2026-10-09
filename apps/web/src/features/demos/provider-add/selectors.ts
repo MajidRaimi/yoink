@@ -24,6 +24,29 @@ export const rowWindow = (count: number, cursor: number, size: number): RowWindo
   return { start, end, above: start, below: count - end };
 };
 
+export const optionId = (idPrefix: string, key: string): string => `${idPrefix}-option-${key}`;
+
+const activeOptionKey = (state: State): string | undefined => {
+  switch (state.phase) {
+    case "preset":
+      return PRESET_OPTIONS[state.presetCursor]?.id;
+    case "models":
+      return filteredModels(state)[state.modelCursor];
+    case "harnesses":
+      return harnessRows(state.source)[state.harnessCursor]?.id;
+    case "claudeDefault":
+    case "default":
+      return defaultOptions(state)[state.defaultCursor];
+    default:
+      return undefined;
+  }
+};
+
+export const activeOptionId = (state: State, idPrefix: string): string | undefined => {
+  const key = activeOptionKey(state);
+  return key === undefined ? undefined : optionId(idPrefix, key);
+};
+
 export const maskKey = (key: string): string => "•".repeat(key.length);
 
 const joinLabels = (labels: readonly string[]): string => labels.join(", ");

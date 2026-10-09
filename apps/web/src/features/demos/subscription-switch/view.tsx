@@ -21,6 +21,7 @@ import { cn } from "@/shared/lib/cn";
 
 export type SubscriptionSwitchViewProps = {
   state: SwitchState;
+  idPrefix: string;
   hints?: readonly DemoHint[];
   onReplay?: () => void;
   rootProps?: DemoRootProps;
@@ -30,12 +31,16 @@ export type SubscriptionSwitchViewProps = {
   onAnswer?: (choice: ConfirmChoice) => void;
 };
 
-const ID_PREFIX = "subscription-switch";
 const ROW_HEIGHT_REM = 2.25;
 
-const tabId = (index: number): string => `${ID_PREFIX}-tab-${index}`;
-const panelId = `${ID_PREFIX}-panel`;
-const rowId = (tool: SwitchTool, index: number): string => `${ID_PREFIX}-${tool}-${index}`;
+const tabId = (idPrefix: string, index: number): string => `${idPrefix}-tab-${index}`;
+const panelId = (idPrefix: string): string => `${idPrefix}-panel`;
+const rowId = (idPrefix: string, tool: SwitchTool, index: number): string => `${idPrefix}-${tool}-${index}`;
+
+const activeRowId = (idPrefix: string, state: SwitchState, tool: SwitchTool): string | undefined =>
+  state.phase.kind === "browse" && loginsFor(tool)[state.cursor] !== undefined
+    ? rowId(idPrefix, tool, state.cursor)
+    : undefined;
 
 const TONE_CLASSES: Readonly<Record<LogTone, string>> = {
   step: "text-foreground",
@@ -52,21 +57,22 @@ const TONE_MARKERS: Readonly<Record<LogTone, string>> = {
 };
 
 type ToolTabsProps = {
+  idPrefix: string;
   activeTab: number;
   onTab?: (tab: number) => void;
 };
 
-const ToolTabs = ({ activeTab, onTab }: ToolTabsProps): React.JSX.Element => (
+const ToolTabs = ({ idPrefix, activeTab, onTab }: ToolTabsProps): React.JSX.Element => (
   <div role="tablist" aria-label="Tools" className="flex flex-wrap gap-x-1 gap-y-1 border-b border-hairline pb-3">
     {TOOLS.map((tool, index) => {
       const selected = index === activeTab;
       return (
         <div
           key={tool}
-          id={tabId(index)}
+          id={tabId(idPrefix, index)}
           role="tab"
           aria-selected={selected}
-          aria-controls={panelId}
+          aria-controls={panelId(idPrefix)}
           onClick={onTab === undefined ? undefined : () => onTab(index)}
           className={cn(
             "rounded-xs px-2 py-1 text-xs whitespace-nowrap transition-colors dur-1",
@@ -82,12 +88,13 @@ const ToolTabs = ({ activeTab, onTab }: ToolTabsProps): React.JSX.Element => (
 );
 
 type LoginListProps = {
+  idPrefix: string;
   state: SwitchState;
   tool: SwitchTool;
   onRow?: (row: number) => void;
 };
 
-const LoginList = ({ state, tool, onRow }: LoginListProps): React.JSX.Element => {
+const LoginList = ({ idPrefix, state, tool, onRow }: LoginListProps): React.JSX.Element => {
   const logins = loginsFor(tool);
   const browsing = state.phase.kind === "browse";
   const minHeight = `${MAX_LOGINS * ROW_HEIGHT_REM}rem`;
@@ -102,7 +109,6 @@ const LoginList = ({ state, tool, onRow }: LoginListProps): React.JSX.Element =>
     <ul
       role="listbox"
       aria-label={`${toolTitle(tool)} logins`}
-      aria-activedescendant={rowId(tool, state.cursor)}
       style={{ minHeight }}
       className="flex flex-col"
     >
@@ -112,7 +118,7 @@ const LoginList = ({ state, tool, onRow }: LoginListProps): React.JSX.Element =>
         return (
           <li
             key={login.name}
-            id={rowId(tool, index)}
+            id={rowId(idPrefix, tool, index)}
             role="option"
             aria-selected={index === state.cursor}
             onClick={onRow === undefined ? undefined : () => onRow(index)}
@@ -234,6 +240,7 @@ const SwitchLog = ({ state }: { state: SwitchState }): React.JSX.Element => (
 
 export const SubscriptionSwitchView = ({
   state,
+  idPrefix,
   hints,
   onReplay,
   rootProps,
@@ -251,11 +258,17 @@ export const SubscriptionSwitchView = ({
       hints={hints}
       onReplay={onReplay}
       rootProps={rootProps}
+      activeDescendant={activeRowId(idPrefix, state, tool)}
     >
       <div className="flex flex-col gap-3">
-        <ToolTabs activeTab={state.tab} onTab={onTab} />
-        <div id={panelId} role="tabpanel" aria-labelledby={tabId(state.tab)} className="flex flex-col gap-2">
-          <LoginList state={state} tool={tool} onRow={onRow} />
+        <ToolTabs idPrefix={idPrefix} activeTab={state.tab} onTab={onTab} />
+        <div
+          id={panelId(idPrefix)}
+          role="tabpanel"
+          aria-labelledby={tabId(idPrefix, state.tab)}
+          className="flex flex-col gap-2"
+        >
+          <LoginList idPrefix={idPrefix} state={state} tool={tool} onRow={onRow} />
           <div className="border-b border-hairline pb-2">
             <RunningToggle tool={tool} running={state.running[tool]} onToggleRunning={onToggleRunning} />
           </div>

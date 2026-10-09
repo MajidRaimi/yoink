@@ -74,14 +74,22 @@ export const PROVIDER_PROFILES: readonly ProviderProfileFixture[] = [
 ];
 
 export const SUBSCRIPTION_LOGINS: readonly SubscriptionLoginFixture[] = [
-  { tool: "codex", name: "work", label: "sara.haddad@lumenlabs.example", email: "sara.haddad@lumenlabs.example", plan: "team" },
-  { tool: "codex", name: "personal", label: "sara@haddad.example", email: "sara@haddad.example", plan: "plus" },
+  {
+    tool: "codex",
+    name: "codex-work",
+    label: "sara.haddad@lumenlabs.example",
+    email: "sara.haddad@lumenlabs.example",
+    plan: "team",
+  },
+  { tool: "codex", name: "codex-personal", label: "sara@haddad.example", email: "sara@haddad.example", plan: "plus" },
   { tool: "kimi", name: "kimi", label: "kimi:d41c9e07", email: null, plan: "global" },
+  { tool: "gemini", name: "gemini", label: "sara@haddad.example", email: "sara@haddad.example", plan: null },
 ];
 
 export const ACTIVE_SUBSCRIPTIONS: Readonly<Partial<Record<SubscriptionTool, string>>> = {
-  codex: "work",
+  codex: "codex-work",
   kimi: "kimi",
+  gemini: "gemini",
 };
 
 export const PRESET_MODELS: Readonly<Record<ProviderPresetId, PresetModelsFixture>> = {

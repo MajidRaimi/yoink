@@ -85,6 +85,4 @@ export const subscriptionLogo = (tool: string): BrandLogo | undefined => lookup(
 export const LOGO_WALL: readonly BrandLogo[] = [
   ...Object.values(HARNESS_LOGOS),
   ...Object.values(PROVIDER_LOGOS),
-  SUBSCRIPTION_LOGOS.gemini,
-  SUBSCRIPTION_LOGOS.copilot,
 ];

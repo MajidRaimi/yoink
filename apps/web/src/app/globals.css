@@ -21,7 +21,7 @@
   --color-brand-text: var(--brand-text);
   --color-on-brand: var(--on-brand);
   --color-ring: var(--ring);
-  --color-success: var(--success);
+  --color-success: var(--success-ink);
   --color-danger: var(--danger);
 
   --radius-xs: var(--corner-xs);
@@ -94,6 +94,14 @@
 @utility focus-ring {
   outline: var(--ring-width) solid var(--ring);
   outline-offset: 2px;
+}
+
+:root {
+  --success-ink: #166534;
+}
+
+.dark {
+  --success-ink: var(--success);
 }
 
 html {

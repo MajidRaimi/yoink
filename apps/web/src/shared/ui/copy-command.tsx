@@ -27,7 +27,12 @@ export const CopyCommand = ({ command, prompt = "$", className }: CopyCommandPro
       <span aria-hidden="true" className="select-none text-brand-text">
         {prompt}
       </span>
-      <code className="min-w-0 flex-1 overflow-x-auto whitespace-nowrap py-1.5 tracking-mono">{command}</code>
+      <code
+        tabIndex={0}
+        className="w-0 min-w-0 flex-1 overflow-x-auto whitespace-nowrap rounded-xs py-1.5 tracking-mono focus-visible:focus-ring"
+      >
+        {command}
+      </code>
       <button
         type="button"
         onClick={() => void copy(command)}

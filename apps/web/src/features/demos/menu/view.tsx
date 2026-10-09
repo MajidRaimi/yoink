@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { ReactNode, RefObject } from "react";
 import { DemoFrame } from "@/features/demos/engine/demo-frame";
 import type { DemoRootProps } from "@/features/demos/engine/use-demo";
 import {
@@ -17,6 +17,7 @@ import { Kbd } from "@/shared/ui/kbd";
 
 export type MenuViewControls = {
   rootProps: DemoRootProps;
+  focusRef: RefObject<HTMLDivElement | null>;
   onReplay: () => void;
   onPick: (index: number) => void;
   onReopen: () => void;
@@ -24,6 +25,7 @@ export type MenuViewControls = {
 
 export type MenuViewProps = {
   state: MenuState;
+  idPrefix: string;
   controls?: MenuViewControls;
 };
 
@@ -36,23 +38,28 @@ type LineProps = GutterProps & {
 };
 
 type ProfileRowProps = {
+  idPrefix: string;
   profile: MenuProfile;
   state: MenuState;
   onPick?: (index: number) => void;
 };
 
 type MenuListProps = {
+  idPrefix: string;
   state: MenuState;
   onPick?: (index: number) => void;
 };
 
 type MenuSurfaceProps = {
+  idPrefix: string;
   state: MenuState;
   controls?: MenuViewControls;
   children: ReactNode;
 };
 
-const HELP_LINE_ID = "menu-demo-help";
+const helpLineId = (idPrefix: string): string => `${idPrefix}-help`;
+
+const rowId = (idPrefix: string, profile: MenuProfile): string => `${idPrefix}-${profile.id}`;
 
 const Gutter = ({ glyph = "│" }: GutterProps): React.JSX.Element => (
   <span aria-hidden="true" className="w-[3ch] shrink-0 text-faint">
@@ -93,13 +100,13 @@ const Outcome = ({ lines }: { lines: OutcomeLines }): React.JSX.Element => {
   );
 };
 
-const ProfileRow = ({ profile, state, onPick }: ProfileRowProps): React.JSX.Element => {
+const ProfileRow = ({ idPrefix, profile, state, onPick }: ProfileRowProps): React.JSX.Element => {
   const index = MENU_PROFILES.indexOf(profile);
   const isCursor = index === state.cursor;
   const isCurrent = isCurrentProfile(state, profile);
   return (
     <div
-      id={profile.id}
+      id={rowId(idPrefix, profile)}
       role="option"
       aria-selected={isCursor}
       onClick={onPick === undefined ? undefined : (): void => onPick(index)}
@@ -128,8 +135,8 @@ const ProfileRow = ({ profile, state, onPick }: ProfileRowProps): React.JSX.Elem
   );
 };
 
-const HelpLine = ({ enterLabel }: { enterLabel: string }): React.JSX.Element => (
-  <div id={HELP_LINE_ID} aria-hidden="true" className="flex min-h-10 min-w-0 items-start leading-5">
+const HelpLine = ({ id, enterLabel }: { id: string; enterLabel: string }): React.JSX.Element => (
+  <div id={id} aria-hidden="true" className="flex min-h-10 min-w-0 items-start leading-5">
     <Gutter glyph="└" />
     <p className="flex min-w-0 flex-wrap gap-x-[1.5ch]">
       {helpItems(enterLabel).map((item) => (
@@ -141,7 +148,7 @@ const HelpLine = ({ enterLabel }: { enterLabel: string }): React.JSX.Element => 
   </div>
 );
 
-const MenuList = ({ state, onPick }: MenuListProps): React.JSX.Element => {
+const MenuList = ({ idPrefix, state, onPick }: MenuListProps): React.JSX.Element => {
   const highlighted = highlightedProfile(state);
   return (
     <div>
@@ -163,7 +170,7 @@ const MenuList = ({ state, onPick }: MenuListProps): React.JSX.Element => {
               </Line>
             ) : null}
             {group.profiles.map((profile) => (
-              <ProfileRow key={profile.id} profile={profile} state={state} onPick={onPick} />
+              <ProfileRow key={profile.id} idPrefix={idPrefix} profile={profile} state={state} onPick={onPick} />
             ))}
           </div>
         ))}
@@ -171,7 +178,7 @@ const MenuList = ({ state, onPick }: MenuListProps): React.JSX.Element => {
       <div aria-hidden="true">
         <Line />
       </div>
-      <HelpLine enterLabel={enterLabelFor(highlighted)} />
+      <HelpLine id={helpLineId(idPrefix)} enterLabel={enterLabelFor(highlighted)} />
     </div>
   );
 };
@@ -197,21 +204,27 @@ const Collapsed = ({ onReopen }: { onReopen?: () => void }): React.JSX.Element =
   </div>
 );
 
-const MenuSurface = ({ state, controls, children }: MenuSurfaceProps): React.JSX.Element => {
+const activeRowId = (idPrefix: string, state: MenuState): string | undefined => {
+  const profile = highlightedProfile(state);
+  return profile === undefined ? undefined : rowId(idPrefix, profile);
+};
+
+const MenuSurface = ({ idPrefix, state, controls, children }: MenuSurfaceProps): React.JSX.Element => {
   const interactive = controls !== undefined;
   const a11y = state.open
     ? {
         role: "listbox",
         "aria-label": "Saved profiles",
-        "aria-describedby": HELP_LINE_ID,
-        "aria-activedescendant": interactive ? highlightedProfile(state)?.id : undefined,
+        "aria-describedby": helpLineId(idPrefix),
+        "aria-activedescendant": interactive ? activeRowId(idPrefix, state) : undefined,
       }
     : { role: "group", "aria-label": "yoink menu closed" };
   return (
     <div
-      {...controls?.rootProps}
+      ref={controls?.focusRef}
       {...a11y}
       tabIndex={interactive ? 0 : undefined}
+      data-demo-focus={interactive ? "" : undefined}
       className="min-h-[27.5rem] min-w-0 rounded-xs text-xs leading-5 outline-none focus-visible:focus-ring sm:min-h-[26.25rem] sm:text-sm"
     >
       {children}
@@ -219,19 +232,25 @@ const MenuSurface = ({ state, controls, children }: MenuSurfaceProps): React.JSX
   );
 };
 
-export const MenuView = ({ state, controls }: MenuViewProps): React.JSX.Element => (
+export const MenuView = ({ state, idPrefix, controls }: MenuViewProps): React.JSX.Element => (
   <DemoFrame
     label="Interactive yoink menu demo"
     title="~ yoink"
     status={statusText(state)}
     hints={controls === undefined ? [] : menuHints(state)}
     onReplay={controls?.onReplay}
+    rootProps={controls?.rootProps}
+    focusTarget="content"
   >
-    <MenuSurface state={state} controls={controls}>
+    <MenuSurface idPrefix={idPrefix} state={state} controls={controls}>
       <div aria-hidden="true">
         <Outcome lines={outcomeLines(state)} />
       </div>
-      {state.open ? <MenuList state={state} onPick={controls?.onPick} /> : <Collapsed onReopen={controls?.onReopen} />}
+      {state.open ? (
+        <MenuList idPrefix={idPrefix} state={state} onPick={controls?.onPick} />
+      ) : (
+        <Collapsed onReopen={controls?.onReopen} />
+      )}
     </MenuSurface>
   </DemoFrame>
 );

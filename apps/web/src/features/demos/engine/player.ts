@@ -7,12 +7,13 @@ export type PlayerState<State> = {
   cursor: number;
 };
 
-export type PlayerAction =
+export type PlayerAction<State> =
   | { type: "start" }
   | { type: "advance" }
   | { type: "settle" }
   | { type: "takeover" }
-  | { type: "input"; event: DemoEvent };
+  | { type: "input"; event: DemoEvent }
+  | { type: "patch"; update: (state: State) => State };
 
 export const initPlayer = <State>(definition: DemoDefinition<State>): PlayerState<State> => ({
   demo: computeFinal(definition),
@@ -22,7 +23,7 @@ export const initPlayer = <State>(definition: DemoDefinition<State>): PlayerStat
 
 export const createPlayerReducer =
   <State>(definition: DemoDefinition<State>) =>
-  (player: PlayerState<State>, action: PlayerAction): PlayerState<State> => {
+  (player: PlayerState<State>, action: PlayerAction<State>): PlayerState<State> => {
     switch (action.type) {
       case "start":
         return definition.script.length === 0
@@ -45,5 +46,9 @@ export const createPlayerReducer =
         return player.mode === "user" ? player : { ...player, mode: "user" };
       case "input":
         return { ...player, demo: applyEvent(definition, player.demo, action.event), mode: "user" };
+      case "patch": {
+        const demo = action.update(player.demo);
+        return demo === player.demo && player.mode === "user" ? player : { ...player, demo, mode: "user" };
+      }
     }
   };

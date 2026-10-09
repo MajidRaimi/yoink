@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useId } from "react";
 import type { DemoHint } from "@/features/demos/engine/demo-frame";
 import { keyLabel } from "@/features/demos/engine/keymap";
 import { useDemo } from "@/features/demos/engine/use-demo";
@@ -58,11 +58,13 @@ const useSubscriptionSwitchActions = (
 };
 
 const SubscriptionSwitchIsland = (): React.JSX.Element => {
+  const idPrefix = useId();
   const { state, dispatch, replay, rootProps } = useDemo(subscriptionSwitchDemo);
   const actions = useSubscriptionSwitchActions(state, dispatch);
   return (
     <SubscriptionSwitchView
       state={state}
+      idPrefix={idPrefix}
       hints={state.phase.kind === "confirm" ? CONFIRM_HINTS : BROWSE_HINTS}
       onReplay={replay}
       rootProps={rootProps}

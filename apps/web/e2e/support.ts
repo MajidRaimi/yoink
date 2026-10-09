@@ -1,5 +1,5 @@
 import AxeBuilder from "@axe-core/playwright";
-import type { ConsoleMessage, Page } from "@playwright/test";
+import type { ConsoleMessage, Locator, Page } from "@playwright/test";
 import { DOC_ALIASES, INDEXABLE_PATHS, docPath, withTrailingSlash, type DocAlias } from "../src/shared/lib/routes";
 
 export type AliasRoute = {
@@ -84,6 +84,12 @@ export const scanAccessibility = async (page: Page): Promise<string> => {
 };
 
 export const DEMO_GROUP_SELECTOR = '[role="group"][aria-roledescription="interactive demo"]';
+
+export const VISIBLE_DEMO_GROUP_SELECTOR = `${DEMO_GROUP_SELECTOR}:visible`;
+
+export const DEMO_FOCUS_XPATH = "xpath=descendant-or-self::*[@data-demo-focus]";
+
+export const demoFocusTarget = (group: Locator): Locator => group.locator(DEMO_FOCUS_XPATH).first();
 
 export const DARK_PROJECT = "chromium-dark";
 

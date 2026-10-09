@@ -1,33 +1,29 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import { DEMO_IDS } from "../src/shared/contract";
-import { DEMO_GROUP_SELECTOR, DOC_PAGE_PATHS, VIEWPORT_HEIGHT } from "./support";
+import { DOC_PAGE_PATHS, VIEWPORT_HEIGHT, VISIBLE_DEMO_GROUP_SELECTOR, demoFocusTarget } from "./support";
 
 const DEMO_PATHS: readonly string[] = ["/", ...DOC_PAGE_PATHS];
 
-const ACTIVE_LISTBOX_SELECTOR = '[role="listbox"][aria-activedescendant]';
-
 const statusOf = (group: Locator): Locator => group.getByRole("status");
 
-const activeDescendantOf = async (group: Locator): Promise<string | null> => {
-  const listbox = group.locator(ACTIVE_LISTBOX_SELECTOR).first();
-  return (await listbox.count()) === 0 ? null : listbox.getAttribute("aria-activedescendant");
-};
+const activeDescendantOf = (target: Locator): Promise<string | null> => target.getAttribute("aria-activedescendant");
 
 const scrollYOf = (page: Page): Promise<number> => page.evaluate(() => window.scrollY);
 
 const exerciseDemo = async (page: Page, group: Locator): Promise<void> => {
   await group.scrollIntoViewIfNeeded();
-  await expect(group, "demo becomes interactive").toHaveAttribute("tabindex", "0");
-  await group.focus();
-  await expect(group).toBeFocused();
+  const target = demoFocusTarget(group);
+  await expect(target, "demo becomes interactive").toHaveAttribute("tabindex", "0");
+  await target.focus();
+  await expect(target).toBeFocused();
   const status = statusOf(group);
   await expect(status).toHaveAttribute("aria-live", "polite");
 
-  const descendantBefore = await activeDescendantOf(group);
+  const descendantBefore = await activeDescendantOf(target);
   await page.keyboard.press("j");
   if (descendantBefore !== null) {
     await expect
-      .poll(() => activeDescendantOf(group), { message: "j moves the listbox selection" })
+      .poll(() => activeDescendantOf(target), { message: "j moves the listbox selection" })
       .not.toBe(descendantBefore);
   }
 
@@ -38,7 +34,7 @@ const exerciseDemo = async (page: Page, group: Locator): Promise<void> => {
   const statusBefore = (await status.textContent()) ?? "";
   await page.keyboard.press("Enter");
   await expect(status, "Enter updates the live region").not.toHaveText(statusBefore);
-  await expect(group).toBeFocused();
+  await expect(target).toBeFocused();
 };
 
 test.beforeEach(async ({ page }) => {
@@ -48,7 +44,7 @@ test.beforeEach(async ({ page }) => {
 for (const path of DEMO_PATHS) {
   test(`demos on ${path} respond to the keyboard`, async ({ page }) => {
     await page.goto(path, { waitUntil: "load" });
-    const groups = page.locator(DEMO_GROUP_SELECTOR);
+    const groups = page.locator(VISIBLE_DEMO_GROUP_SELECTOR);
     if (path === "/") {
       await expect(groups).toHaveCount(DEMO_IDS.length);
     }

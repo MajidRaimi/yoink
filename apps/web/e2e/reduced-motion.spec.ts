@@ -1,6 +1,12 @@
 import { expect, test, type Page } from "@playwright/test";
 import { DEMO_IDS } from "../src/shared/contract";
-import { DEMO_GROUP_SELECTOR, REDUCED_MOTION_PROJECT, VIEWPORT_HEIGHT } from "./support";
+import {
+  DEMO_GROUP_SELECTOR,
+  REDUCED_MOTION_PROJECT,
+  VIEWPORT_HEIGHT,
+  VISIBLE_DEMO_GROUP_SELECTOR,
+  demoFocusTarget,
+} from "./support";
 
 const SETTLE_WINDOW_MS = 2_000;
 
@@ -28,11 +34,11 @@ test.beforeEach(async ({ page }, testInfo) => {
 });
 
 test("demos hold their frame without input", async ({ page }) => {
-  const groups = page.locator(DEMO_GROUP_SELECTOR);
+  const groups = page.locator(VISIBLE_DEMO_GROUP_SELECTOR);
   await expect(groups).toHaveCount(DEMO_IDS.length);
   for (const group of await groups.all()) {
     await group.scrollIntoViewIfNeeded();
-    await expect(group, "demo hydrates").toHaveAttribute("tabindex", "0");
+    await expect(demoFocusTarget(group), "demo hydrates").toHaveAttribute("tabindex", "0");
   }
   const before = await demoStatuses(page);
   await page.waitForTimeout(SETTLE_WINDOW_MS);

@@ -38,7 +38,7 @@ const CLI_ONLY_KEYS: Readonly<Record<string, CliOnlyAction>> = {
   d: "delete",
 };
 
-const sharesClaudeSlot = (profile: MenuProfile): boolean => profile.group === "claude" || profile.group === "external";
+export const sharesClaudeSlot = (profile: MenuProfile): boolean => profile.group === "claude" || profile.group === "external";
 
 export const cursorForCurrent = (current: string | null): number =>
   Math.max(
@@ -135,6 +135,18 @@ export const reduce = (state: MenuState, event: DemoEvent): MenuState => {
   if (event.type === "reset") return initial;
   if (state.open) return reduceOpen(state, event);
   return event.type === "key" && event.key === "enter" ? reopen(state) : state;
+};
+
+export const withClaudeAccount = (state: MenuState, account: string): MenuState => {
+  const known = MENU_PROFILES.some((profile) => sharesClaudeSlot(profile) && profile.name === account);
+  if (!known || state.current === account) return state;
+  return {
+    ...state,
+    current: account,
+    cursor: cursorForCurrent(account),
+    outcome: { kind: "none" },
+    notice: NO_NOTICE,
+  };
 };
 
 export const eventsToPick = (state: MenuState, index: number): DemoEvent[] => {

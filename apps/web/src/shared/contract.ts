@@ -33,6 +33,7 @@ export type DemoMode = "idle" | "auto" | "done" | "user";
 export type DemoSlotProps = {
   id: DemoId;
   eager?: boolean;
+  linked?: boolean;
   className?: string;
 };
 

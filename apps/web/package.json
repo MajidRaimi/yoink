@@ -3,12 +3,12 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
+    "predev": "bun run build:search",
     "dev": "next dev",
     "gen:data": "bun run scripts/gen-data.ts",
     "resolve:release": "bun run scripts/resolve-release.ts",
     "build:search": "bun run scripts/build-search.ts",
-    "prebuild": "bun run resolve:release && bun run build:search",
-    "build": "next build && bun run scripts/finalize-og.ts",
+    "build": "bun run resolve:release && bun run build:search && next build && bun run scripts/finalize-og.ts",
     "typecheck": "tsc --noEmit && tsc -p e2e/tsconfig.json --noEmit",
     "typecheck:e2e": "tsc -p e2e/tsconfig.json --noEmit",
     "test": "bun test src scripts",
@@ -38,7 +38,8 @@
     "shiki": "^4.5.0",
     "simple-icons": "^16.34.0",
     "tailwind-merge": "^3.3.0",
-    "unist-util-visit": "^5.1.0"
+    "unist-util-visit": "^5.1.0",
+    "zustand": "^5.0.15"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",

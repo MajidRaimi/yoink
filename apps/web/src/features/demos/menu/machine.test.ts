@@ -54,7 +54,7 @@ describe("menu rows", () => {
 
   test("hints mirror accountLabel", () => {
     expect(profileAt(indexOf("external", "fuse")).hint).toBe("Fuse · 6 models");
-    expect(profileAt(indexOf("codex", "work")).hint).toBe("sara.haddad@lumenlabs.example · team");
+    expect(profileAt(indexOf("codex", "codex-work")).hint).toBe("sara.haddad@lumenlabs.example · team");
     expect(profileAt(indexOf("gemini", "gemini")).hint).toBe("sara@haddad.example");
   });
 });
@@ -102,19 +102,19 @@ describe("menu machine", () => {
   });
 
   test("Enter on a Codex login moves the marker only within its group", () => {
-    const target = indexOf("codex", "personal");
+    const target = indexOf("codex", "codex-personal");
     const state = run([key("enter")], at(target));
-    expect(state.currentByTool.codex).toBe("personal");
+    expect(state.currentByTool.codex).toBe("codex-personal");
     expect(state.currentByTool.kimi).toBe(initial.currentByTool.kimi);
     expect(state.current).toBe(initial.current);
-    expect(isCurrentProfile(state, profileAt(indexOf("codex", "work")))).toBe(false);
+    expect(isCurrentProfile(state, profileAt(indexOf("codex", "codex-work")))).toBe(false);
     expect(isCurrentProfile(state, profileAt(indexOf("claude", "work")))).toBe(true);
     expect(state.cursor).toBe(cursorForCurrent(initial.current));
     expect(statusText(state)).toContain("Restart Codex to pick up the new login.");
   });
 
   test("Enter on the current subscription login changes nothing", () => {
-    const state = run([key("enter")], at(indexOf("codex", "work")));
+    const state = run([key("enter")], at(indexOf("codex", "codex-work")));
     expect(state.currentByTool).toEqual(initial.currentByTool);
     expect(state.outcome).toEqual(initial.outcome);
     expect(state.notice.kind).toBe("unchanged");
@@ -241,9 +241,9 @@ describe("menu script", () => {
     expect(afterClaude.outcome.kind).toBe("switched");
     const final = computeFinal(menuDefinition);
     expect(final.current).toBe("side");
-    expect(final.currentByTool.codex).toBe("personal");
+    expect(final.currentByTool.codex).toBe("codex-personal");
     expect(final.currentByTool.kimi).toBe(initial.currentByTool.kimi);
-    expect(final.outcome).toEqual({ kind: "switched", profileId: profileAt(indexOf("codex", "personal")).id });
+    expect(final.outcome).toEqual({ kind: "switched", profileId: profileAt(indexOf("codex", "codex-personal")).id });
     expect(final.open).toBe(true);
   });
 });

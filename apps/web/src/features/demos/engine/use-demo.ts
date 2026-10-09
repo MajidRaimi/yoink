@@ -37,6 +37,7 @@ export type DemoController<State> = {
   inView: boolean;
   reducedMotion: boolean;
   dispatch: (event: DemoEvent) => void;
+  patch: (update: (state: State) => State) => void;
   replay: () => void;
   rootProps: DemoRootProps;
 };
@@ -89,6 +90,8 @@ export const useDemo = <State,>(
 
   const dispatch = useCallback((event: DemoEvent): void => send({ type: "input", event }), []);
 
+  const patch = useCallback((update: (state: State) => State): void => send({ type: "patch", update }), []);
+
   const replay = useCallback((): void => send({ type: reducedMotion ? "settle" : "start" }), [reducedMotion]);
 
   const takeOver = useCallback((): void => send({ type: "takeover" }), []);
@@ -116,6 +119,7 @@ export const useDemo = <State,>(
     inView,
     reducedMotion: hydrated && reducedMotion,
     dispatch,
+    patch,
     replay,
     rootProps,
   };

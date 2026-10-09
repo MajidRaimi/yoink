@@ -84,7 +84,7 @@ describe("menubar panel profile list", () => {
     const typed = run([{ type: "text", value: "zz" }]);
     expect(visibleProfiles(typed)).toHaveLength(0);
     expect(selectedProfileIndex(typed)).toBe(-1);
-    expect(run([key("enter")], typed)).toEqual(typed);
+    expect(run([key("enter")], typed)).toEqual({ ...typed, status: 'No profiles match "zz".' });
     expect(run([key("backspace")], typed).query).toBe("z");
     expect(run([key("escape")], typed).query).toBe("");
     expect(run([key("escape")])).toEqual(initialPanelState);

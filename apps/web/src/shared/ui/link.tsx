@@ -5,7 +5,7 @@ import { isExternalHref, type Href } from "@/shared/ui/href";
 
 export type TextLinkProps = Omit<AnchorHTMLAttributes<HTMLAnchorElement>, "href"> & {
   href: Href;
-  tone?: "accent" | "muted";
+  tone?: "accent" | "muted" | "on-brand";
   children: ReactNode;
 };
 
@@ -13,6 +13,7 @@ const tones: Readonly<Record<NonNullable<TextLinkProps["tone"]>, string>> = {
   accent:
     "text-foreground underline decoration-brand decoration-2 underline-offset-4 hover:text-brand-text",
   muted: "text-muted hover:text-foreground",
+  "on-brand": "text-current underline decoration-current decoration-2 underline-offset-4 hover:decoration-transparent",
 };
 
 export const textLinkStyles = (tone: NonNullable<TextLinkProps["tone"]> = "accent", className?: string): string =>

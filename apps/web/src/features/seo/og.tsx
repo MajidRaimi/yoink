@@ -1,10 +1,9 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ImageResponse } from "next/og";
+import { ogContentType, ogSize } from "@/features/seo/og-meta";
 
-export const ogSize = { width: 1200, height: 630 } as const;
-
-export const ogContentType = "image/png";
+export { ogContentType, ogSize };
 
 export const OG_INSTALL_LINE = "curl -fsSL yoink.codes/install.sh | bash";
 

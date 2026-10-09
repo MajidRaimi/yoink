@@ -86,6 +86,16 @@ const modelSummary = (count: number): string => `${count} ${count === 1 ? "model
 
 const optionId = (idPrefix: string, kind: string, key: string): string => `${idPrefix}-${kind}-${key}`;
 
+const activeOptionId = (state: PanelState, idPrefix: string): string | undefined => {
+  if (state.dialog !== null) return undefined;
+  if (state.view === "harnesses") {
+    const active = activeHarnessRow(state);
+    return active === null ? undefined : optionId(idPrefix, "harness", active.row.id);
+  }
+  const selected = visibleProfiles(state)[selectedProfileIndex(state)];
+  return selected === undefined ? undefined : optionId(idPrefix, "profile", selected.name);
+};
+
 const PanelHeader = (): React.JSX.Element => (
   <div className="flex h-10 shrink-0 items-center justify-between border-b border-hairline pr-2.5 pl-3.5">
     <div className="flex items-center gap-2">
@@ -189,14 +199,12 @@ const SearchField = ({ state }: { state: PanelState }): React.JSX.Element => (
 
 const ProfileListView = ({ state, idPrefix, onInput }: InputProps): React.JSX.Element => {
   const profiles = visibleProfiles(state);
-  const selected = profiles[selectedProfileIndex(state)];
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <SearchField state={state} />
       <div
         role="listbox"
         aria-label="Profiles"
-        aria-activedescendant={selected === undefined ? undefined : optionId(idPrefix, "profile", selected.name)}
         className="min-h-0 flex-1 overflow-hidden px-1.5 pb-2"
       >
         {profiles.length === 0 ? (
@@ -341,7 +349,6 @@ const HarnessChecklistView = ({
   provider,
 }: InputProps & { provider: ProviderPanelProfile }): React.JSX.Element => {
   const rows = harnessRows(state, provider);
-  const active = rows[state.harnessIndex];
   const visible = rows.slice(state.harnessOffset);
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -375,7 +382,6 @@ const HarnessChecklistView = ({
         <div
           role="listbox"
           aria-label={`Harnesses for ${provider.name}`}
-          aria-activedescendant={active === undefined ? undefined : optionId(idPrefix, "harness", active.id)}
         >
           {visible.map((row, position) => (
             <HarnessRow
@@ -495,6 +501,7 @@ export const MenubarPanelView = ({
     hints={hintsFor(state)}
     onReplay={onReplay}
     rootProps={rootProps}
+    activeDescendant={activeOptionId(state, idPrefix)}
     bodyClassName="p-0"
   >
     <div className="relative mx-auto flex h-[28rem] w-full max-w-[24rem] flex-col border-hairline min-[26rem]:border-x">

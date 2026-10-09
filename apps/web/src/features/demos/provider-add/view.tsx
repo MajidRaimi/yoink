@@ -3,6 +3,7 @@ import type { DemoEvent } from "@/shared/contract";
 import { DemoFrame } from "@/features/demos/engine/demo-frame";
 import type { DemoRootProps } from "@/features/demos/engine/use-demo";
 import { PHASE_HINTS } from "@/features/demos/provider-add/hints";
+import { activeOptionId } from "@/features/demos/provider-add/selectors";
 import type { Phase, State } from "@/features/demos/provider-add/machine";
 import { CancelledStep } from "@/features/demos/provider-add/parts/cancelled-step";
 import { DefaultStep } from "@/features/demos/provider-add/parts/default-step";
@@ -57,6 +58,7 @@ export const ProviderAddView = ({
       hints={PHASE_HINTS[state.phase]}
       onReplay={onReplay}
       rootProps={rootProps}
+      activeDescendant={activeOptionId(state, idPrefix)}
       className={className}
       bodyClassName="h-[23rem] overflow-hidden px-3 py-4 text-xs leading-6 sm:px-4"
     >

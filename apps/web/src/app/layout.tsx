@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { fontVariables } from "@/shared/brand/fonts";
 import { site } from "@/shared/brand/site";
+import { PlatformHeadScript } from "@/features/download/platform-head-script";
 import { Footer } from "@/shared/ui/footer";
 import { Navbar } from "@/shared/ui/navbar";
 import { ThemeProvider } from "@/shared/ui/theme-provider";
@@ -63,6 +64,9 @@ type RootLayoutProps = {
 
 const RootLayout = ({ children }: RootLayoutProps): React.JSX.Element => (
   <html lang="en" className={fontVariables} suppressHydrationWarning>
+    <head>
+      <PlatformHeadScript />
+    </head>
     <body className="flex min-h-dvh flex-col">
       <ThemeProvider>
         <Navbar />

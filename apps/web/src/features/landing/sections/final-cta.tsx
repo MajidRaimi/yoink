@@ -14,7 +14,7 @@ export const FinalCta = (): React.JSX.Element => (
           </h2>
           <p className="text-lg text-muted">{FINAL_COPY.body}</p>
         </div>
-        <PrimaryCta />
+        <PrimaryCta tone="on-brand" />
       </Container>
     </div>
   </section>

@@ -30,7 +30,7 @@ export const SurfaceSwitcher = ({ terminal, menubar, header }: SurfaceSwitcherPr
       </div>
       <div className="grid min-h-[26rem] place-items-start md:place-items-center">
         {SURFACE_OPTIONS.map((option) => (
-          <div key={option.value} hidden={option.value !== surface} className="w-full max-w-3xl md:mx-auto">
+          <div key={option.value} hidden={option.value !== surface} className="w-full min-w-0 max-w-3xl md:mx-auto">
             {views[option.value]}
           </div>
         ))}

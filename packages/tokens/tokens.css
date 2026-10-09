@@ -29,3 +29,70 @@
   --brand-text: #facc15;
   --on-brand: #0a0908;
 }
+
+:root {
+  --corner-xs: 4px;
+  --corner-sm: 6px;
+  --corner-md: 10px;
+  --corner-lg: 14px;
+  --corner-xl: 20px;
+  --corner-pill: 999px;
+  --corner-button: var(--corner-pill);
+  --corner-inset: 4px;
+
+  --elevation-1: 0 1px 2px rgb(19 17 16 / 0.06), 0 1px 1px rgb(19 17 16 / 0.04);
+  --elevation-2: 0 4px 12px -2px rgb(19 17 16 / 0.08), 0 2px 4px -1px rgb(19 17 16 / 0.05);
+  --elevation-3: 0 18px 40px -12px rgb(19 17 16 / 0.16), 0 6px 14px -6px rgb(19 17 16 / 0.08);
+
+  --type-xs: 0.75rem;
+  --type-sm: 0.875rem;
+  --type-base: 1rem;
+  --type-lg: 1.125rem;
+  --type-xl: 1.3125rem;
+  --type-2xl: 1.625rem;
+  --type-3xl: clamp(1.75rem, 1.4rem + 1.4vw, 2.25rem);
+  --type-4xl: clamp(2.125rem, 1.6rem + 2.4vw, 3.25rem);
+  --type-5xl: clamp(2.5rem, 1.7rem + 3.8vw, 4.5rem);
+
+  --line-tight: 1.05;
+  --line-snug: 1.2;
+  --line-normal: 1.5;
+  --line-relaxed: 1.65;
+
+  --letter-display: -0.025em;
+  --letter-tight: -0.012em;
+  --letter-normal: 0em;
+  --letter-mono: -0.01em;
+  --letter-caps: 0.08em;
+
+  --motion-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --motion-ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-1: 120ms;
+  --dur-2: 220ms;
+  --dur-3: 420ms;
+
+  --ring: #a16207;
+  --ring-width: 2px;
+
+  --success: #15803d;
+  --danger: #b91c1c;
+}
+
+.dark {
+  --elevation-1: 0 1px 2px rgb(0 0 0 / 0.5), 0 0 0 1px rgb(255 255 255 / 0.04);
+  --elevation-2: 0 6px 16px -4px rgb(0 0 0 / 0.6), 0 0 0 1px rgb(255 255 255 / 0.05);
+  --elevation-3: 0 24px 48px -16px rgb(0 0 0 / 0.75), 0 0 0 1px rgb(255 255 255 / 0.06);
+
+  --ring: #facc15;
+
+  --success: #4ade80;
+  --danger: #f87171;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-1: 0ms;
+    --dur-2: 0ms;
+    --dur-3: 0ms;
+  }
+}

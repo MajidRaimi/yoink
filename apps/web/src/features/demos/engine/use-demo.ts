@@ -7,7 +7,6 @@ import {
   useMemo,
   useReducer,
   useRef,
-  useSyncExternalStore,
   type FocusEvent,
   type KeyboardEvent,
   type PointerEvent,
@@ -16,6 +15,7 @@ import {
 import type { DemoDefinition, DemoEvent, DemoMode } from "@/shared/contract";
 import { toDemoEvent } from "@/features/demos/engine/keymap";
 import { createPlayerReducer, initPlayer } from "@/features/demos/engine/player";
+import { useHydrated } from "@/shared/ui/use-hydrated";
 
 export type UseDemoOptions<State> = {
   autoplay?: boolean;
@@ -28,6 +28,7 @@ export type DemoRootProps = {
   onKeyDown: (event: KeyboardEvent<HTMLElement>) => void;
   onPointerDown: (event: PointerEvent<HTMLElement>) => void;
   onFocus: (event: FocusEvent<HTMLElement>) => void;
+  announce: boolean;
 };
 
 export type DemoController<State> = {
@@ -37,21 +38,13 @@ export type DemoController<State> = {
   inView: boolean;
   reducedMotion: boolean;
   dispatch: (event: DemoEvent) => void;
+  dispatchAll: (events: readonly DemoEvent[]) => void;
   patch: (update: (state: State) => State) => void;
   replay: () => void;
   rootProps: DemoRootProps;
 };
 
 const NESTED_CONTROLS = "button, a[href], input, textarea, select, [contenteditable='true']";
-
-const subscribeToNothing = (): (() => void) => () => undefined;
-
-const useHydrated = (): boolean =>
-  useSyncExternalStore(
-    subscribeToNothing,
-    () => true,
-    () => false,
-  );
 
 const isNestedControl = (event: KeyboardEvent<HTMLElement>): boolean =>
   event.target !== event.currentTarget &&
@@ -90,6 +83,11 @@ export const useDemo = <State,>(
 
   const dispatch = useCallback((event: DemoEvent): void => send({ type: "input", event }), []);
 
+  const dispatchAll = useCallback(
+    (events: readonly DemoEvent[]): void => events.forEach((event) => send({ type: "input", event })),
+    [],
+  );
+
   const patch = useCallback((update: (state: State) => State): void => send({ type: "patch", update }), []);
 
   const replay = useCallback((): void => send({ type: reducedMotion ? "settle" : "start" }), [reducedMotion]);
@@ -107,9 +105,11 @@ export const useDemo = <State,>(
     [textMode, player.demo],
   );
 
+  const announce = player.mode === "user";
+
   const rootProps = useMemo<DemoRootProps>(
-    () => ({ ref, onKeyDown, onPointerDown: takeOver, onFocus: takeOver }),
-    [onKeyDown, takeOver],
+    () => ({ ref, onKeyDown, onPointerDown: takeOver, onFocus: takeOver, announce }),
+    [onKeyDown, takeOver, announce],
   );
 
   return {
@@ -119,6 +119,7 @@ export const useDemo = <State,>(
     inView,
     reducedMotion: hydrated && reducedMotion,
     dispatch,
+    dispatchAll,
     patch,
     replay,
     rootProps,

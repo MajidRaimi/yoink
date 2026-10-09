@@ -6,6 +6,7 @@
     "predev": "bun run build:search",
     "dev": "next dev",
     "gen:data": "bun run scripts/gen-data.ts",
+    "gen:icons": "bun run scripts/generate-icons.ts",
     "resolve:release": "bun run scripts/resolve-release.ts",
     "build:search": "bun run scripts/build-search.ts",
     "build": "bun run resolve:release && bun run build:search && next build && bun run scripts/finalize-og.ts",
@@ -24,7 +25,6 @@
     "clsx": "^2.1.1",
     "github-slugger": "^2.0.0",
     "gray-matter": "^4.0.3",
-    "mdast-util-to-string": "^4.0.0",
     "minisearch": "^7.2.0",
     "motion": "^12.0.0",
     "next": "^16.2.10",
@@ -38,7 +38,6 @@
     "shiki": "^4.5.0",
     "simple-icons": "^16.34.0",
     "tailwind-merge": "^3.3.0",
-    "unist-util-visit": "^5.1.0",
     "zustand": "^5.0.15"
   },
   "devDependencies": {

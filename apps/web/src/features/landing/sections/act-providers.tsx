@@ -6,8 +6,7 @@ import { Container } from "@/shared/ui/container";
 export const ActProviders = (): React.JSX.Element => (
   <section aria-labelledby="providers-title" className="border-t border-hairline bg-surface py-24 md:py-32">
     <Container size="wide" className="grid gap-12 lg:grid-cols-12 lg:gap-14">
-      <DemoSlot id="provider-add" className="order-2 lg:order-1 lg:col-span-7" />
-      <div className="order-1 flex flex-col gap-10 lg:order-2 lg:col-span-5 lg:pt-4">
+      <div className="flex flex-col gap-10 lg:col-span-5 lg:col-start-8 lg:row-start-1 lg:pt-4">
         <SectionHeader id="providers-title" title={PROVIDERS_COPY.title} body={PROVIDERS_COPY.body} />
         <ol className="flex flex-col border-t border-hairline">
           {PROVIDERS_COPY.steps.map((step) => (
@@ -18,6 +17,7 @@ export const ActProviders = (): React.JSX.Element => (
           ))}
         </ol>
       </div>
+      <DemoSlot id="provider-add" className="lg:sticky lg:top-24 lg:col-span-7 lg:col-start-1 lg:row-start-1 lg:self-start" />
     </Container>
   </section>
 );

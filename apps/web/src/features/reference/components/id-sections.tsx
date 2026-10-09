@@ -19,7 +19,7 @@ export const KeymapSection = (): React.JSX.Element => (
         <div key={binding.label} className="contents">
           <dt className="flex flex-wrap items-center gap-1.5" aria-label={binding.label}>
             {binding.keys.map((key) => (
-              <Kbd key={key} className="h-6 min-w-6 px-1.5 text-xs">
+              <Kbd key={key} size="md">
                 {key}
               </Kbd>
             ))}

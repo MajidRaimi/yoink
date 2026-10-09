@@ -123,20 +123,6 @@ export const PRESET_MODELS: Readonly<Record<ProviderPresetId, PresetModelsFixtur
   },
 };
 
-export const CLAUDE_MANAGED_ENV_KEYS = [
-  "ANTHROPIC_BASE_URL",
-  "ANTHROPIC_AUTH_TOKEN",
-  "ANTHROPIC_MODEL",
-  "ANTHROPIC_DEFAULT_OPUS_MODEL",
-  "ANTHROPIC_DEFAULT_SONNET_MODEL",
-  "ANTHROPIC_DEFAULT_HAIKU_MODEL",
-  "CLAUDE_CODE_SUBAGENT_MODEL",
-] as const;
-
-export type ClaudeManagedEnvKey = (typeof CLAUDE_MANAGED_ENV_KEYS)[number];
-
-export const CLAUDE_SETTINGS_PATH = "~/.claude/settings.json";
-
 export const HARNESS_CONFIG_PATHS: Readonly<Record<HarnessId, string>> = {
   "claude-code": "~/.claude/settings.json",
   pi: "~/.pi/agent/models.json",

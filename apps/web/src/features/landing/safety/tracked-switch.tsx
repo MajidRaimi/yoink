@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@/shared/lib/cn";
+import { cx } from "@/shared/lib/cx";
 
 export type TrackedSwitchProps = {
   checked: boolean;
@@ -18,15 +18,15 @@ export const TrackedSwitch = ({ checked, onToggle, label }: TrackedSwitchProps):
   >
     <span
       aria-hidden="true"
-      className={cn(
-        "relative inline-flex h-5 w-9 shrink-0 rounded-pill border border-hairline-strong bg-surface-3 transition-colors dur-2",
-        checked && "border-transparent bg-brand",
+      className={cx(
+        "relative inline-flex h-5 w-9 shrink-0 rounded-pill border transition-colors dur-2",
+        checked ? "border-transparent bg-brand" : "border-muted bg-transparent",
       )}
     >
       <span
-        className={cn(
-          "absolute top-0.5 left-0.5 size-3.5 rounded-pill bg-background shadow-1 transition-transform dur-2 ease-out",
-          checked && "translate-x-4 bg-on-brand",
+        className={cx(
+          "absolute top-0.5 left-0.5 size-3.5 rounded-pill shadow-1 transition-transform dur-2 ease-out",
+          checked ? "translate-x-4 bg-on-brand" : "bg-muted",
         )}
       />
     </span>

@@ -86,8 +86,10 @@ const modelSummary = (count: number): string => `${count} ${count === 1 ? "model
 
 const optionId = (idPrefix: string, kind: string, key: string): string => `${idPrefix}-${kind}-${key}`;
 
+const dialogButtonId = (idPrefix: string, button: DialogButton): string => `${idPrefix}-dialog-${button}`;
+
 const activeOptionId = (state: PanelState, idPrefix: string): string | undefined => {
-  if (state.dialog !== null) return undefined;
+  if (state.dialog !== null) return dialogButtonId(idPrefix, state.dialogFocus);
   if (state.view === "harnesses") {
     const active = activeHarnessRow(state);
     return active === null ? undefined : optionId(idPrefix, "harness", active.row.id);
@@ -441,8 +443,7 @@ const ConfirmDialog = ({
   return (
     <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/85 px-5">
       <div
-        role="alertdialog"
-        aria-modal="true"
+        role="dialog"
         aria-labelledby={titleId}
         aria-describedby={bodyId}
         className="w-full rounded-lg border border-hairline-strong bg-background p-4 shadow-2"
@@ -455,6 +456,7 @@ const ConfirmDialog = ({
         </p>
         <div className="mt-4 flex flex-wrap justify-end gap-2">
           <button
+            id={dialogButtonId(idPrefix, "cancel")}
             type="button"
             tabIndex={onInput === undefined ? -1 : undefined}
             onFocus={onInput === undefined ? undefined : () => onInput(focusEvents("cancel"))}
@@ -464,6 +466,7 @@ const ConfirmDialog = ({
             Cancel
           </button>
           <button
+            id={dialogButtonId(idPrefix, "confirm")}
             type="button"
             tabIndex={onInput === undefined ? -1 : undefined}
             onFocus={onInput === undefined ? undefined : () => onInput(focusEvents("confirm"))}

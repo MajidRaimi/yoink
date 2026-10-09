@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@/shared/lib/cn";
+import { cx } from "@/shared/lib/cx";
 import { routes } from "@/shared/lib/routes";
 import { CopyCommand } from "@/shared/ui/copy-command";
 import { TextLink, type TextLinkProps } from "@/shared/ui/link";
@@ -8,7 +8,7 @@ import type { Platform } from "@/shared/contract";
 import { ArchChooser } from "@/features/download/components/arch-chooser";
 import { MacDownloadButton } from "@/features/download/components/mac-download-button";
 import { usePlatform } from "@/features/download/hooks/use-platform";
-import { installCommandForPlatform } from "@/features/download/lib/install-options";
+import { INSTALL_OPTIONS, installTabForPlatform } from "@/features/download/lib/install-options";
 
 export type PrimaryCtaTone = "default" | "on-brand";
 
@@ -32,9 +32,9 @@ const secondaryRow = "flex h-10 items-center gap-4";
 
 const variant = "flex-col gap-3";
 
-const macVariant = cn(variant, "hidden group-data-[platform=mac]/cta:flex [:root[data-yoink-platform=mac]_&]:flex");
+const macVariant = cx(variant, "hidden group-data-[platform=mac]/cta:flex [:root[data-yoink-platform=mac]_&]:flex");
 
-const cliVariant = cn(variant, "flex group-data-[platform=mac]/cta:hidden [:root[data-yoink-platform=mac]_&]:hidden");
+const cliVariant = cx(variant, "flex group-data-[platform=mac]/cta:hidden [:root[data-yoink-platform=mac]_&]:hidden");
 
 const MacCta = ({ linkTone }: LinkToneProps): React.JSX.Element => (
   <div className={macVariant}>
@@ -54,29 +54,29 @@ type CliCtaProps = LinkToneProps & {
   platform: Exclude<Platform, "mac">;
 };
 
-const CliCta = ({ platform, linkTone }: CliCtaProps): React.JSX.Element => (
-  <div className={cliVariant}>
-    <div className={primaryRow}>
-      <CopyCommand
-        command={installCommandForPlatform(platform)}
-        prompt={platform === "windows" ? ">" : "$"}
-        className="w-full max-w-xl"
-      />
+const CliCta = ({ platform, linkTone }: CliCtaProps): React.JSX.Element => {
+  const option = INSTALL_OPTIONS[installTabForPlatform(platform)];
+
+  return (
+    <div className={cliVariant}>
+      <div className={primaryRow}>
+        <CopyCommand command={option.command} prompt={option.prompt} className="w-full max-w-xl" />
+      </div>
+      <div className={secondaryRow}>
+        <TextLink href={routes.docs} tone={linkTone} className="text-sm font-medium">
+          Read the docs
+        </TextLink>
+      </div>
     </div>
-    <div className={secondaryRow}>
-      <TextLink href={routes.docs} tone={linkTone} className="text-sm font-medium">
-        Read the docs
-      </TextLink>
-    </div>
-  </div>
-);
+  );
+};
 
 export const PrimaryCta = ({ tone = "default", className }: PrimaryCtaProps): React.JSX.Element => {
   const platform = usePlatform();
   const linkTone = LINK_TONES[tone];
 
   return (
-    <div data-platform={platform} className={cn("group/cta flex h-26 w-full max-w-xl flex-col", className)}>
+    <div data-platform={platform} className={cx("group/cta flex h-26 w-full max-w-xl flex-col", className)}>
       <MacCta linkTone={linkTone} />
       <CliCta platform={platform === "mac" ? "unknown" : platform} linkTone={linkTone} />
     </div>

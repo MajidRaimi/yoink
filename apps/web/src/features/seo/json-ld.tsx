@@ -18,7 +18,7 @@ export type TechArticleInput = {
 
 const SCHEMA_CONTEXT = "https://schema.org";
 
-const author: JsonLdDocument = { "@type": "Person", name: site.author, url: site.repo };
+const author: JsonLdDocument = { "@type": "Person", name: site.author, url: site.authorUrl };
 
 export const serializeJsonLd = (data: JsonLdDocument): string =>
   JSON.stringify(data)
@@ -40,6 +40,7 @@ export const softwareApplicationLd = (): JsonLdDocument => ({
   downloadUrl: canonicalUrl("/download/"),
   installUrl: `${canonicalUrl("/")}#install`,
   license: "https://opensource.org/licenses/MIT",
+  isAccessibleForFree: true,
   codeRepository: site.repo,
   author,
   offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },

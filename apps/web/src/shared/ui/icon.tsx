@@ -1,5 +1,5 @@
 import type { Icon as PhosphorIcon, IconWeight } from "@phosphor-icons/react";
-import { cn } from "@/shared/lib/cn";
+import { cx } from "@/shared/lib/cx";
 
 export type IconProps = {
   icon: PhosphorIcon;
@@ -13,7 +13,7 @@ export const Icon = ({ icon: Glyph, size = 16, weight = "regular", className, la
   <Glyph
     size={size}
     weight={weight}
-    className={cn("shrink-0", className)}
+    className={cx("shrink-0", className)}
     aria-hidden={label === undefined ? true : undefined}
     aria-label={label}
     role={label === undefined ? undefined : "img"}

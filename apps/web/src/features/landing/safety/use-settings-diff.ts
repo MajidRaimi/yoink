@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useDisclosure } from "@/shared/lib/use-disclosure";
 import {
   diffSummary,
   settingsDiff,
@@ -21,13 +22,13 @@ export type SettingsDiffState = {
 
 export const useSettingsDiff = (): SettingsDiffState => {
   const [mode, setMode] = useState<DiffMode>("apply");
-  const [tracked, setTracked] = useState(false);
+  const { open: tracked, toggle: toggleTracked } = useDisclosure(false);
   const lines = useMemo(() => settingsDiff({ mode, tracked }), [mode, tracked]);
   return {
     mode,
     setMode,
     tracked,
-    toggleTracked: () => setTracked((value) => !value),
+    toggleTracked,
     lines,
     summary: diffSummary(lines),
     skipped: !writesManagedKeys({ mode, tracked }),

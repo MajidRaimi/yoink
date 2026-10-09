@@ -21,8 +21,10 @@ export const initPlayer = <State>(definition: DemoDefinition<State>): PlayerStat
   cursor: 0,
 });
 
+export type PlayerReducer<State> = (player: PlayerState<State>, action: PlayerAction<State>) => PlayerState<State>;
+
 export const createPlayerReducer =
-  <State>(definition: DemoDefinition<State>) =>
+  <State>(definition: DemoDefinition<State>): PlayerReducer<State> =>
   (player: PlayerState<State>, action: PlayerAction<State>): PlayerState<State> => {
     switch (action.type) {
       case "start":

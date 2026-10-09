@@ -7,6 +7,11 @@ import { SUBSCRIPTION_BACKENDS } from "../../cli/src/features/subscriptions/regi
 
 export type LiteralValue = string | number | boolean | null | readonly LiteralValue[] | { readonly [key: string]: LiteralValue };
 
+export type ModuleContract = {
+  readonly imports: readonly string[];
+  readonly satisfies: string;
+};
+
 export type GeneratedModule = {
   fileName: string;
   source: string;
@@ -35,8 +40,27 @@ export const toLiteral = (value: LiteralValue, depth = 0): string => {
   return `{\n${entries.map(([key, item]) => `${pad}${formatKey(key)}: ${toLiteral(item, depth + 1)},`).join("\n")}\n${closePad}}`;
 };
 
-export const renderModule = (constName: string, value: LiteralValue, typeLines: readonly string[]): string =>
-  [`export const ${constName} = ${toLiteral(value)} as const;`, "", ...typeLines, ""].join("\n");
+const CONTRACT_MODULE = "@/shared/contract";
+
+const renderImports = (contract: ModuleContract | undefined): readonly string[] =>
+  contract ? [`import type { ${contract.imports.join(", ")} } from "${CONTRACT_MODULE}";`, ""] : [];
+
+const renderAssertion = (contract: ModuleContract | undefined): string =>
+  contract ? `as const satisfies ${contract.satisfies}` : "as const";
+
+export const renderModule = (
+  constName: string,
+  value: LiteralValue,
+  typeLines: readonly string[],
+  contract?: ModuleContract,
+): string =>
+  [
+    ...renderImports(contract),
+    `export const ${constName} = ${toLiteral(value)} ${renderAssertion(contract)};`,
+    "",
+    ...typeLines,
+    "",
+  ].join("\n");
 
 export const buildModules = (): GeneratedModule[] => {
   const harnesses = HARNESS_ADAPTERS.map((adapter) => ({
@@ -67,7 +91,7 @@ export const buildModules = (): GeneratedModule[] => {
         'export type HarnessId = Harness["id"];',
         "",
         'export type HarnessProtocol = Harness["protocols"][number];',
-      ]),
+      ], { imports: ["HarnessData"], satisfies: "readonly HarnessData[]" }),
     },
     {
       fileName: "presets.gen.ts",
@@ -79,7 +103,7 @@ export const buildModules = (): GeneratedModule[] => {
         'export type PresetEndpoint = ProviderPreset["endpoints"][number];',
         "",
         'export type Protocol = PresetEndpoint["protocol"];',
-      ]),
+      ], { imports: ["PresetData"], satisfies: "readonly PresetData[]" }),
     },
     {
       fileName: "subscriptions.gen.ts",
@@ -87,15 +111,16 @@ export const buildModules = (): GeneratedModule[] => {
         "export type Subscription = (typeof SUBSCRIPTIONS)[number];",
         "",
         'export type SubscriptionTool = Subscription["tool"];',
-      ]),
+      ], { imports: ["SubscriptionData"], satisfies: "readonly SubscriptionData[]" }),
     },
     {
       fileName: "groups.gen.ts",
-      source: renderModule("PROFILE_GROUP_TITLES", groups, [
-        "export type ProfileGroupKey = keyof typeof PROFILE_GROUP_TITLES;",
-        "",
-        "export type ProfileGroupTitle = (typeof PROFILE_GROUP_TITLES)[ProfileGroupKey];",
-      ]),
+      source: renderModule(
+        "PROFILE_GROUP_TITLES",
+        groups,
+        ["export type ProfileGroupTitle = (typeof PROFILE_GROUP_TITLES)[ProfileGroupKey];"],
+        { imports: ["ProfileGroupData", "ProfileGroupKey"], satisfies: "ProfileGroupData" },
+      ),
     },
   ];
 };

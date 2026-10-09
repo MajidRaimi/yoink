@@ -32,7 +32,6 @@ export type DemoMode = "idle" | "auto" | "done" | "user";
 
 export type DemoSlotProps = {
   id: DemoId;
-  eager?: boolean;
   linked?: boolean;
   className?: string;
 };
@@ -40,6 +39,9 @@ export type DemoSlotProps = {
 export const DOC_SECTIONS = ["Start", "Switch", "Connect", "Understand", "Reference"] as const;
 
 export type DocSection = (typeof DOC_SECTIONS)[number];
+
+export const isDocSection = (value: unknown): value is DocSection =>
+  typeof value === "string" && (DOC_SECTIONS as readonly string[]).includes(value);
 
 export type DocMeta = {
   slug: DocSlug;
@@ -71,14 +73,15 @@ export type DesktopReleaseInfo = {
   readonly dmg: DesktopDmgUrls;
 };
 
-export type ReleaseInfo = {
-  readonly cli: string;
-  readonly desktop: DesktopReleaseInfo;
-};
-
 export const PROTOCOLS = ["anthropic-messages", "openai-chat", "openai-responses"] as const;
 
 export type Protocol = (typeof PROTOCOLS)[number];
+
+export const PROTOCOL_LABELS: Readonly<Record<Protocol, string>> = {
+  "anthropic-messages": "Anthropic Messages",
+  "openai-chat": "OpenAI Chat",
+  "openai-responses": "OpenAI Responses",
+};
 
 export type HarnessData = {
   readonly id: string;

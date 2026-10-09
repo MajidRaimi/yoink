@@ -21,9 +21,15 @@ describe("pageMetadata", () => {
     expect(metadata.description).toBe("Every command.");
     expect(metadata.alternates?.canonical).toBe("https://yoink.codes/reference/");
     expect(metadata.openGraph?.url).toBe("https://yoink.codes/reference/");
-    expect(metadata.openGraph?.title).toBe("CLI reference");
-    expect(metadata.twitter?.title).toBe("CLI reference");
+    expect(metadata.openGraph?.title).toBe("CLI reference · Yoink");
+    expect(metadata.twitter?.title).toBe("CLI reference · Yoink");
     expect(metadata.twitter?.description).toBe("Every command.");
+  });
+
+  test("does not repeat the brand in share titles that already carry it", () => {
+    const home = pageMetadata({ title: "Yoink: switch AI coding accounts and providers", description: "y", path: "/" });
+    expect(home.openGraph?.title).toBe("Yoink: switch AI coding accounts and providers");
+    expect(home.twitter?.title).toBe("Yoink: switch AI coding accounts and providers");
   });
 
   test("leaves robots to the layout unless noIndex is set", () => {

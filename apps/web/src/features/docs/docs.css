@@ -119,6 +119,8 @@
   font-family: var(--font-mono);
   font-size: 0.875em;
   letter-spacing: var(--letter-mono);
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
 }
 
 .doc-prose blockquote {
@@ -153,10 +155,17 @@
 }
 
 .doc-table {
+  --doc-table-shadow: color-mix(in srgb, var(--foreground) 22%, transparent);
   max-width: 100%;
   overflow-x: auto;
   border: 1px solid var(--hairline);
   border-radius: var(--corner-md);
+  background:
+    linear-gradient(to right, var(--background) 30%, transparent) left center / 40px 100% no-repeat local,
+    linear-gradient(to left, var(--background) 30%, transparent) right center / 40px 100% no-repeat local,
+    radial-gradient(farthest-side at 0 50%, var(--doc-table-shadow), transparent) left center / 16px 100% no-repeat scroll,
+    radial-gradient(farthest-side at 100% 50%, var(--doc-table-shadow), transparent) right center / 16px 100% no-repeat scroll,
+    var(--background);
 }
 
 .doc-table table {
@@ -174,10 +183,22 @@
   border-bottom: 1px solid var(--hairline);
 }
 
-.doc-table th {
-  background: var(--surface);
-  font-weight: 620;
+.doc-table td {
+  min-width: 6.5rem;
+  overflow-wrap: break-word;
+}
+
+.doc-table td:first-child code {
   white-space: nowrap;
+}
+
+.doc-table th {
+  font-weight: 620;
+  text-wrap: balance;
+}
+
+.doc-table thead tr {
+  background: color-mix(in srgb, var(--surface) 70%, transparent);
 }
 
 .doc-table tr:last-child td {
@@ -185,7 +206,7 @@
 }
 
 .doc-table td code {
-  white-space: nowrap;
+  overflow-wrap: anywhere;
 }
 
 .doc-code pre {

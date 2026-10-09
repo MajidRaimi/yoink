@@ -20,10 +20,13 @@ export const DocsNav = (): React.JSX.Element => (
         ...group.docs.map((doc) => ({ href: docHref(doc.slug), label: doc.nav })),
         ...(EXTRA_ITEMS[group.section] ?? []),
       ];
+      const labelId = `docs-nav-${group.section.toLowerCase()}`;
       return (
         <div key={group.section} className="flex flex-col gap-2">
-          <h2 className="font-mono text-xs tracking-caps text-faint uppercase">{group.section}</h2>
-          <ul className="flex flex-col border-l border-hairline">
+          <p id={labelId} className="font-mono text-xs tracking-caps text-faint uppercase">
+            {group.section}
+          </p>
+          <ul aria-labelledby={labelId} className="flex flex-col border-l border-hairline">
             {items.map((item) => (
               <li key={item.href}>
                 <DocsNavLink href={item.href} label={item.label} />

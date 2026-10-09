@@ -6,6 +6,7 @@ export type ProofStats = {
 
 export type ProofClause = {
   key: keyof ProofStats;
+  term?: string;
   before: string;
   value: string;
   after: string;
@@ -45,7 +46,8 @@ export const proofClauses = (stats: ProofStats): ProofClause[] => {
   if (stats.monthlyDownloads !== undefined) {
     clauses.push({
       key: "monthlyDownloads",
-      before: "yoink-cli was downloaded ",
+      term: "yoink-cli",
+      before: " was downloaded ",
       value: formatCount(stats.monthlyDownloads),
       after: ` ${plural(stats.monthlyDownloads, "time", "times")} from npm last month`,
     });

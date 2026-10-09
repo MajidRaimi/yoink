@@ -31,17 +31,22 @@
 
 @media (prefers-reduced-motion: reduce) {
   .viewport {
+    overflow: visible;
     mask-image: none;
     -webkit-mask-image: none;
   }
 
   .track {
+    display: block;
     width: auto;
     animation: none;
   }
 
   .list {
     flex-wrap: wrap;
+    flex-shrink: 1;
+    min-width: 0;
+    width: 100%;
     justify-content: center;
     gap: 1.25rem 2rem;
     padding-inline-end: 0;

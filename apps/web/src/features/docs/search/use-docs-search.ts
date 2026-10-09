@@ -1,17 +1,12 @@
 "use client";
 
 import { useMemo } from "react";
-import { DOC_SECTIONS, type DocSection } from "@/shared/contract";
+import { isDocSection } from "@/shared/contract";
 import { isDocSlug } from "@/shared/lib/routes";
-import { SEARCH_RESULT_LIMIT, type SearchHit } from "./search-options";
+import { MIN_QUERY_LENGTH, SEARCH_RESULT_LIMIT, type SearchHit } from "./search-options";
 import type { SearchIndexState } from "./use-search-index";
 
-const MIN_QUERY_LENGTH = 2;
-
 const textField = (value: unknown): string => (typeof value === "string" ? value : "");
-
-const isDocSection = (value: unknown): value is DocSection =>
-  typeof value === "string" && (DOC_SECTIONS as readonly string[]).includes(value);
 
 export const useDocsSearch = (query: string, state: SearchIndexState): readonly SearchHit[] =>
   useMemo(() => {

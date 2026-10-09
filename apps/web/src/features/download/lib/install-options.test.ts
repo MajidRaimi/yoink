@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { site } from "@/shared/brand/site";
 import { PLATFORMS } from "@/shared/contract";
-import { INSTALL_OPTIONS, INSTALL_TAB_IDS, installCommandForPlatform, installTabForPlatform } from "./install-options";
+import { INSTALL_OPTIONS, INSTALL_TAB_IDS, installTabForPlatform } from "./install-options";
 
 describe("install options", () => {
   test("preselects the visitor tab", () => {
@@ -14,8 +14,8 @@ describe("install options", () => {
   test("uses the real install commands", () => {
     expect(INSTALL_OPTIONS.windows.command).toBe(site.installCommandWindows);
     expect(INSTALL_OPTIONS.npm.command).toBe(site.installCommandNpm);
-    expect(installCommandForPlatform("windows")).toContain("install.ps1");
-    expect(installCommandForPlatform("linux")).toContain("install.sh");
-    expect(installCommandForPlatform("unknown")).toContain("install.sh");
+    expect(INSTALL_OPTIONS[installTabForPlatform("windows")].command).toContain("install.ps1");
+    expect(INSTALL_OPTIONS[installTabForPlatform("linux")].command).toContain("install.sh");
+    expect(INSTALL_OPTIONS[installTabForPlatform("unknown")].command).toContain("install.sh");
   });
 });

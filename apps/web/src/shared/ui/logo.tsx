@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { YOINK_MARK_PATH, YOINK_MARK_TRANSFORM, YOINK_MARK_VIEWBOX } from "@/shared/brand/mark";
 import { cn } from "@/shared/lib/cn";
 import { routes } from "@/shared/lib/routes";
 
@@ -9,7 +10,7 @@ export type YoinkMarkProps = {
 
 export const YoinkMark = ({ className, title }: YoinkMarkProps): React.JSX.Element => (
   <svg
-    viewBox="0 0 24 24"
+    viewBox={YOINK_MARK_VIEWBOX}
     fill="currentColor"
     className={className}
     role={title === undefined ? undefined : "img"}
@@ -17,10 +18,7 @@ export const YoinkMark = ({ className, title }: YoinkMarkProps): React.JSX.Eleme
     aria-label={title}
     focusable="false"
   >
-    <path
-      transform="matrix(0.014826 0 0 -0.014826 2.3855 21.8369)"
-      d="M424 0V422L-26 1327H408L867 391V0ZM895 484 680 920 898 1327H1323Z"
-    />
+    <path transform={YOINK_MARK_TRANSFORM} d={YOINK_MARK_PATH} />
   </svg>
 );
 

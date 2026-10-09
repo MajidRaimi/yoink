@@ -12,7 +12,7 @@ type IndexItem = {
 const REFERENCE_ITEM: IndexItem = {
   href: routes.reference,
   label: "CLI reference",
-  description: "Every command, alias, and flag with an example, plus the menu keymap.",
+  description: "One card per command with its flags, aliases and an example, plus the menu keymap and the tool, harness and preset ids.",
 };
 
 export const DocsIndexView = (): React.JSX.Element => (
@@ -20,7 +20,7 @@ export const DocsIndexView = (): React.JSX.Element => (
     <header className="flex flex-col gap-4">
       <h1 className="display text-4xl">Docs</h1>
       <p className="text-lg text-muted">
-        Switch accounts, connect providers, and see exactly what yoink writes. These pages are rendered from the Markdown in
+        Switch accounts, connect providers and see exactly what yoink writes. Guides are rendered from the Markdown in
         the repo&apos;s <code className="font-mono text-[0.9em]">docs/</code> folder.
       </p>
     </header>

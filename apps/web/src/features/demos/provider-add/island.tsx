@@ -12,21 +12,31 @@ const AUTOPLAY_STATUS = "Playing: add OpenRouter, pick three models, connect pi,
 
 const textMode = (state: State): boolean => isTextPhase(state);
 
+type ProviderAddActions = {
+  onPick: (index: number) => void;
+  onSend: (events: readonly DemoEvent[]) => void;
+};
+
+const useProviderAddActions = (
+  state: State,
+  dispatchAll: (events: readonly DemoEvent[]) => void,
+): ProviderAddActions => {
+  const onPick = useCallback((index: number): void => dispatchAll(eventsToPick(state, index)), [dispatchAll, state]);
+  return { onPick, onSend: dispatchAll };
+};
+
 const ProviderAddIsland = (): React.JSX.Element => {
-  const demo = useDemo(providerAddDemo, { textMode });
   const idPrefix = useId();
-  const { state, dispatch } = demo;
-  const send = useCallback((events: readonly DemoEvent[]): void => events.forEach((event) => dispatch(event)), [dispatch]);
-  const pick = useCallback((index: number): void => send(eventsToPick(state, index)), [state, send]);
+  const { state, mode, dispatchAll, replay, rootProps } = useDemo(providerAddDemo, { textMode });
+  const actions = useProviderAddActions(state, dispatchAll);
   return (
     <ProviderAddView
       state={state}
-      status={demo.mode === "auto" ? AUTOPLAY_STATUS : statusText(state)}
+      status={mode === "auto" ? AUTOPLAY_STATUS : statusText(state)}
       idPrefix={idPrefix}
-      onPick={pick}
-      onSend={send}
-      onReplay={demo.replay}
-      rootProps={demo.rootProps}
+      onReplay={replay}
+      rootProps={rootProps}
+      {...actions}
     />
   );
 };

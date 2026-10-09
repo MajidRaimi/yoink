@@ -1,22 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { applyHeadingEntries, type HeadingEntry, type HeadingPositions, resolveActiveHeading } from "./heading-tracker";
+import { useMediaQuery } from "./use-media-query";
 
 const TOP_OFFSET = 72;
 const BOTTOM_INSET_PERCENT = 65;
 const OBSERVER_MARGIN = `-${TOP_OFFSET}px 0px -${BOTTOM_INSET_PERCENT}% 0px`;
-
-const topmostIntersecting = (entries: readonly IntersectionObserverEntry[]): string | null => {
-  const visible = entries.filter((entry) => entry.isIntersecting);
-  visible.sort((left, right) => left.boundingClientRect.top - right.boundingClientRect.top);
-  return visible[0]?.target.id ?? null;
-};
-
-const lastPassedHeading = (targets: readonly HTMLElement[]): string | null => {
-  const bandBottom = (window.innerHeight * (100 - BOTTOM_INSET_PERCENT)) / 100;
-  const passed = targets.filter((target) => target.getBoundingClientRect().top <= bandBottom);
-  return passed.at(-1)?.id ?? targets[0]?.id ?? null;
-};
+const DOC_TOC_ACTIVE_QUERY = "(min-width: 80rem)";
 
 const decodeFragment = (fragment: string): string => {
   try {
@@ -31,26 +22,39 @@ const hashHeading = (ids: readonly string[]): string | null => {
   return ids.includes(hash) ? hash : null;
 };
 
-export const useActiveHeading = (ids: readonly string[]): string | null => {
+const toHeadingEntry = (entry: IntersectionObserverEntry): HeadingEntry => ({
+  id: entry.target.id,
+  intersecting: entry.isIntersecting,
+  top: entry.boundingClientRect.top,
+  bandBottom: entry.rootBounds?.bottom ?? (window.innerHeight * (100 - BOTTOM_INSET_PERCENT)) / 100,
+});
+
+export const useActiveHeading = (ids: readonly string[], activeQuery: string = DOC_TOC_ACTIVE_QUERY): string | null => {
   const [active, setActive] = useState<string | null>(ids[0] ?? null);
+  const wide = useMediaQuery(activeQuery);
   const key = ids.join("|");
 
   useEffect(() => {
+    if (!wide) return;
     const headingIds = key.split("|");
     const targets = headingIds
       .map((id) => document.getElementById(id))
       .filter((element): element is HTMLElement => element !== null);
     if (targets.length === 0) return;
-    setActive(hashHeading(headingIds) ?? lastPassedHeading(targets));
+    let positions: HeadingPositions = new Map();
+    let seeded = false;
     const observer = new IntersectionObserver(
       (entries) => {
-        setActive(topmostIntersecting(entries) ?? lastPassedHeading(targets));
+        positions = applyHeadingEntries(positions, entries.map(toHeadingEntry));
+        const resolved = resolveActiveHeading(headingIds, positions);
+        setActive(seeded ? resolved : (hashHeading(headingIds) ?? resolved));
+        seeded = true;
       },
       { rootMargin: OBSERVER_MARGIN, threshold: 0 },
     );
     for (const target of targets) observer.observe(target);
     return () => observer.disconnect();
-  }, [key]);
+  }, [key, wide]);
 
   return active;
 };

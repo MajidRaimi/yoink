@@ -28,5 +28,3 @@ export const archFromHints = ({ architecture, renderer }: ArchHints): MacArch | 
   if (/Intel|AMD|Radeon|NVIDIA/i.test(renderer)) return "x64";
   return null;
 };
-
-export const isMacArch = (value: string): value is MacArch => (MAC_ARCHES as readonly string[]).includes(value);

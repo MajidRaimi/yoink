@@ -1,19 +1,20 @@
+import { DocToc, DocTocCollapsible } from "@/features/docs/toc";
+import type { DocHeading } from "@/shared/contract";
 import { REFERENCE_SECTIONS } from "../sections";
 
+const REFERENCE_HEADINGS: readonly DocHeading[] = REFERENCE_SECTIONS.map((section) => ({
+  id: section.id,
+  text: section.title,
+  depth: 2,
+}));
+
+const RAIL_QUERY = "(min-width: 64rem)";
+
 export const OnThisPage = (): React.JSX.Element => (
-  <nav aria-label="On this page" className="lg:sticky lg:top-24">
-    <p className="text-sm font-medium">On this page</p>
-    <ul className="mt-3 flex flex-wrap gap-2 lg:flex-col lg:gap-0.5">
-      {REFERENCE_SECTIONS.map((section) => (
-        <li key={section.id}>
-          <a
-            href={`#${section.id}`}
-            className="inline-flex rounded-pill border border-hairline px-3 py-1.5 text-sm text-muted transition-colors dur-1 hover:text-foreground focus-visible:focus-ring lg:rounded-sm lg:border-transparent lg:px-2 lg:py-1"
-          >
-            {section.title}
-          </a>
-        </li>
-      ))}
-    </ul>
-  </nav>
+  <>
+    <DocTocCollapsible headings={REFERENCE_HEADINGS} className="lg:hidden" />
+    <div className="hidden lg:sticky lg:top-24 lg:block lg:max-h-[calc(100dvh-7rem)] lg:overflow-y-auto lg:pb-6">
+      <DocToc headings={REFERENCE_HEADINGS} activeQuery={RAIL_QUERY} />
+    </div>
+  </>
 );

@@ -15,6 +15,9 @@ on:
       - "apps/cli/src/features/menu/**"
       - "apps/desktop/src-tauri/tauri.conf.json"
       - ".github/workflows/deploy.yml"
+  workflow_run:
+    workflows: ["Desktop Release"]
+    types: [completed]
   workflow_dispatch:
 
 permissions:
@@ -28,6 +31,7 @@ concurrency:
 
 jobs:
   build:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

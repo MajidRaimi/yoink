@@ -1,10 +1,9 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
+import { subscribeToNothing } from "@/shared/lib/subscribe-to-nothing";
 import type { Platform } from "@/shared/contract";
 import { readNavigatorPlatform } from "@/features/download/hooks/navigator-hints";
-
-const subscribeToNothing = (): (() => void) => () => undefined;
 
 let cached: Platform | null = null;
 

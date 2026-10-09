@@ -11,7 +11,9 @@ const activeDescendantOf = (target: Locator): Promise<string | null> => target.g
 const scrollYOf = (page: Page): Promise<number> => page.evaluate(() => window.scrollY);
 
 const exerciseDemo = async (page: Page, group: Locator): Promise<void> => {
-  await group.scrollIntoViewIfNeeded();
+  await expect(async () => {
+    await group.scrollIntoViewIfNeeded({ timeout: 2_000 });
+  }, "demo scrolls into view while its island swaps in").toPass();
   const target = demoFocusTarget(group);
   await expect(target, "demo becomes interactive").toHaveAttribute("tabindex", "0");
   await target.focus();

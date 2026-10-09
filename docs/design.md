@@ -63,7 +63,7 @@ Radius rule: radius grows with the size of the element and nests concentrically 
 - `rounded-md`: command lines and inputs.
 - `rounded-lg`: demo frames and cards.
 - `rounded-xl`: the largest panels only.
-- `rounded-button`: every `Button` and `ButtonLink`, plus the theme toggle.
+- `rounded-button`: every `ButtonLink`, plus the theme toggle.
 - `rounded-pill`: segmented controls and tags.
 
 Never round past `rounded-xl` on a container, and never mix radii on the same level of a layout.
@@ -135,9 +135,9 @@ Shared primitives live in `apps/web/src/shared/ui`. Feature-specific pieces live
 
 | Component | File | Notes |
 | --- | --- | --- |
-| `Button`, `ButtonLink`, `buttonStyles` | `button.tsx` | Variants `primary` (yellow fill), `secondary` (surface-2 with strong hairline), `ghost`. Sizes `sm`, `md`, `lg`. `ButtonLink` picks `next/link` or `<a>` from the href. |
+| `ButtonLink`, `buttonStyles` | `button.tsx` | Variants `primary` (yellow fill), `secondary` (surface-2 with strong hairline), `ghost`. Sizes `sm`, `md`, `lg`. `ButtonLink` picks `next/link` or `<a>` from the href. |
 | `TextLink`, `textLinkStyles` | `link.tsx` | Tones `accent` (yellow underline) and `muted`. |
-| `Container` | `container.tsx` | Sizes `prose` (`max-w-3xl`), `default` (`max-w-6xl`), `wide` (`max-w-7xl`), gutter `px-4 sm:px-6`. |
+| `Container` | `container.tsx` | Sizes `wide` (`max-w-7xl`, the default and the one page width shared by navbar, sections and footer) and `prose` (`max-w-3xl`, inner reading width only), gutter `px-4 sm:px-6`. |
 | `CopyCommand` | `copy-command.tsx` | A mono command line with a yellow prompt, a copy button and a polite live region. |
 | `InlineCode` | `code.tsx` | Inline mono code on `bg-surface-2`. |
 | `Kbd` | `kbd.tsx` | Mono keycap with `shadow-1`. |
@@ -147,7 +147,6 @@ Shared primitives live in `apps/web/src/shared/ui`. Feature-specific pieces live
 | `Navbar`, `NavbarMenu`, `NavLinkItem`, `navLinks` | `navbar.tsx`, `navbar-menu.tsx`, `nav-link-item.tsx`, `nav-links.ts` | Sticky top bar on `bg-background` with a bottom hairline and a skip link; collapses to a disclosure menu below `md`. |
 | `Footer` | `footer.tsx` | Brand column plus three link columns from `sm` up. |
 | `ThemeProvider`, `ThemeToggle` | `theme-provider.tsx`, `theme-toggle.tsx` | See Theme. |
-| `PlaceholderPage` | `placeholder-page.tsx` | Title and description for pages without a body. |
 | `Href`, `isExternalHref` | `href.ts` | Typed internal routes and external URLs. |
 
 The props of the shared primitives and every cross-feature type (`DemoId`, `DemoEvent`, `Step`, `DemoSlotProps`, `DocMeta`, `Platform`, `ReleaseInfo`, `CtaLabel`) live in `apps/web/src/shared/contract.ts`. Route helpers live in `shared/lib/routes.ts`.

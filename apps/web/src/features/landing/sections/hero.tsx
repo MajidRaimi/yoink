@@ -13,7 +13,7 @@ export const Hero = (): React.JSX.Element => (
         <p className="max-w-md text-lg text-muted">{HERO_COPY.subhead}</p>
         <PrimaryCta className="mt-2" />
       </div>
-      <DemoSlot id="menu" eager className="lg:col-span-7" />
+      <DemoSlot id="menu" className="lg:col-span-7" />
     </Container>
   </section>
 );

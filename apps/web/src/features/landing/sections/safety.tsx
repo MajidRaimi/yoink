@@ -22,7 +22,7 @@ export const Safety = (): React.JSX.Element => (
             Every file and permission, in the security docs
           </TextLink>
         </div>
-        <div className="min-w-0 lg:col-span-7">
+        <div className="min-w-0 lg:sticky lg:top-24 lg:col-span-7 lg:self-start">
           <SettingsDiff />
         </div>
       </div>

@@ -2,20 +2,21 @@ import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { fontVariables } from "@/shared/brand/fonts";
 import { site } from "@/shared/brand/site";
+import { pageMetadata } from "@/features/seo/metadata";
+import { routes } from "@/shared/lib/routes";
 import { PlatformHeadScript } from "@/features/download/platform-head-script";
 import { Footer } from "@/shared/ui/footer";
 import { Navbar } from "@/shared/ui/navbar";
-import { ThemeProvider } from "@/shared/ui/theme-provider";
+import { ThemeProvider } from "@/shared/ui/theme/theme-provider";
+import { ThemeColorMeta } from "@/shared/ui/theme/theme-color-meta";
 import "./globals.css";
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#faf9f7" },
-    { media: "(prefers-color-scheme: dark)", color: "#0a0908" },
-  ],
 };
+
+const siteDefaults = pageMetadata({ title: site.title, description: site.description, path: routes.home });
 
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
@@ -25,26 +26,15 @@ export const metadata: Metadata = {
   },
   description: site.description,
   applicationName: site.name,
-  authors: [{ name: site.author, url: site.repo }],
+  authors: [{ name: site.author, url: site.authorUrl }],
   creator: site.author,
   publisher: site.author,
   icons: {
     icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
     apple: "/apple-icon.png",
   },
-  openGraph: {
-    title: site.title,
-    description: site.description,
-    url: site.url,
-    siteName: site.name,
-    locale: "en_US",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: site.title,
-    description: site.description,
-  },
+  openGraph: siteDefaults.openGraph,
+  twitter: siteDefaults.twitter,
   robots: {
     index: true,
     follow: true,
@@ -69,6 +59,7 @@ const RootLayout = ({ children }: RootLayoutProps): React.JSX.Element => (
     </head>
     <body className="flex min-h-dvh flex-col">
       <ThemeProvider>
+        <ThemeColorMeta />
         <Navbar />
         <main id="main" className="flex-1">
           {children}

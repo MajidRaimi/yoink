@@ -26,15 +26,17 @@ export const SettingsDiff = (): React.JSX.Element => {
         tabIndex={0}
         role="region"
         aria-label="settings.json diff"
-        className="overflow-x-auto py-3 font-mono text-[0.8125rem] leading-relaxed focus-visible:focus-ring"
+        className="overflow-x-auto py-3 font-mono text-[0.8125rem] leading-relaxed focus-visible:focus-ring focus-visible:-outline-offset-2!"
       >
-        {lines.map((line) => (
-          <DiffLineRow
-            key={`${line.id}-${line.change}`}
-            line={line}
-            order={Math.max(changedIds.indexOf(line.id), 0)}
-          />
-        ))}
+        <div className="w-max min-w-full">
+          {lines.map((line) => (
+            <DiffLineRow
+              key={`${line.id}-${line.change}`}
+              line={line}
+              order={Math.max(changedIds.indexOf(line.id), 0)}
+            />
+          ))}
+        </div>
       </div>
       <p role="status" aria-live="polite" className="border-t border-hairline px-4 py-2.5 font-mono text-xs text-muted">
         {summary}

@@ -1,3 +1,5 @@
+import { type CommandIndexEntry, matchesTerms, queryTerms } from "./command-query";
+
 export const COMMAND_GROUPS = [
   { id: "accounts", title: "Accounts", summary: "Open the menu, add, switch, list and manage saved profiles." },
   {
@@ -113,8 +115,8 @@ export const CLI_COMMANDS: readonly CliCommand[] = [
     usage: "yoink use <name>",
     aliases: ["switch"],
     summary:
-      "Switch to a saved profile inside its own tool. Warns if the tool is running and no-ops if the profile is already active.",
-    flags: [{ flag: "--force", description: "Skip the running check when called from a script." }],
+      "Switch to a saved profile inside its own tool. If the tool is running it asks first, and from a script it refuses a subscription switch unless --force. No-ops if already active.",
+    flags: [{ flag: "--force", description: "Switch even when the tool is running." }],
     example: "yoink use personal",
     group: "accounts",
   },
@@ -284,16 +286,16 @@ export const commandsInGroup = (commands: readonly CliCommand[], group: CommandG
 
 export const commandAnchor = (command: CliCommand): string => `cmd-${command.id}`;
 
-const searchableText = (command: CliCommand): string =>
+export const commandSearchText = (command: CliCommand): string =>
   [command.usage, command.summary, command.example, ...command.aliases, ...(command.aliases.length > 0 ? ["alias"] : []), ...command.flags.flatMap((flag) => [flag.flag, flag.description])]
     .join(" ")
     .toLowerCase();
 
+export const commandIndex = (commands: readonly CliCommand[]): readonly CommandIndexEntry[] =>
+  commands.map((command) => ({ id: command.id, group: command.group, text: commandSearchText(command) }));
+
 export const filterCommands = (commands: readonly CliCommand[], query: string): readonly CliCommand[] => {
-  const terms = query.trim().toLowerCase().split(/\s+/).filter((term) => term.length > 0);
+  const terms = queryTerms(query);
   if (terms.length === 0) return commands;
-  return commands.filter((command) => {
-    const text = searchableText(command);
-    return terms.every((term) => text.includes(term));
-  });
+  return commands.filter((command) => matchesTerms(commandSearchText(command), terms));
 };

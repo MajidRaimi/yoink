@@ -1,9 +1,11 @@
 "use client";
 
 import { CheckIcon, CopyIcon } from "@phosphor-icons/react";
-import { cn } from "@/shared/lib/cn";
-import { useCopyToClipboard } from "@/shared/lib/use-copy-to-clipboard";
+import { useRef } from "react";
+import { cx } from "@/shared/lib/cx";
+import { COPY_STATUS_TEXT, useCopyToClipboard } from "@/shared/lib/use-copy-to-clipboard";
 import { Icon } from "@/shared/ui/icon";
+import { useOverflowsEnd } from "@/shared/ui/use-overflows-end";
 
 export type CopyCommandProps = {
   command: string;
@@ -11,15 +13,16 @@ export type CopyCommandProps = {
   className?: string;
 };
 
-const statusText = { idle: "", copied: "Copied to clipboard", failed: "Copy failed" } as const;
-
 export const CopyCommand = ({ command, prompt = "$", className }: CopyCommandProps): React.JSX.Element => {
   const { status, copy } = useCopyToClipboard();
   const copied = status === "copied";
+  const codeRef = useRef<HTMLElement>(null);
+  const endSentinelRef = useRef<HTMLSpanElement>(null);
+  const overflowsEnd = useOverflowsEnd(codeRef, endSentinelRef);
 
   return (
     <div
-      className={cn(
+      className={cx(
         "flex min-w-0 items-center gap-3 rounded-md border border-hairline-strong bg-surface py-1.5 pr-1.5 pl-4 font-mono text-sm",
         className,
       )}
@@ -28,24 +31,30 @@ export const CopyCommand = ({ command, prompt = "$", className }: CopyCommandPro
         {prompt}
       </span>
       <code
+        ref={codeRef}
         tabIndex={0}
-        className="w-0 min-w-0 flex-1 overflow-x-auto whitespace-nowrap rounded-xs py-1.5 tracking-mono focus-visible:focus-ring"
+        dir="ltr"
+        className={cx(
+          "w-0 min-w-0 flex-1 overflow-x-auto whitespace-nowrap rounded-xs py-1.5 tracking-mono focus-visible:focus-ring",
+          overflowsEnd && "[mask-image:linear-gradient(to_right,#000_calc(100%-2.5rem),transparent)]",
+        )}
       >
         {command}
+        <span ref={endSentinelRef} aria-hidden="true" className="inline-block h-px w-px align-middle" />
       </code>
       <button
         type="button"
         onClick={() => void copy(command)}
         aria-label="Copy command"
-        className={cn(
-          "grid size-9 shrink-0 place-items-center rounded-sm text-muted transition-colors dur-1 hover:bg-surface-2 hover:text-foreground focus-visible:focus-ring",
-          copied && "text-success",
+        className={cx(
+          "grid size-9 shrink-0 place-items-center rounded-sm transition-colors dur-1 hover:bg-surface-2 hover:text-foreground focus-visible:focus-ring",
+          copied ? "text-success" : "text-muted",
         )}
       >
         <Icon icon={copied ? CheckIcon : CopyIcon} size={16} weight={copied ? "bold" : "regular"} />
       </button>
       <span role="status" aria-live="polite" className="sr-only">
-        {statusText[status]}
+        {COPY_STATUS_TEXT[status]}
       </span>
     </div>
   );

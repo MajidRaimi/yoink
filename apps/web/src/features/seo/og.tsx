@@ -2,10 +2,12 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ImageResponse } from "next/og";
 import { ogContentType, ogSize } from "@/features/seo/og-meta";
+import { YOINK_MARK_PATH, YOINK_MARK_TRANSFORM, YOINK_MARK_VIEWBOX } from "@/shared/brand/mark";
+import { site } from "@/shared/brand/site";
 
 export { ogContentType, ogSize };
 
-export const OG_INSTALL_LINE = "curl -fsSL yoink.codes/install.sh | bash";
+export const OG_INSTALL_LINE: string = site.installCommand;
 
 export type OgImageInput = {
   title: string;
@@ -31,7 +33,7 @@ const fonts = [
   { name: "JetBrains Mono", data: readFont("JetBrainsMono-Regular.ttf"), weight: 400, style: "normal" },
 ] as const;
 
-const markSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="${palette.ink}"><path transform="matrix(0.014826 0 0 -0.014826 2.3855 21.8369)" d="M424 0V422L-26 1327H408L867 391V0ZM895 484 680 920 898 1327H1323Z"/></svg>`;
+const markSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${YOINK_MARK_VIEWBOX}" fill="${palette.ink}"><path transform="${YOINK_MARK_TRANSFORM}" d="${YOINK_MARK_PATH}"/></svg>`;
 
 const markDataUri = `data:image/svg+xml;base64,${Buffer.from(markSvg).toString("base64")}`;
 

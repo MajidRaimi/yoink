@@ -1,3 +1,5 @@
+import type { HarnessData } from "@/shared/contract";
+
 export const HARNESSES = [
   {
     id: "claude-code",
@@ -90,7 +92,7 @@ export const HARNESSES = [
     exclusive: false,
     experimental: true,
   },
-] as const;
+] as const satisfies readonly HarnessData[];
 
 export type Harness = (typeof HARNESSES)[number];
 

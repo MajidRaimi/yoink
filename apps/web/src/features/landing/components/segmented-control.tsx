@@ -1,7 +1,7 @@
 "use client";
 
 import { useRovingRadio } from "@/features/landing/hooks/use-roving-radio";
-import { cn } from "@/shared/lib/cn";
+import { cx } from "@/shared/lib/cx";
 
 export type SegmentedOption<Value extends string> = {
   value: Value;
@@ -33,16 +33,16 @@ export const SegmentedControl = <Value extends string>({
     <div
       role="radiogroup"
       aria-label={label}
-      className={cn("inline-flex rounded-pill border border-hairline-strong bg-surface p-1", className)}
+      className={cx("inline-flex rounded-pill border border-hairline-strong bg-surface p-1", className)}
     >
       {options.map((option) => (
         <button
           key={option.value}
           type="button"
           {...itemProps(option.value)}
-          className={cn(
-            "h-9 rounded-pill px-4 text-sm font-medium text-muted transition-colors dur-1 hover:text-foreground focus-visible:focus-ring",
-            option.value === value && "bg-foreground text-background hover:text-background",
+          className={cx(
+            "h-9 whitespace-nowrap rounded-pill px-4 text-sm font-medium transition-colors dur-1 focus-visible:focus-ring",
+            option.value === value ? "bg-foreground text-background" : "text-muted hover:text-foreground",
           )}
         >
           {option.label}

@@ -21,6 +21,7 @@ import {
   reduce,
   restartHint,
   runningPrompt,
+  runningSummary,
   statusText,
   TOOLS,
   type SwitchState,
@@ -143,8 +144,8 @@ describe("switching", () => {
   test.each([
     [
       "codex",
-      "Re-capture ~/.codex/auth.json, or the Codex keyring entry into personal",
-      "Restore ~/.codex/auth.json, or the Codex keyring entry from spare",
+      "Re-capture ~/.codex/auth.json (or the Codex keyring entry) into personal",
+      "Restore ~/.codex/auth.json (or the Codex keyring entry) from spare",
     ],
     ["kimi", "Re-capture ~/.kimi-code/credentials/*.json into personal", "Restore ~/.kimi-code/credentials/*.json from spare"],
     [
@@ -181,7 +182,7 @@ describe("switching", () => {
     const state = run([key("down")]);
     const profile = CLAUDE_PROFILES[state.cursor];
     const suffix = profile?.name === ACTIVE_CLAUDE_PROFILE ? ", active" : "";
-    expect(statusText(state)).toBe(`Claude Code: ${profile?.name ?? ""} (${profile?.email ?? ""})${suffix}. Enter switches.`);
+    expect(statusText(state)).toBe(`Claude Code: ${profile?.name ?? ""} (${profile?.email ?? ""})${suffix}. Enter switches. Claude Code not running.`);
     expect(statusText(initial)).toContain(", active. Enter switches.");
     const cancelled = run([key("down")], run([key("escape")], run([key("down"), key("space"), key("enter")], onCodex())));
     const codexLogin = loginsFor("codex")[cancelled.cursor];
@@ -189,10 +190,18 @@ describe("switching", () => {
     expect(statusText(cancelled)).toContain(`${codexLogin?.name ?? ""} (${codexLogin?.detail ?? ""})`);
   });
 
+  test("toggling running is announced in the status", () => {
+    const toggled = run([key("space")], onCodex());
+    expect(statusText(onCodex())).toEndWith(runningSummary(onCodex(), "codex"));
+    expect(statusText(onCodex())).toEndWith("not running.");
+    expect(statusText(toggled)).toEndWith("marked running.");
+    expect(statusText(run([key("space")], toggled))).toEndWith("not running.");
+  });
+
   test("a switch with no active login skips the re-capture step", () => {
     const base: SwitchState = { ...onCodex(), active: { ...initial.active, codex: null } };
     const state = run([key("enter")], base);
-    expect(texts(state)[0]).toStartWith("Restore ~/.codex/auth.json, or the Codex keyring entry from");
+    expect(texts(state)[0]).toStartWith("Restore ~/.codex/auth.json (or the Codex keyring entry) from");
   });
 
   test("the restart hints name each tool", () => {

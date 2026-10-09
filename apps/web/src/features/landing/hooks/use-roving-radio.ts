@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useRef, type KeyboardEvent } from "react";
-import { directionForKey, moveIndex } from "@/features/landing/hooks/roving-radio";
+import type { KeyboardEvent } from "react";
+import { BIDIRECTIONAL_ROVING_KEYS, rovingTarget } from "@/shared/lib/roving-index";
+import { useFocusRegistry } from "@/shared/lib/use-focus-registry";
 
 export type RovingRadioItemProps = {
   role: "radio";
@@ -9,7 +10,7 @@ export type RovingRadioItemProps = {
   tabIndex: 0 | -1;
   onClick: () => void;
   onKeyDown: (event: KeyboardEvent<HTMLButtonElement>) => void;
-  ref: (node: HTMLButtonElement | null) => void;
+  ref: (node: HTMLElement | null) => void;
 };
 
 export type RovingRadio<Value extends string> = {
@@ -21,15 +22,7 @@ export const useRovingRadio = <Value extends string>(
   value: Value,
   onChange: (next: Value) => void,
 ): RovingRadio<Value> => {
-  const nodes = useRef(new Map<Value, HTMLButtonElement>());
-
-  const select = useCallback(
-    (option: Value): void => {
-      onChange(option);
-      nodes.current.get(option)?.focus();
-    },
-    [onChange],
-  );
+  const { register, focus } = useFocusRegistry<Value>();
 
   const itemProps = (option: Value): RovingRadioItemProps => ({
     role: "radio",
@@ -37,16 +30,13 @@ export const useRovingRadio = <Value extends string>(
     tabIndex: option === value ? 0 : -1,
     onClick: () => onChange(option),
     onKeyDown: (event) => {
-      const direction = directionForKey(event.key);
-      if (direction === undefined) return;
+      const next = rovingTarget(options, option, event.key, BIDIRECTIONAL_ROVING_KEYS);
+      if (next === undefined) return;
       event.preventDefault();
-      const next = options[moveIndex(options.indexOf(option), options.length, direction)];
-      if (next !== undefined) select(next);
+      onChange(next);
+      focus(next);
     },
-    ref: (node) => {
-      if (node === null) nodes.current.delete(option);
-      else nodes.current.set(option, node);
-    },
+    ref: register(option),
   });
 
   return { itemProps };

@@ -159,15 +159,14 @@ type RunningToggleProps = {
 
 const RunningToggle = ({ tool, running, onToggleRunning }: RunningToggleProps): React.JSX.Element => (
   <span
-    role="switch"
-    aria-checked={running}
+    aria-hidden="true"
     onClick={onToggleRunning}
     className={cn(
       "inline-flex items-center gap-2 rounded-xs px-2 py-1 text-xs text-muted transition-colors dur-1",
       onToggleRunning !== undefined && "cursor-pointer hover:text-foreground",
     )}
   >
-    <span aria-hidden="true" className="text-foreground">
+    <span className="text-foreground">
       {running ? "[x]" : "[ ]"}
     </span>
     {toolTitle(tool)} is running

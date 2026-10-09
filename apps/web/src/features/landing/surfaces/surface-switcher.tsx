@@ -1,14 +1,10 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
-import { SegmentedControl, type SegmentedOption } from "@/features/landing/components/segmented-control";
+import type { ReactNode } from "react";
+import { SegmentedControl } from "@/features/landing/components/segmented-control";
+import { useSurfaceTabs } from "@/features/landing/surfaces/use-surface-tabs";
 
-export type Surface = "terminal" | "menubar";
-
-const SURFACE_OPTIONS: readonly SegmentedOption<Surface>[] = [
-  { value: "terminal", label: "Terminal" },
-  { value: "menubar", label: "Menu bar" },
-];
+export type { Surface } from "@/features/landing/surfaces/use-surface-tabs";
 
 export type SurfaceSwitcherProps = {
   terminal: ReactNode;
@@ -16,24 +12,21 @@ export type SurfaceSwitcherProps = {
   header: ReactNode;
 };
 
-const useSurface = (initial: Surface): readonly [Surface, (next: Surface) => void] => useState<Surface>(initial);
-
 export const SurfaceSwitcher = ({ terminal, menubar, header }: SurfaceSwitcherProps): React.JSX.Element => {
-  const [surface, setSurface] = useSurface("terminal");
-  const views: Readonly<Record<Surface, ReactNode>> = { terminal, menubar };
+  const { options, surface, select, panels } = useSurfaceTabs({ terminal, menubar });
 
   return (
-    <div className="flex flex-col gap-10">
-      <div className="flex flex-col items-start gap-8 md:flex-row md:items-end md:justify-between">
-        {header}
-        <SegmentedControl label="Surface" options={SURFACE_OPTIONS} value={surface} onChange={setSurface} />
-      </div>
-      <div className="grid min-h-[26rem] place-items-start md:place-items-center">
-        {SURFACE_OPTIONS.map((option) => (
-          <div key={option.value} hidden={option.value !== surface} className="w-full min-w-0 max-w-3xl md:mx-auto">
-            {views[option.value]}
-          </div>
-        ))}
+    <div className="flex w-full flex-col gap-10">
+      {header}
+      <div className="flex w-full min-w-0 flex-col items-start gap-4">
+        <SegmentedControl label="Surface" options={options} value={surface} onChange={select} />
+        <div className="grid min-h-[26rem] w-full place-items-start">
+          {panels.map((panel) => (
+            <div key={panel.value} hidden={!panel.active} className="w-full min-w-0">
+              {panel.view}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

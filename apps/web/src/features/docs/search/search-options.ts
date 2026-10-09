@@ -28,3 +28,5 @@ export const SEARCH_OPTIONS: Options<SearchSection> = {
 };
 
 export const SEARCH_RESULT_LIMIT = 8;
+
+export const MIN_QUERY_LENGTH = 2;

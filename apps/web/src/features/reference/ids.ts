@@ -1,7 +1,4 @@
-import { PROFILE_GROUP_TITLES } from "@/features/demos/data/groups.gen";
-import { HARNESSES } from "@/features/demos/data/harnesses.gen";
-import { PROVIDER_PRESETS } from "@/features/demos/data/presets.gen";
-import { SUBSCRIPTIONS } from "@/features/demos/data/subscriptions.gen";
+import { HARNESSES, PROFILE_GROUP_TITLES, PROVIDER_PRESETS, SUBSCRIPTIONS } from "@/features/demos/data";
 import type { Protocol } from "@/shared/contract";
 
 export type KeyBinding = {
@@ -12,7 +9,7 @@ export type KeyBinding = {
 
 export const MENU_KEYMAP: readonly KeyBinding[] = [
   { keys: ["↑", "↓", "j", "k"], label: "Up, down, j or k", action: "Move the highlight. It wraps at the top and bottom." },
-  { keys: ["Enter"], label: "Enter", action: "Switch to the highlighted profile within its own tool." },
+  { keys: ["Enter"], label: "Enter", action: "Switch to the highlighted login within its own tool. On a provider row, open its harness picker." },
   { keys: ["n"], label: "n", action: "Add a new account or API-key provider." },
   { keys: ["e"], label: "e", action: "Edit the highlighted profile." },
   { keys: ["s"], label: "s", action: "Save the current live login as a new profile." },
@@ -55,9 +52,3 @@ export const PRESET_ID_ROWS: readonly PresetIdRow[] = PROVIDER_PRESETS.map((pres
   label: preset.label,
   protocols: preset.endpoints.map((endpoint) => endpoint.protocol),
 }));
-
-export const PROTOCOL_LABELS: Readonly<Record<Protocol, string>> = {
-  "anthropic-messages": "Anthropic Messages",
-  "openai-chat": "OpenAI Chat",
-  "openai-responses": "OpenAI Responses",
-};

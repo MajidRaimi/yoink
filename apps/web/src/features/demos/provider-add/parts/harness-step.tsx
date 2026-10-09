@@ -25,7 +25,7 @@ export const HarnessStep = ({ state, idPrefix, onPick, onSend }: StepProps): Rea
   return (
     <>
       <Line glyph="active">
-        <span className="shrink-0 text-brand-text">{source?.profileName}</span>
+        <span className="shrink-0 font-semibold text-foreground">{source?.profileName}</span>
         <span className="truncate text-faint">{summary}</span>
       </Line>
       <Line>

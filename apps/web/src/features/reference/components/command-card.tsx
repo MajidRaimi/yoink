@@ -12,7 +12,8 @@ export const CommandCard = ({ command }: CommandCardProps): React.JSX.Element =>
   return (
     <article
       aria-labelledby={anchor}
-      className="grid gap-4 py-7 md:grid-cols-[minmax(0,15rem)_minmax(0,1fr)] md:gap-10"
+      data-command-id={command.id}
+      className="grid gap-4 border-b border-hairline py-7 md:grid-cols-[minmax(0,15rem)_minmax(0,1fr)] md:gap-10"
     >
       <div className="min-w-0">
         <h3 id={anchor} className="scroll-mt-24 font-mono text-base font-medium tracking-mono">
@@ -35,7 +36,7 @@ export const CommandCard = ({ command }: CommandCardProps): React.JSX.Element =>
       <div className="flex min-w-0 flex-col gap-4">
         <p>{command.summary}</p>
         {command.flags.length === 0 ? null : <CommandFlags flags={command.flags} />}
-        <CommandExample command={command.example} />
+        <CommandExample command={command.example} label={`${command.usage} example`} />
       </div>
     </article>
   );

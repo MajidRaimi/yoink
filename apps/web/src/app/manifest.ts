@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { site } from "@/shared/brand/site";
+import { themeColors } from "@/shared/ui/theme/theme-colors";
 
 export const dynamic = "force-static";
 
@@ -11,8 +12,8 @@ const manifest = (): MetadataRoute.Manifest => ({
   start_url: "/",
   scope: "/",
   display: "standalone",
-  background_color: "#0a0908",
-  theme_color: "#0a0908",
+  background_color: themeColors.dark,
+  theme_color: themeColors.dark,
   categories: ["developer", "productivity", "utilities"],
   icons: [
     { src: "/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },

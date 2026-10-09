@@ -8,7 +8,7 @@ type DesktopFeature = {
 
 const FEATURES: readonly DesktopFeature[] = [
   {
-    title: "Switch Claude Code accounts in one click.",
+    title: "Switch Claude Code accounts from the menu bar.",
     body: "Pick a profile from the menu bar. If Claude Code is running, the app asks before it switches.",
   },
   {

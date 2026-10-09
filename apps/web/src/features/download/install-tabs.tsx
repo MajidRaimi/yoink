@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@/shared/lib/cn";
+import { cx } from "@/shared/lib/cx";
 import { CopyCommand } from "@/shared/ui/copy-command";
 import { CopyLineText } from "@/features/download/components/copy-line-text";
 import { useInstallTabs } from "@/features/download/hooks/use-install-tabs";
@@ -14,7 +14,7 @@ export const InstallTabs = ({ className }: InstallTabsProps): React.JSX.Element 
   const { active, tabProps, panelProps } = useInstallTabs();
 
   return (
-    <div className={cn("min-w-0 rounded-lg border border-hairline bg-surface-2", className)}>
+    <div className={cx("min-w-0 rounded-lg border border-hairline bg-surface-2", className)}>
       <div
         role="tablist"
         aria-label="Install method"
@@ -24,9 +24,9 @@ export const InstallTabs = ({ className }: InstallTabsProps): React.JSX.Element 
           <button
             key={id}
             {...tabProps(id)}
-            className={cn(
-              "shrink-0 rounded-t-sm border-b-2 px-3.5 py-2 text-sm font-medium transition-colors dur-1 focus-visible:focus-ring",
-              id === active ? "border-brand text-foreground" : "border-transparent text-muted hover:text-foreground",
+            className={cx(
+              "shrink-0 rounded-t-sm border-b-2 px-3.5 py-2 text-sm font-medium transition-colors dur-1 focus-visible:focus-ring focus-visible:-outline-offset-2!",
+              id === active ? "border-brand-text text-foreground" : "border-transparent text-muted hover:text-foreground",
             )}
           >
             {INSTALL_OPTIONS[id].label}
@@ -40,7 +40,7 @@ export const InstallTabs = ({ className }: InstallTabsProps): React.JSX.Element 
             <div
               key={id}
               {...panelProps(id)}
-              className={cn(
+              className={cx(
                 "flex flex-col gap-4 p-4 [grid-area:1/1] focus-visible:focus-ring sm:p-5",
                 id !== active && "invisible",
               )}

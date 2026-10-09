@@ -6,6 +6,9 @@ describe("json-ld builders", () => {
     const data = softwareApplicationLd();
     expect(data["@type"]).toBe("SoftwareApplication");
     expect(data.url).toBe("https://yoink.codes/");
+    expect(data.isAccessibleForFree).toBe(true);
+    expect(data.downloadUrl).toBe("https://yoink.codes/download/");
+    expect(data.installUrl).toBe("https://yoink.codes/#install");
     expect(data.offers).toEqual({ "@type": "Offer", price: "0", priceCurrency: "USD" });
     expect(data).not.toHaveProperty("aggregateRating");
   });

@@ -19,7 +19,7 @@ export type InstallOption = {
 };
 
 const unixScriptDetail: CopyLine = [
-  "Downloads the binary for your OS and architecture from the latest GitHub release, verifies its SHA-256 checksum and installs it to ",
+  "Downloads the binary for your OS and architecture from the latest GitHub release, verifies its SHA-256 checksum when the release ships one and installs it to ",
   { code: "/usr/local/bin" },
   " or ",
   { code: "~/.local/bin" },
@@ -79,6 +79,3 @@ const tabByPlatform: Readonly<Record<Platform, InstallTabId>> = {
 };
 
 export const installTabForPlatform = (platform: Platform): InstallTabId => tabByPlatform[platform];
-
-export const installCommandForPlatform = (platform: Platform): string =>
-  platform === "windows" ? site.installCommandWindows : site.installCommand;

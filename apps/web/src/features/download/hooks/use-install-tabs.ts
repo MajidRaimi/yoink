@@ -1,9 +1,10 @@
 "use client";
 
-import { useCallback, useId, useRef, useState, type KeyboardEvent } from "react";
+import { useCallback, useId, useState, type KeyboardEvent } from "react";
 import { usePlatform } from "@/features/download/hooks/use-platform";
 import { INSTALL_TAB_IDS, installTabForPlatform, type InstallTabId } from "@/features/download/lib/install-options";
-import { targetIndex } from "@/features/download/lib/tab-keys";
+import { HORIZONTAL_ROVING_KEYS, rovingTarget } from "@/shared/lib/roving-index";
+import { useFocusRegistry } from "@/shared/lib/use-focus-registry";
 
 export type InstallTabProps = {
   id: string;
@@ -12,7 +13,7 @@ export type InstallTabProps = {
   "aria-selected": boolean;
   "aria-controls": string;
   tabIndex: number;
-  ref: (node: HTMLButtonElement | null) => void;
+  ref: (node: HTMLElement | null) => void;
   onClick: () => void;
   onKeyDown: (event: KeyboardEvent<HTMLButtonElement>) => void;
 };
@@ -36,13 +37,16 @@ export const useInstallTabs = (): InstallTabs => {
   const platform = usePlatform();
   const [chosen, setChosen] = useState<InstallTabId | null>(null);
   const baseId = useId();
-  const nodes = useRef(new Map<InstallTabId, HTMLButtonElement>());
+  const { register, focus } = useFocusRegistry<InstallTabId>();
   const active = chosen ?? installTabForPlatform(platform);
 
-  const focusTab = useCallback((id: InstallTabId): void => {
-    setChosen(id);
-    nodes.current.get(id)?.focus();
-  }, []);
+  const focusTab = useCallback(
+    (id: InstallTabId): void => {
+      setChosen(id);
+      focus(id);
+    },
+    [focus],
+  );
 
   const tabProps = useCallback(
     (id: InstallTabId): InstallTabProps => ({
@@ -52,20 +56,16 @@ export const useInstallTabs = (): InstallTabs => {
       "aria-selected": id === active,
       "aria-controls": `${baseId}-panel-${id}`,
       tabIndex: id === active ? 0 : -1,
-      ref: (node) => {
-        if (node === null) nodes.current.delete(id);
-        else nodes.current.set(id, node);
-      },
+      ref: register(id),
       onClick: () => setChosen(id),
       onKeyDown: (event) => {
-        const next = targetIndex(event.key, INSTALL_TAB_IDS.indexOf(id), INSTALL_TAB_IDS.length);
-        const nextId = next === null ? undefined : INSTALL_TAB_IDS[next];
+        const nextId = rovingTarget(INSTALL_TAB_IDS, id, event.key, HORIZONTAL_ROVING_KEYS);
         if (nextId === undefined) return;
         event.preventDefault();
         focusTab(nextId);
       },
     }),
-    [active, baseId, focusTab],
+    [active, baseId, focusTab, register],
   );
 
   const panelProps = useCallback(

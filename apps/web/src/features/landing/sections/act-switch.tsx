@@ -5,7 +5,7 @@ import { Container } from "@/shared/ui/container";
 
 export const ActSwitch = (): React.JSX.Element => (
   <section aria-labelledby="switch-title" className="py-24 md:py-32">
-    <Container className="flex flex-col gap-12">
+    <Container size="prose" className="flex flex-col gap-12">
       <SectionHeader
         id="switch-title"
         eyebrow={SWITCH_COPY.eyebrow}
@@ -13,7 +13,7 @@ export const ActSwitch = (): React.JSX.Element => (
         body={SWITCH_COPY.body}
         align="center"
       />
-      <DemoSlot id="subscription-switch" className="mx-auto w-full max-w-3xl" />
+      <DemoSlot id="subscription-switch" className="w-full" />
     </Container>
   </section>
 );

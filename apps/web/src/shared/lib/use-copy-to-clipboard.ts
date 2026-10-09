@@ -4,6 +4,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 export type CopyStatus = "idle" | "copied" | "failed";
 
+export const COPY_STATUS_TEXT: Readonly<Record<CopyStatus, string>> = {
+  idle: "",
+  copied: "Copied to clipboard",
+  failed: "Copy failed",
+};
+
 export type CopyToClipboard = {
   status: CopyStatus;
   copy: (text: string) => Promise<void>;

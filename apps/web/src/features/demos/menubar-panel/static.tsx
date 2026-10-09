@@ -4,6 +4,10 @@ import { MenubarPanelView } from "@/features/demos/menubar-panel/view";
 
 const finalState = computeFinal(menubarPanelDemo);
 
-export const MenubarPanelStatic = (): React.JSX.Element => (
-  <MenubarPanelView state={finalState} idPrefix="menubar-panel-static" />
+type MenubarPanelStaticProps = {
+  idPrefix: string;
+};
+
+export const MenubarPanelStatic = ({ idPrefix }: MenubarPanelStaticProps): React.JSX.Element => (
+  <MenubarPanelView state={finalState} idPrefix={idPrefix} />
 );

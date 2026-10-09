@@ -1,3 +1,5 @@
+import type { ProfileGroupData, ProfileGroupKey } from "@/shared/contract";
+
 export const PROFILE_GROUP_TITLES = {
   claude: "Claude Code",
   external: "Providers",
@@ -5,8 +7,6 @@ export const PROFILE_GROUP_TITLES = {
   kimi: "Kimi Code",
   gemini: "Gemini",
   copilot: "GitHub Copilot",
-} as const;
-
-export type ProfileGroupKey = keyof typeof PROFILE_GROUP_TITLES;
+} as const satisfies ProfileGroupData;
 
 export type ProfileGroupTitle = (typeof PROFILE_GROUP_TITLES)[ProfileGroupKey];

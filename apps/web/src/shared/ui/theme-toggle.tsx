@@ -2,7 +2,8 @@
 
 import { MoonIcon, SunIcon } from "@phosphor-icons/react";
 import { useTheme } from "next-themes";
-import { cn } from "@/shared/lib/cn";
+import { cx } from "@/shared/lib/cx";
+import { useHydrated } from "@/shared/ui/use-hydrated";
 import { Icon } from "@/shared/ui/icon";
 
 export type ThemeToggleProps = {
@@ -11,14 +12,17 @@ export type ThemeToggleProps = {
 
 export const ThemeToggle = ({ className }: ThemeToggleProps): React.JSX.Element => {
   const { resolvedTheme, setTheme } = useTheme();
-  const toggle = (): void => setTheme(resolvedTheme === "dark" ? "light" : "dark");
+  const hydrated = useHydrated();
+  const isDark = resolvedTheme === "dark";
+  const toggle = (): void => setTheme(isDark ? "light" : "dark");
 
   return (
     <button
       type="button"
       onClick={toggle}
-      aria-label="Toggle dark mode"
-      className={cn(
+      aria-label="Dark mode"
+      aria-pressed={hydrated && resolvedTheme !== undefined ? isDark : undefined}
+      className={cx(
         "grid size-10 place-items-center rounded-button text-muted transition-colors dur-1 hover:bg-surface-2 hover:text-foreground focus-visible:focus-ring",
         className,
       )}

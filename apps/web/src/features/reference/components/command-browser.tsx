@@ -1,26 +1,9 @@
-"use client";
-
-import { CLI_COMMANDS, COMMAND_GROUPS, commandsInGroup, type CliCommand, type CommandGroup } from "../commands";
-import { useCommandFilter } from "../hooks/use-command-filter";
+import { CLI_COMMANDS, COMMAND_GROUPS, commandIndex, commandsInGroup, type CliCommand, type CommandGroup } from "../commands";
 import { CommandCard } from "./command-card";
-import { CommandFilterInput } from "./command-filter-input";
+import { CommandFilterScope } from "./command-filter-scope";
 import { SectionHeading } from "./section-heading";
 
-const resultLabelFor = (matches: number, total: number, isFiltering: boolean): React.JSX.Element => {
-  if (!isFiltering) {
-    return (
-      <>
-        <bdi>{total}</bdi> commands
-      </>
-    );
-  }
-  if (matches === 0) return <>No commands match</>;
-  return (
-    <>
-      <bdi>{matches}</bdi> of <bdi>{total}</bdi> commands
-    </>
-  );
-};
+const COMMAND_INDEX = commandIndex(CLI_COMMANDS);
 
 type CommandGroupSectionProps = {
   group: CommandGroup;
@@ -32,33 +15,21 @@ const CommandGroupSection = ({ group, commands }: CommandGroupSectionProps): Rea
     <SectionHeading id={group.id} title={group.title}>
       {group.summary}
     </SectionHeading>
-    {commands.length === 0 ? (
-      <p className="border-t border-hairline pt-4 text-sm text-muted">No matching commands</p>
-    ) : (
-      <div className="divide-y divide-hairline border-t border-hairline">
-        {commands.map((command) => (
-          <CommandCard key={command.id} command={command} />
-        ))}
-      </div>
-    )}
+    <div className="border-t border-hairline">
+      {commands.map((command) => (
+        <CommandCard key={command.id} command={command} />
+      ))}
+    </div>
+    <p data-command-empty={group.id} className="hidden pt-4 text-sm text-muted">
+      No matching commands
+    </p>
   </section>
 );
 
-export const CommandBrowser = (): React.JSX.Element => {
-  const { query, setQuery, clear, matches, isFiltering } = useCommandFilter(CLI_COMMANDS);
-  const groupedMatches = COMMAND_GROUPS.map((group) => ({ group, commands: commandsInGroup(matches, group.id) }));
-
-  return (
-    <div className="flex flex-col gap-14">
-      <CommandFilterInput
-        query={query}
-        onQueryChange={setQuery}
-        onClear={clear}
-        resultLabel={resultLabelFor(matches.length, CLI_COMMANDS.length, isFiltering)}
-      />
-      {groupedMatches.map(({ group, commands }) => (
-        <CommandGroupSection key={group.id} group={group} commands={commands} />
-      ))}
-    </div>
-  );
-};
+export const CommandBrowser = (): React.JSX.Element => (
+  <CommandFilterScope index={COMMAND_INDEX}>
+    {COMMAND_GROUPS.map((group) => (
+      <CommandGroupSection key={group.id} group={group} commands={commandsInGroup(CLI_COMMANDS, group.id)} />
+    ))}
+  </CommandFilterScope>
+);

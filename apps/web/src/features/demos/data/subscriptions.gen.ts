@@ -1,3 +1,5 @@
+import type { SubscriptionData } from "@/shared/contract";
+
 export const SUBSCRIPTIONS = [
   {
     tool: "codex",
@@ -15,7 +17,7 @@ export const SUBSCRIPTIONS = [
     tool: "copilot",
     label: "GitHub Copilot",
   },
-] as const;
+] as const satisfies readonly SubscriptionData[];
 
 export type Subscription = (typeof SUBSCRIPTIONS)[number];
 

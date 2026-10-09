@@ -4,4 +4,10 @@ import { MenuView } from "@/features/demos/menu/view";
 
 const FINAL_STATE = computeFinal(menuDefinition);
 
-export const MenuStatic = (): React.JSX.Element => <MenuView state={FINAL_STATE} idPrefix="menu-static" />;
+type MenuStaticProps = {
+  idPrefix: string;
+};
+
+export const MenuStatic = ({ idPrefix }: MenuStaticProps): React.JSX.Element => (
+  <MenuView state={FINAL_STATE} idPrefix={idPrefix} />
+);

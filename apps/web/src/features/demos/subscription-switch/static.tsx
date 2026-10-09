@@ -4,6 +4,10 @@ import { SubscriptionSwitchView } from "@/features/demos/subscription-switch/vie
 
 const FINAL_STATE = computeFinal(subscriptionSwitchDemo);
 
-export const SubscriptionSwitchStatic = (): React.JSX.Element => (
-  <SubscriptionSwitchView state={FINAL_STATE} idPrefix="subscription-switch-static" />
+type SubscriptionSwitchStaticProps = {
+  idPrefix: string;
+};
+
+export const SubscriptionSwitchStatic = ({ idPrefix }: SubscriptionSwitchStaticProps): React.JSX.Element => (
+  <SubscriptionSwitchView state={FINAL_STATE} idPrefix={idPrefix} />
 );

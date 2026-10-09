@@ -8,8 +8,9 @@ export const site = {
   title: "Yoink: switch AI coding accounts and providers",
   headline: "Every AI coding login and provider, in one place.",
   description:
-    "Switch Claude, Codex, Kimi, Gemini and Copilot logins, and wire any API key into 13 coding tools.",
+    "Switch Claude, Codex, Kimi, Gemini and Copilot logins, and connect API keys to 13 coding tools.",
   author: "Majid Raimi",
+  authorUrl: "https://github.com/MajidRaimi",
   repo: "https://github.com/MajidRaimi/yoink",
   releasesUrl: "https://github.com/MajidRaimi/yoink/releases",
   issuesUrl: "https://github.com/MajidRaimi/yoink/issues",
@@ -21,7 +22,3 @@ export const site = {
 } as const;
 
 export const desktopRelease: DesktopReleaseInfo = release.desktop;
-
-export const desktopTag = (version: string): string => `desktop-v${version}`;
-
-export const repoFileUrl = (path: string): string => `${site.repo}/blob/main/${path}`;

@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { JsonLd, breadcrumbLd, techArticleLd } from "@/features/seo/json-ld";
 import { pageMetadata } from "@/features/seo/metadata";
-import { REFERENCE_DESCRIPTION, REFERENCE_TITLE, ReferencePage } from "@/features/reference/components/reference-page";
+import { REFERENCE_DESCRIPTION, REFERENCE_TITLE } from "@/features/reference/components/reference-page";
 import { canonicalPath, routes } from "@/shared/lib/routes";
+import { ReferenceDocView } from "./_components/reference-doc-view";
 
 const path = canonicalPath(routes.reference);
 
@@ -19,10 +20,11 @@ const ReferenceRoute = (): React.JSX.Element => (
     <JsonLd
       data={breadcrumbLd([
         { name: "Home", path: "/" },
+        { name: "Docs", path: canonicalPath(routes.docs) },
         { name: REFERENCE_TITLE, path },
       ])}
     />
-    <ReferencePage />
+    <ReferenceDocView />
   </>
 );
 

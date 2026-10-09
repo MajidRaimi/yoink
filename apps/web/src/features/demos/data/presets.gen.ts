@@ -1,3 +1,5 @@
+import type { PresetData } from "@/shared/contract";
+
 export const PROVIDER_PRESETS = [
   {
     id: "openai",
@@ -100,7 +102,7 @@ export const PROVIDER_PRESETS = [
     ],
     keyUrl: null,
   },
-] as const;
+] as const satisfies readonly PresetData[];
 
 export type ProviderPreset = (typeof PROVIDER_PRESETS)[number];
 

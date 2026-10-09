@@ -15,7 +15,8 @@ export const CliSection = (): React.JSX.Element => (
         </h2>
         <p className="max-w-xl text-muted">
           Switch Claude, Codex, Kimi, Gemini and Copilot logins, and connect API keys to 13 coding tools. One
-          self-contained binary, with no runtime to install.
+          self-contained binary. The install scripts need no runtime, and the npm package runs the same binary through a
+          small Node shim.
         </p>
       </div>
       <InstallTabs />

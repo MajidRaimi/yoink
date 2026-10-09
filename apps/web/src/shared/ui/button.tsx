@@ -1,13 +1,13 @@
 import Link from "next/link";
-import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from "react";
-import { cn } from "@/shared/lib/cn";
+import type { AnchorHTMLAttributes, ReactNode } from "react";
+import { cx } from "@/shared/lib/cx";
 import { isExternalHref, type Href } from "@/shared/ui/href";
 
 export type ButtonVariant = "primary" | "secondary" | "ghost";
 
 export type ButtonSize = "sm" | "md" | "lg";
 
-export type ButtonStyleOptions = {
+type ButtonStyleOptions = {
   variant?: ButtonVariant;
   size?: ButtonSize;
   className?: string;
@@ -28,17 +28,8 @@ const sizes: Readonly<Record<ButtonSize, string>> = {
   lg: "h-12 px-6 text-base",
 };
 
-export const buttonStyles = ({ variant = "primary", size = "md", className }: ButtonStyleOptions = {}): string =>
-  cn(base, variants[variant], sizes[size], className);
-
-export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: ButtonVariant;
-  size?: ButtonSize;
-};
-
-export const Button = ({ variant, size, className, type = "button", ...props }: ButtonProps): React.JSX.Element => (
-  <button type={type} className={buttonStyles({ variant, size, className })} {...props} />
-);
+const buttonStyles = ({ variant = "primary", size = "md", className }: ButtonStyleOptions = {}): string =>
+  cx(base, variants[variant], sizes[size], className);
 
 export type ButtonLinkProps = Omit<AnchorHTMLAttributes<HTMLAnchorElement>, "href"> & {
   href: Href;

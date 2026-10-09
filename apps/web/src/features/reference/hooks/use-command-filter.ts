@@ -1,20 +1,24 @@
 "use client";
 
 import { useCallback, useDeferredValue, useMemo, useState } from "react";
-import { filterCommands, type CliCommand } from "../commands";
+import { type CommandIndexEntry, matchesTerms, queryTerms } from "../command-query";
 
 export type CommandFilter = {
   query: string;
   setQuery: (value: string) => void;
   clear: () => void;
-  matches: readonly CliCommand[];
+  matchedIds: ReadonlySet<string>;
   isFiltering: boolean;
 };
 
-export const useCommandFilter = (commands: readonly CliCommand[]): CommandFilter => {
+export const useCommandFilter = (index: readonly CommandIndexEntry[]): CommandFilter => {
   const [query, setQuery] = useState("");
   const deferredQuery = useDeferredValue(query);
-  const matches = useMemo(() => filterCommands(commands, deferredQuery), [commands, deferredQuery]);
+  const terms = useMemo(() => queryTerms(deferredQuery), [deferredQuery]);
+  const matchedIds = useMemo(
+    () => new Set(index.filter((entry) => matchesTerms(entry.text, terms)).map((entry) => entry.id)),
+    [index, terms],
+  );
   const clear = useCallback((): void => setQuery(""), []);
-  return { query, setQuery, clear, matches, isFiltering: deferredQuery.trim().length > 0 };
+  return { query, setQuery, clear, matchedIds, isFiltering: terms.length > 0 };
 };

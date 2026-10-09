@@ -2,7 +2,7 @@ import { site } from "@/shared/brand/site";
 import type { DocSlug } from "@/shared/lib/routes";
 import type { ExternalHref } from "@/shared/ui/href";
 
-const RAW_HOST = "https://raw.githubusercontent.com/MajidRaimi/yoink";
+const RAW_HOST: ExternalHref = `https://raw.githubusercontent.com${new URL(site.repo).pathname}`;
 
 export const repoBlobUrl = (repoPath: string): ExternalHref => `${site.repo}/blob/main/${repoPath}`;
 

@@ -21,6 +21,12 @@ describe("renderModule", () => {
   test("emits an as const export followed by type lines and a trailing newline", () => {
     expect(renderModule("X", [], ["export type Y = 1;"])).toBe("export const X = [] as const;\n\nexport type Y = 1;\n");
   });
+
+  test("imports the contract type and gates the value with satisfies", () => {
+    expect(renderModule("X", [], [], { imports: ["A", "B"], satisfies: "readonly A[]" })).toBe(
+      'import type { A, B } from "@/shared/contract";\n\nexport const X = [] as const satisfies readonly A[];\n\n',
+    );
+  });
 });
 
 describe("buildModules", () => {

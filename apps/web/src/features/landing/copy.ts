@@ -3,7 +3,7 @@ import { site } from "@/shared/brand/site";
 export const LANDING_TITLE = site.title;
 
 export const LANDING_DESCRIPTION =
-  "Switch Claude Code, Codex, Kimi, Gemini and Copilot logins, and wire any API key into 13 coding tools. Open source CLI for macOS, Linux and Windows.";
+  "Switch Claude Code, Codex, Kimi, Gemini and Copilot logins, and connect API keys to 13 coding tools. Open source CLI for macOS, Linux and Windows.";
 
 export const HERO_COPY = {
   headline: site.headline,
@@ -40,10 +40,10 @@ export const SAFETY_COPY = {
 
 export const INSTALL_COPY = {
   title: "Install in one line.",
-  body: "On macOS and Linux, the install script downloads the binary for your OS, verifies its SHA-256 checksum and installs it to /usr/local/bin or ~/.local/bin.",
+  body: "On macOS and Linux, the install script downloads the binary for your OS, verifies its SHA-256 checksum when the release ships one and installs it to /usr/local/bin or ~/.local/bin.",
 } as const;
 
 export const FINAL_COPY = {
   title: "Stop logging in and out.",
-  body: "Save each login and API key once, then switch with Enter in the yoink menu.",
+  body: "Save each login and API key once. Switch logins with Enter in the yoink menu, and connect keys from the same list.",
 } as const;

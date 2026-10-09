@@ -21,7 +21,7 @@ export const ReferencePage = (): React.JSX.Element => (
       </p>
     </header>
     <div className="mt-12 grid gap-10 lg:grid-cols-[12rem_minmax(0,1fr)] lg:gap-16">
-      <aside className="min-w-0">
+      <aside aria-label="Table of contents" className="min-w-0">
         <OnThisPage />
       </aside>
       <div className="flex min-w-0 flex-col gap-20">

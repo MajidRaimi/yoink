@@ -21,6 +21,7 @@ export const Proof = async (): Promise<React.JSX.Element> => {
           {clauses.length === 0 ? "." : ": "}
           {clauses.map((clause, index) => (
             <Fragment key={clause.key}>
+              {clause.term === undefined ? null : <bdi className="whitespace-nowrap">{clause.term}</bdi>}
               {clause.before}
               <bdi className="font-mono font-medium tracking-mono text-foreground">{clause.value}</bdi>
               {clause.after}

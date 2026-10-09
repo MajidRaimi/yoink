@@ -1,7 +1,7 @@
 "use client";
 
 import { ListIcon, XIcon } from "@phosphor-icons/react";
-import { useId, type KeyboardEvent, type ReactNode } from "react";
+import { useId, useRef, type FocusEvent, type KeyboardEvent, type ReactNode } from "react";
 import { useDisclosure } from "@/shared/lib/use-disclosure";
 import { Icon } from "@/shared/ui/icon";
 import { NavLinkItem } from "@/shared/ui/nav-link-item";
@@ -14,13 +14,22 @@ export type NavbarMenuProps = {
 export const NavbarMenu = ({ cta }: NavbarMenuProps): React.JSX.Element => {
   const { open, toggle, hide } = useDisclosure();
   const panelId = useId();
+  const buttonRef = useRef<HTMLButtonElement>(null);
   const closeOnEscape = (event: KeyboardEvent<HTMLDivElement>): void => {
-    if (event.key === "Escape") hide();
+    if (event.key !== "Escape" || !open) return;
+    hide();
+    buttonRef.current?.focus();
+  };
+  const closeOnFocusLeave = (event: FocusEvent<HTMLDivElement>): void => {
+    const next = event.relatedTarget;
+    if (next instanceof Node && event.currentTarget.contains(next)) return;
+    hide();
   };
 
   return (
-    <div className="md:hidden" onKeyDown={closeOnEscape}>
+    <div className="md:hidden" onKeyDown={closeOnEscape} onBlur={closeOnFocusLeave}>
       <button
+        ref={buttonRef}
         type="button"
         onClick={toggle}
         aria-expanded={open}
@@ -37,7 +46,7 @@ export const NavbarMenu = ({ cta }: NavbarMenuProps): React.JSX.Element => {
       >
         <nav aria-label="Mobile" className="flex flex-col">
           {NAV_LINKS.map((link) => (
-            <NavLinkItem key={link.label} link={link} onNavigate={hide} className="py-3 text-base" />
+            <NavLinkItem key={link.label} link={link} onNavigate={hide} size="menu" />
           ))}
         </nav>
         {cta === undefined ? null : (

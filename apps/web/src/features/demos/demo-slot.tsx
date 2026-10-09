@@ -1,41 +1,24 @@
-import dynamic from "next/dynamic";
 import type { ComponentType } from "react";
 import type { DemoId, DemoSlotProps } from "@/shared/contract";
-import type { DemoIslandProps } from "@/features/demos/linked/types";
-import MenuIsland from "@/features/demos/menu/island";
+import { LazyIsland } from "@/features/demos/lazy-island";
 import { MenuStatic } from "@/features/demos/menu/static";
 import { MenubarPanelStatic } from "@/features/demos/menubar-panel/static";
 import { ProviderAddStatic } from "@/features/demos/provider-add/static";
 import { SubscriptionSwitchStatic } from "@/features/demos/subscription-switch/static";
-import { cn } from "@/shared/lib/cn";
 
-const STATIC_FRAMES: Readonly<Record<DemoId, ComponentType>> = {
+type StaticFrameProps = {
+  idPrefix: string;
+};
+
+const STATIC_FRAMES: Readonly<Record<DemoId, ComponentType<StaticFrameProps>>> = {
   menu: MenuStatic,
   "provider-add": ProviderAddStatic,
   "subscription-switch": SubscriptionSwitchStatic,
   "menubar-panel": MenubarPanelStatic,
 };
 
-const LAZY_ISLANDS: Readonly<Record<DemoId, ComponentType<DemoIslandProps>>> = {
-  menu: dynamic<DemoIslandProps>(() => import("@/features/demos/menu/island"), { loading: MenuStatic }),
-  "provider-add": dynamic<DemoIslandProps>(() => import("@/features/demos/provider-add/island"), {
-    loading: ProviderAddStatic,
-  }),
-  "subscription-switch": dynamic<DemoIslandProps>(() => import("@/features/demos/subscription-switch/island"), {
-    loading: SubscriptionSwitchStatic,
-  }),
-  "menubar-panel": dynamic<DemoIslandProps>(() => import("@/features/demos/menubar-panel/island"), {
-    loading: MenubarPanelStatic,
-  }),
-};
-
-export const staticFrameFor = (id: DemoId): ComponentType => STATIC_FRAMES[id];
-
-export const DemoSlot = ({ id, eager = false, linked = false, className }: DemoSlotProps): React.JSX.Element => {
-  const Island = eager && id === "menu" ? MenuIsland : LAZY_ISLANDS[id];
-  return (
-    <div className={cn("min-w-0", className)}>
-      <Island linked={linked} />
-    </div>
-  );
+export const DemoSlot = ({ id, linked = false, className }: DemoSlotProps): React.JSX.Element => {
+  const StaticFrame = STATIC_FRAMES[id];
+  const idPrefix = linked ? `${id}-static-linked` : `${id}-static`;
+  return <LazyIsland id={id} linked={linked} className={className} fallback={<StaticFrame idPrefix={idPrefix} />} />;
 };

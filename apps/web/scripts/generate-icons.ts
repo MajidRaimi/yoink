@@ -6,7 +6,7 @@ import pngToIco from "png-to-ico";
 const root = process.cwd();
 const source = readFileSync(join(root, "public", "icon.svg"));
 
-const renderPng = (size: number) =>
+const renderPng = (size: number): Promise<Buffer> =>
   sharp(source, { density: 512 }).resize(size, size).png().toBuffer();
 
 const outputs = [

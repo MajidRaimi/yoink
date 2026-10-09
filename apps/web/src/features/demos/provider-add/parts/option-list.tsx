@@ -85,7 +85,7 @@ export const OptionList = ({
               </span>
               <span
                 className={cn(
-                  "min-w-0 truncate",
+                  row.hint === undefined ? "min-w-0 truncate" : "shrink-0",
                   disabled ? "text-faint line-through" : active ? "text-foreground" : "text-muted",
                 )}
               >
@@ -93,7 +93,7 @@ export const OptionList = ({
               </span>
               {row.tag === undefined ? null : <span className="shrink-0 text-faint">{row.tag}</span>}
               {row.hint === undefined ? null : (
-                <span title={row.hint} className="min-w-0 shrink-[4] truncate text-faint">
+                <span title={row.hint} className="min-w-0 truncate text-faint">
                   {row.hint}
                 </span>
               )}

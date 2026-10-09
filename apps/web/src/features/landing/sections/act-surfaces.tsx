@@ -6,7 +6,7 @@ import { Container } from "@/shared/ui/container";
 
 export const ActSurfaces = (): React.JSX.Element => (
   <section aria-labelledby="surfaces-title" className="py-24 md:py-32">
-    <Container size="wide">
+    <Container size="prose">
       <SurfaceSwitcher
         header={<SectionHeader id="surfaces-title" title={SURFACES_COPY.title} body={SURFACES_COPY.body} />}
         terminal={<DemoSlot id="menu" linked />}

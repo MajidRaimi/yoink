@@ -6,7 +6,7 @@ import {
   PROVIDER_PROFILES,
 } from "@/features/demos/data/fixtures";
 import { HARNESSES, type Harness, type HarnessId } from "@/features/demos/data/harnesses.gen";
-import type { Protocol } from "@/features/demos/data/presets.gen";
+import { PROTOCOL_LABELS, type Protocol } from "@/shared/contract";
 
 export type ClaudePanelProfile = {
   type: "claude";
@@ -57,12 +57,6 @@ export const INITIAL_LINKS: Readonly<Record<string, ProviderLinks>> = Object.fro
 export const NOT_INSTALLED: ReadonlySet<HarnessId> = new Set<HarnessId>(["goose", "continue"]);
 
 export const WITHOUT_DEFAULT_MODEL: ReadonlySet<HarnessId> = new Set<HarnessId>(["droid"]);
-
-export const PROTOCOL_LABELS: Readonly<Record<Protocol, string>> = {
-  "anthropic-messages": "Anthropic Messages",
-  "openai-chat": "OpenAI Chat",
-  "openai-responses": "OpenAI Responses",
-};
 
 export const HARNESS_ORDER: readonly HarnessId[] = HARNESSES.map((harness) => harness.id);
 

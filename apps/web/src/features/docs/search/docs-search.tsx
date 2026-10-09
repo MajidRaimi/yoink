@@ -4,12 +4,12 @@ import { MagnifyingGlassIcon, XIcon } from "@phosphor-icons/react";
 import type { Route } from "next";
 import { useRouter } from "next/navigation";
 import { useId, useState, type KeyboardEvent, type MouseEvent } from "react";
-import { cn } from "@/shared/lib/cn";
+import { cx } from "@/shared/lib/cx";
 import { docPath } from "@/shared/lib/routes";
 import { useDisclosure } from "@/shared/lib/use-disclosure";
 import { Icon } from "@/shared/ui/icon";
 import { Kbd } from "@/shared/ui/kbd";
-import type { SearchHit } from "./search-options";
+import { MIN_QUERY_LENGTH, type SearchHit } from "./search-options";
 import { useDocsSearch } from "./use-docs-search";
 import { useListCursor } from "./use-list-cursor";
 import { useModalDialog } from "./use-modal-dialog";
@@ -22,7 +22,7 @@ const hitHref = (hit: SearchHit): Route =>
 const statusMessage = (state: SearchIndexState, query: string, count: number): string => {
   if (state.status === "error") return "Search is unavailable right now.";
   if (state.status !== "ready") return "Loading search";
-  if (query.trim().length < 2) return "Type at least two characters.";
+  if (query.trim().length < MIN_QUERY_LENGTH) return `Type at least ${MIN_QUERY_LENGTH} characters.`;
   if (count === 0) return `No results for "${query.trim()}".`;
   return count === 1 ? "1 result" : `${count} results`;
 };
@@ -68,11 +68,14 @@ export const DocsSearch = (): React.JSX.Element => {
         type="button"
         onClick={show}
         aria-haspopup="dialog"
+        aria-keyshortcuts="/ Control+K Meta+K"
         className="flex h-10 w-full items-center gap-2 rounded-md border border-hairline-strong bg-surface px-3 text-sm text-muted transition-colors dur-1 hover:bg-surface-2 hover:text-foreground focus-visible:focus-ring"
       >
         <Icon icon={MagnifyingGlassIcon} size={16} />
         <span className="flex-1 text-left">Search docs</span>
-        <Kbd>/</Kbd>
+        <span aria-hidden="true" className="inline-flex">
+          <Kbd>/</Kbd>
+        </span>
       </button>
       <dialog
         ref={dialogRef}
@@ -112,7 +115,14 @@ export const DocsSearch = (): React.JSX.Element => {
               <Icon icon={XIcon} size={16} />
             </button>
           </div>
-          <ul id={listId} role="listbox" aria-label="Search results" className="max-h-[50vh] overflow-y-auto p-2 empty:hidden">
+          <ul
+            ref={cursor.listRef}
+            id={listId}
+            role="listbox"
+            tabIndex={-1}
+            aria-label="Search results"
+            className="max-h-[50vh] overflow-y-auto p-2 empty:hidden"
+          >
             {hits.map((hit, index) => (
               <li
                 key={hit.id}
@@ -121,7 +131,7 @@ export const DocsSearch = (): React.JSX.Element => {
                 aria-selected={index === cursor.index}
                 onClick={() => go(hit)}
                 onMouseMove={() => cursor.set(index)}
-                className={cn(
+                className={cx(
                   "flex cursor-pointer flex-col gap-0.5 rounded-md px-3 py-2.5",
                   index === cursor.index && "bg-surface-2",
                 )}

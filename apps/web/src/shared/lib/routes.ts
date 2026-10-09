@@ -29,13 +29,9 @@ export const routes = {
   install: "/#install",
 } as const satisfies Readonly<Record<string, Route>>;
 
-export type SiteRoute = (typeof routes)[keyof typeof routes];
-
 export const isDocSlug = (value: string): value is DocSlug => (DOC_SLUGS as readonly string[]).includes(value);
 
 export const docHref = (slug: DocSlug): Route => `/docs/${slug}` as Route;
-
-export const docAliasHref = (alias: DocAlias): Route => `/docs/${alias}` as Route;
 
 export const docAliasTarget = (alias: DocAlias): Route => docHref(DOC_ALIASES[alias]);
 

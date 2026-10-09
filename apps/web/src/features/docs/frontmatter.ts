@@ -1,4 +1,4 @@
-import { DEMO_IDS, DOC_SECTIONS, type DemoId, type DocMeta, type DocSection } from "@/shared/contract";
+import { DEMO_IDS, DOC_SECTIONS, isDocSection, type DemoId, type DocMeta, type DocSection } from "@/shared/contract";
 import type { DocSlug } from "@/shared/lib/routes";
 
 export class DocFrontmatterError extends Error {
@@ -25,9 +25,6 @@ const requireOrder = (slug: DocSlug, data: RawFrontmatter): number => {
   }
   return value;
 };
-
-const isDocSection = (value: unknown): value is DocSection =>
-  typeof value === "string" && (DOC_SECTIONS as readonly string[]).includes(value);
 
 const isDemoId = (value: unknown): value is DemoId =>
   typeof value === "string" && (DEMO_IDS as readonly string[]).includes(value);

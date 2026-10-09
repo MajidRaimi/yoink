@@ -12,14 +12,17 @@ export type PageMetadataInput = {
 
 export const canonicalUrl = (path: string): string => absoluteUrl(site.url, withTrailingSlash(path.split("#")[0] ?? path));
 
+export const brandedTitle = (title: string): string => (title.includes(site.name) ? title : `${title} · ${site.name}`);
+
 export const pageMetadata = ({ title, description, path, type = "website", noIndex = false }: PageMetadataInput): Metadata => {
   const url = canonicalUrl(path);
+  const shareTitle = brandedTitle(title);
   return {
     title,
     description,
     alternates: { canonical: url },
     openGraph: {
-      title,
+      title: shareTitle,
       description,
       url,
       siteName: site.name,
@@ -28,7 +31,7 @@ export const pageMetadata = ({ title, description, path, type = "website", noInd
     },
     twitter: {
       card: "summary_large_image",
-      title,
+      title: shareTitle,
       description,
     },
     ...(noIndex ? { robots: { index: false, follow: true } } : {}),

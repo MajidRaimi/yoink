@@ -4,7 +4,7 @@ export const archivo = Archivo({
   subsets: ["latin"],
   variable: "--font-archivo",
   axes: ["wdth"],
-  display: "swap",
+  display: "optional",
 });
 
 export const jetbrainsMono = JetBrains_Mono({

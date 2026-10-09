@@ -1,5 +1,4 @@
-import type { Protocol } from "@/shared/contract";
-import { PROTOCOL_LABELS } from "../ids";
+import { PROTOCOL_LABELS, type Protocol } from "@/shared/contract";
 
 export type ProtocolListProps = {
   protocols: readonly Protocol[];

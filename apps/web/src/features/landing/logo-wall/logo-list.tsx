@@ -11,7 +11,7 @@ export const LogoList = ({ logos, className, hidden = false }: LogoListProps): R
   <ul className={className} aria-hidden={hidden ? true : undefined}>
     {logos.map((logo) => (
       <li key={logo.id} className="flex items-center gap-2.5 text-muted">
-        <BrandLogoGlyph logo={logo} decorative className="size-6" />
+        <BrandLogoGlyph logo={logo} decorative size="lg" />
         <span className="font-mono text-sm whitespace-nowrap tracking-mono">{logo.title}</span>
       </li>
     ))}

@@ -3,7 +3,7 @@
 import type { Route } from "next";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { cn } from "@/shared/lib/cn";
+import { cx } from "@/shared/lib/cx";
 import { withTrailingSlash } from "@/shared/lib/routes";
 
 export type DocsNavLinkProps = {
@@ -18,7 +18,7 @@ export const DocsNavLink = ({ href, label }: DocsNavLinkProps): React.JSX.Elemen
     <Link
       href={href}
       aria-current={current ? "page" : undefined}
-      className={cn(
+      className={cx(
         "-ml-px block border-l py-1.5 pl-3 text-sm transition-colors dur-1 focus-visible:focus-ring",
         current
           ? "border-brand-text font-medium text-foreground"

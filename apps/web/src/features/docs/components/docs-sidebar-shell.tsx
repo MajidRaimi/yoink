@@ -2,7 +2,7 @@
 
 import { CaretDownIcon } from "@phosphor-icons/react";
 import { useId, useRef, type KeyboardEvent, type MouseEvent, type ReactNode } from "react";
-import { cn } from "@/shared/lib/cn";
+import { cx } from "@/shared/lib/cx";
 import { useDisclosure } from "@/shared/lib/use-disclosure";
 import { Icon } from "@/shared/ui/icon";
 
@@ -37,14 +37,14 @@ export const DocsSidebarShell = ({ search, children }: DocsSidebarShellProps): R
           className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-button border border-hairline-strong px-3.5 text-sm font-medium text-foreground transition-colors dur-1 hover:bg-surface-2 focus-visible:focus-ring lg:hidden"
         >
           Pages
-          <Icon icon={CaretDownIcon} size={14} className={cn("transition-transform dur-2", open && "rotate-180")} />
+          <Icon icon={CaretDownIcon} size={14} className={cx("transition-transform dur-2", open && "rotate-180")} />
         </button>
       </div>
       <div
         id={panelId}
         onClick={closeOnLink}
         onKeyDown={closeOnEscape}
-        className={cn("border-b border-hairline pb-6 lg:block lg:border-b-0 lg:pb-0", open ? "block" : "hidden")}
+        className={cx("border-b border-hairline pb-6 lg:block lg:border-b-0 lg:pb-0", open ? "block" : "hidden")}
       >
         {children}
       </div>

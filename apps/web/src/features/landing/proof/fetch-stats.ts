@@ -14,7 +14,7 @@ const githubHeaders = (): HeadersInit => {
 
 const fetchJson = async (url: string, headers?: HeadersInit): Promise<unknown> => {
   try {
-    const response = await fetch(url, { headers, cache: "force-cache", signal: AbortSignal.timeout(TIMEOUT_MS) });
+    const response = await fetch(url, { headers, next: { revalidate: 3600 }, signal: AbortSignal.timeout(TIMEOUT_MS) });
     if (!response.ok) return undefined;
     return (await response.json()) as unknown;
   } catch {

@@ -5,6 +5,10 @@ import { ProviderAddView } from "@/features/demos/provider-add/view";
 
 const finalState = computeFinal(providerAddDemo);
 
-export const ProviderAddStatic = (): React.JSX.Element => (
-  <ProviderAddView state={finalState} status={statusText(finalState)} />
+type ProviderAddStaticProps = {
+  idPrefix: string;
+};
+
+export const ProviderAddStatic = ({ idPrefix }: ProviderAddStaticProps): React.JSX.Element => (
+  <ProviderAddView state={finalState} status={statusText(finalState)} idPrefix={idPrefix} />
 );

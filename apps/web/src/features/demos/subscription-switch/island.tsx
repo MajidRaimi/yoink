@@ -1,10 +1,9 @@
 "use client";
 
 import { useCallback, useId } from "react";
-import type { DemoHint } from "@/features/demos/engine/demo-frame";
-import { keyLabel } from "@/features/demos/engine/keymap";
 import { useDemo } from "@/features/demos/engine/use-demo";
 import { subscriptionSwitchDemo } from "@/features/demos/subscription-switch/definition";
+import { BROWSE_HINTS, CONFIRM_HINTS } from "@/features/demos/subscription-switch/hints";
 import {
   eventsToAnswer,
   eventsToRow,
@@ -14,19 +13,6 @@ import {
 } from "@/features/demos/subscription-switch/machine";
 import { SubscriptionSwitchView } from "@/features/demos/subscription-switch/view";
 import type { DemoEvent } from "@/shared/contract";
-
-const BROWSE_HINTS: readonly DemoHint[] = [
-  { keys: [keyLabel("left"), keyLabel("right")], action: "tool" },
-  { keys: [keyLabel("up"), keyLabel("down")], action: "login" },
-  { keys: [keyLabel("enter")], action: "switch" },
-  { keys: [keyLabel("space")], action: "toggle running" },
-];
-
-const CONFIRM_HINTS: readonly DemoHint[] = [
-  { keys: [keyLabel("left"), keyLabel("right")], action: "choose" },
-  { keys: [keyLabel("enter")], action: "answer" },
-  { keys: [keyLabel("escape")], action: "cancel" },
-];
 
 const SPACE: DemoEvent = { type: "key", key: "space" };
 

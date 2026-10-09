@@ -28,7 +28,7 @@ The active profile is marked with a green dot. Highlighting a row and pressing `
 | Key | Action |
 | --- | --- |
 | `↑` / `↓` or `j` / `k` | Move the highlight (wraps at the top and bottom) |
-| `Enter` | Switch to the highlighted profile |
+| `Enter` | Switch to the highlighted login within its own tool. On a provider row, open its harness picker. |
 | `n` | Add a new account (Claude sign-in, a Codex, Kimi, Gemini, or Copilot login, or an API-key provider) |
 | `e` | Edit the highlighted profile |
 | `s` | Save the current live login as a new profile |

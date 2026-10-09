@@ -55,7 +55,7 @@ const RESTART_TARGETS: Readonly<Record<SwitchTool, string>> = {
 };
 
 const SNAPSHOT_TARGETS: Readonly<Record<SubscriptionTool, string>> = {
-  codex: "~/.codex/auth.json, or the Codex keyring entry",
+  codex: "~/.codex/auth.json (or the Codex keyring entry)",
   kimi: "~/.kimi-code/credentials/*.json",
   gemini: "~/.gemini/oauth_creds.json and google_accounts.json",
   copilot: "last_logged_in_user in ~/.copilot/config.json",
@@ -270,11 +270,14 @@ export const logLines = (state: SwitchState): readonly LogLine[] => {
   }
 };
 
+export const runningSummary = (state: SwitchState, tool: SwitchTool): string =>
+  `${toolTitle(tool)} ${state.running[tool] ? "marked running" : "not running"}.`;
+
 const cursorSummary = (state: SwitchState, tool: SwitchTool): string => {
   const login = loginsFor(tool)[state.cursor];
-  if (login === undefined) return emptyHint(tool);
+  if (login === undefined) return `${emptyHint(tool)} ${runningSummary(state, tool)}`;
   const active = state.active[tool] === login.name ? ", active" : "";
-  return `${toolTitle(tool)}: ${login.name} (${login.detail})${active}. Enter switches.`;
+  return `${toolTitle(tool)}: ${login.name} (${login.detail})${active}. Enter switches. ${runningSummary(state, tool)}`;
 };
 
 export const emptyHint = (tool: SwitchTool): string => `No saved ${toolTitle(tool)} logins. Add one with yoink add.`;

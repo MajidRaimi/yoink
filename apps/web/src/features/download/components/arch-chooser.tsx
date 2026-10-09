@@ -1,7 +1,7 @@
 "use client";
 
 import { useId } from "react";
-import { cn } from "@/shared/lib/cn";
+import { cx } from "@/shared/lib/cx";
 import { useMacArch } from "@/features/download/hooks/use-mac-arch";
 import { MAC_ARCHES, MAC_ARCH_LABELS } from "@/features/download/lib/mac-arch";
 
@@ -15,17 +15,15 @@ export const ArchChooser = ({ className }: ArchChooserProps): React.JSX.Element 
 
   return (
     <fieldset
-      className={cn("relative inline-flex items-center gap-1 rounded-pill border border-hairline bg-surface p-1", className)}
+      className={cx("inline-flex items-center rounded-pill border border-hairline-strong bg-surface p-1", className)}
     >
       <legend className="sr-only">Mac processor</legend>
       {MAC_ARCHES.map((option) => (
         <label
           key={option}
-          className={cn(
-            "cursor-pointer rounded-pill border px-3 py-1.5 text-xs font-medium transition-colors dur-1 has-[:focus-visible]:focus-ring",
-            option === arch
-              ? "border-brand-text bg-background text-foreground shadow-1"
-              : "border-transparent text-muted hover:text-foreground",
+          className={cx(
+            "flex h-8 cursor-pointer items-center whitespace-nowrap rounded-pill px-3 text-xs font-medium transition-colors dur-1 has-[:focus-visible]:focus-ring",
+            option === arch ? "bg-foreground text-background" : "text-muted hover:text-foreground",
           )}
         >
           <input

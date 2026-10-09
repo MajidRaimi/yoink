@@ -9,7 +9,7 @@ const compileDoc = async (slug: (typeof DOC_SLUGS)[number]): Promise<string> =>
   String(
     await compile(getDoc(slug).body, {
       format: "md",
-      remarkPlugins: docRemarkPlugins(docLinkContext(slug)),
+      remarkPlugins: docRemarkPlugins(docLinkContext({ collection: "docs", slug })),
       rehypePlugins: docRehypePlugins(),
     }),
   );

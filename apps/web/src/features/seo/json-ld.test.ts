@@ -2,8 +2,8 @@ import { describe, expect, test } from "bun:test";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { ENTITY_IDS, softwareApplicationNode } from "./entities";
-import { auditJsonLdBlock, auditJsonLdHtml, extractJsonLdBlocks } from "./json-ld-audit";
-import { homeGraph, JsonLd, serializeJsonLd, techArticleGraph, webPageGraph, type JsonLdGraph } from "./json-ld";
+import { auditFaqVisibility, auditJsonLdBlock, auditJsonLdHtml, extractJsonLdBlocks } from "./json-ld-audit";
+import { faqNode, faqPageGraph, homeGraph, itemListNode, JsonLd, serializeJsonLd, techArticleGraph, webPageGraph, type JsonLdGraph } from "./json-ld";
 import type { PageDates } from "./last-modified";
 
 const dates: PageDates = { published: "2026-09-01T00:00:00.000Z", modified: "2026-10-01T00:00:00.000Z" };
@@ -114,5 +114,45 @@ describe("serializeJsonLd", () => {
     const text = serializeJsonLd({ name: "</script><script>alert(1)</script>" });
     expect(text).not.toContain("<");
     expect(JSON.parse(text)).toEqual({ name: "</script><script>alert(1)</script>" });
+  });
+});
+
+describe("faq and item lists", () => {
+  const items = [{ question: "Do I need to log out?", answer: "No. yoink swaps the stored login." }];
+
+  test("a page FAQ hangs off the article with a fragment id", () => {
+    const graph = techArticleGraph({ title: "G", description: "d", path: "/guides/x/", dates, breadcrumbs: crumbs("G", "/guides/x/") }, [
+      faqNode("/guides/x/", items),
+      itemListNode("/guides/x/", [{ name: "claude-swap", url: "https://github.com/realiti4/claude-swap" }]),
+    ]);
+    const nodes = parse(graph)["@graph"] as Record<string, unknown>[];
+    expect(nodes).toContainEqual(
+      expect.objectContaining({
+        "@type": "FAQPage",
+        "@id": "https://yoink.codes/guides/x/#faq",
+        mainEntity: [{ "@type": "Question", name: items[0]?.question, acceptedAnswer: { "@type": "Answer", text: items[0]?.answer } }],
+      }),
+    );
+    expect(nodes).toContainEqual(
+      expect.objectContaining({
+        "@type": "ItemList",
+        itemListElement: [{ "@type": "ListItem", position: 1, name: "claude-swap", url: "https://github.com/realiti4/claude-swap" }],
+      }),
+    );
+    expect(auditJsonLdBlock(serializeJsonLd(graph), 1)).toEqual([]);
+  });
+
+  test("the faq page itself is a FAQPage", () => {
+    const [page] = faqPageGraph({ title: "FAQ", description: "d", path: "/faq/", dates, breadcrumbs: crumbs("FAQ", "/faq/"), items })["@graph"];
+    expect(page).toMatchObject({ "@type": "FAQPage", "@id": "https://yoink.codes/faq/", breadcrumb: { "@id": "https://yoink.codes/faq/#breadcrumb" } });
+  });
+
+  test("FAQPage text must be visible on the page", () => {
+    const graph = faqPageGraph({ title: "FAQ", description: "d", path: "/faq/", dates, breadcrumbs: crumbs("FAQ", "/faq/"), items });
+    const head = renderToStaticMarkup(createElement(JsonLd, { data: graph }));
+    const visible = `<html><head>${head}</head><body><h3>Do I need to log out?</h3><p>No. yoink swaps the <code>stored</code> login.</p></body></html>`;
+    expect(auditFaqVisibility(visible)).toEqual([]);
+    const hidden = `<html><head>${head}</head><body><h3>Do I need to log out?</h3></body></html>`;
+    expect(auditFaqVisibility(hidden)).toHaveLength(1);
   });
 });

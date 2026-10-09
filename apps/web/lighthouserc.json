@@ -15,7 +15,13 @@
         "http://localhost/docs/harnesses/",
         "http://localhost/docs/how-it-works/",
         "http://localhost/docs/security/",
-        "http://localhost/docs/usage/"
+        "http://localhost/docs/usage/",
+        "http://localhost/guides/switch-claude-code-accounts/",
+        "http://localhost/harnesses/claude-code/",
+        "http://localhost/providers/openrouter/",
+        "http://localhost/compare/",
+        "http://localhost/compare/claude-swap/",
+        "http://localhost/faq/"
       ],
       "numberOfRuns": 1,
       "settings": {

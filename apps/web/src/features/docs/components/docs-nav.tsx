@@ -1,7 +1,9 @@
 import type { Route } from "next";
 import type { DocSection } from "@/shared/contract";
-import { docHref, routes } from "@/shared/lib/routes";
-import { getDocGroups } from "../content";
+import { COLLECTION_ROUTE_BASES, docHref, routes } from "@/shared/lib/routes";
+import { CONTENT_COLLECTIONS, NAV_COLLECTIONS } from "../collections";
+import { getDocGroups, getEntries } from "../content";
+import { DocsNavGroup } from "./docs-nav-group";
 import { DocsNavLink } from "./docs-nav-link";
 
 type NavItem = {
@@ -12,6 +14,22 @@ type NavItem = {
 const EXTRA_ITEMS: Readonly<Partial<Record<DocSection, readonly NavItem[]>>> = {
   Reference: [{ href: routes.reference, label: "CLI reference" }],
 };
+
+type NavListProps = {
+  items: readonly NavItem[];
+  labelledBy?: string;
+  label?: string;
+};
+
+const NavList = ({ items, labelledBy, label }: NavListProps): React.JSX.Element => (
+  <ul aria-labelledby={labelledBy} aria-label={label} className="flex flex-col border-l border-hairline">
+    {items.map((item) => (
+      <li key={item.href}>
+        <DocsNavLink href={item.href} label={item.label} />
+      </li>
+    ))}
+  </ul>
+);
 
 export const DocsNav = (): React.JSX.Element => (
   <nav aria-label="Documentation pages" className="flex flex-col gap-6">
@@ -26,14 +44,18 @@ export const DocsNav = (): React.JSX.Element => (
           <p id={labelId} className="font-mono text-xs tracking-caps text-faint uppercase">
             {group.section}
           </p>
-          <ul aria-labelledby={labelId} className="flex flex-col border-l border-hairline">
-            {items.map((item) => (
-              <li key={item.href}>
-                <DocsNavLink href={item.href} label={item.label} />
-              </li>
-            ))}
-          </ul>
+          <NavList items={items} labelledBy={labelId} />
         </div>
+      );
+    })}
+    {NAV_COLLECTIONS.map((collection) => {
+      const entries = getEntries(collection);
+      if (entries.length === 0) return null;
+      const { label } = CONTENT_COLLECTIONS[collection];
+      return (
+        <DocsNavGroup key={collection} label={label} routeBase={COLLECTION_ROUTE_BASES[collection]}>
+          <NavList label={label} items={entries.map((entry) => ({ href: entry.path as Route, label: entry.nav }))} />
+        </DocsNavGroup>
       );
     })}
   </nav>

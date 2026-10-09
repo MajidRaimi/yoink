@@ -1,43 +1,23 @@
-import GithubSlugger from "github-slugger";
 import type { DocHeading } from "@/shared/contract";
 import type { DocSlug } from "@/shared/lib/routes";
+import { entryKey, type EntryRef } from "./collections";
 import { getDoc } from "./content";
-import { parseDocBody } from "./mdx/parse-markdown";
-import { textOf, walk, type TreeNode } from "./mdx/syntax-tree";
+import { entryDocument } from "./entry-document";
+import { extractHeadings, headingIdSet } from "./headings-core";
 
-export type SluggedHeading = {
-  node: TreeNode;
-  id: string;
-  text: string;
-  depth: number;
-};
+export { extractHeadings, sluggedHeadings, tocHeadings, type SluggedHeading } from "./headings-core";
 
-const isTocDepth = (depth: number): depth is DocHeading["depth"] => depth === 2 || depth === 3;
+const idCache = new Map<string, ReadonlySet<string>>();
 
-export const sluggedHeadings = (tree: TreeNode): readonly SluggedHeading[] => {
-  const slugger = new GithubSlugger();
-  const headings: SluggedHeading[] = [];
-  walk(tree, (node) => {
-    if (node.type !== "heading" || typeof node.depth !== "number") return;
-    const raw = textOf(node);
-    headings.push({ node, id: slugger.slug(raw), text: raw.trim(), depth: node.depth });
-  });
-  return headings;
-};
-
-export const tocHeadings = (headings: readonly SluggedHeading[]): readonly DocHeading[] =>
-  headings.flatMap(({ id, text, depth }) => (isTocDepth(depth) ? [{ id, text, depth }] : []));
-
-export const extractHeadings = (body: string): readonly DocHeading[] => tocHeadings(sluggedHeadings(parseDocBody(body)));
-
-const idCache = new Map<DocSlug, ReadonlySet<string>>();
-
-export const headingIdsFor = (slug: DocSlug): ReadonlySet<string> => {
-  const cached = idCache.get(slug);
+export const headingIdsFor = (ref: EntryRef): ReadonlySet<string> => {
+  const key = entryKey(ref);
+  const cached = idCache.get(key);
   if (cached !== undefined) return cached;
-  const ids = new Set(sluggedHeadings(parseDocBody(getDoc(slug).body)).map((heading) => heading.id));
-  idCache.set(slug, ids);
+  const ids = headingIdSet(entryDocument(ref).markdown);
+  idCache.set(key, ids);
   return ids;
 };
 
 export const docHeadings = (slug: DocSlug): readonly DocHeading[] => extractHeadings(getDoc(slug).body);
+
+export const entryHeadings = (ref: EntryRef): readonly DocHeading[] => extractHeadings(entryDocument(ref).markdown);

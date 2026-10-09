@@ -35,7 +35,17 @@ export type BreadcrumbPageLdInput = PageLdInput & {
   breadcrumbs: readonly BreadcrumbItem[];
 };
 
-export type WebPageType = "WebPage" | "CollectionPage";
+export type WebPageType = "WebPage" | "CollectionPage" | "FAQPage";
+
+export type FaqLdItem = {
+  question: string;
+  answer: string;
+};
+
+export type ListLdItem = {
+  name: string;
+  url: string;
+};
 
 export type WebPageLdInput = BreadcrumbPageLdInput & {
   pageType?: WebPageType;
@@ -105,8 +115,36 @@ export const homeGraph = (input: Omit<PageLdInput, "path">): JsonLdGraph =>
 export const webPageGraph = ({ breadcrumbs, ...page }: WebPageLdInput): JsonLdGraph =>
   graphLd([{ ...webPageNode(page), breadcrumb: idRef(breadcrumbId(page.path)) }, breadcrumbNode(page.path, breadcrumbs), ...subpageEntityNodes()]);
 
-export const techArticleGraph = ({ breadcrumbs, ...page }: BreadcrumbPageLdInput): JsonLdGraph =>
-  graphLd([techArticleNode(page), breadcrumbNode(page.path, breadcrumbs), ...subpageEntityNodes()]);
+const questionNodes = (items: readonly FaqLdItem[]): readonly JsonLdNode[] =>
+  items.map((item) => ({
+    "@type": "Question",
+    name: item.question,
+    acceptedAnswer: { "@type": "Answer", text: item.answer },
+  }));
+
+export const faqNode = (path: string, items: readonly FaqLdItem[]): JsonLdNode => ({
+  "@type": "FAQPage",
+  "@id": `${canonicalUrl(path)}#faq`,
+  url: canonicalUrl(path),
+  isPartOf: idRef(ENTITY_IDS.website),
+  mainEntity: questionNodes(items),
+});
+
+export const itemListNode = (path: string, items: readonly ListLdItem[]): JsonLdNode => ({
+  "@type": "ItemList",
+  "@id": `${canonicalUrl(path)}#tools`,
+  itemListElement: items.map((item, index) => ({ "@type": "ListItem", position: index + 1, name: item.name, url: item.url })),
+});
+
+export const techArticleGraph = ({ breadcrumbs, ...page }: BreadcrumbPageLdInput, extra: readonly JsonLdNode[] = []): JsonLdGraph =>
+  graphLd([techArticleNode(page), breadcrumbNode(page.path, breadcrumbs), ...extra, ...subpageEntityNodes()]);
+
+export const faqPageGraph = ({ breadcrumbs, items, ...page }: BreadcrumbPageLdInput & { items: readonly FaqLdItem[] }): JsonLdGraph =>
+  graphLd([
+    { ...webPageNode({ ...page, pageType: "FAQPage" }), breadcrumb: idRef(breadcrumbId(page.path)), mainEntity: questionNodes(items) },
+    breadcrumbNode(page.path, breadcrumbs),
+    ...subpageEntityNodes(),
+  ]);
 
 export type JsonLdProps = {
   data: JsonLdGraph;

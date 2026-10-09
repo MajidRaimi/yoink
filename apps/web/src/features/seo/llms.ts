@@ -1,14 +1,18 @@
 import { createProcessor } from "@mdx-js/mdx";
 import remarkGfm from "remark-gfm";
-import { getDoc, getDocs } from "@/features/docs/content";
+import { hasEntry, type CollectionId, type EntryRef } from "@/features/docs/collections";
+import { getEntries } from "@/features/docs/content";
+import { entryDocument } from "@/features/docs/entry-document";
+import type { EntryMeta } from "@/features/docs/entry-types";
+import type { HarnessFactsData } from "@/features/docs/facts/types";
 import { docLinkContext } from "@/features/docs/mdx/pipeline";
 import { rewriteDocUrl, rewriteImageUrl, type DocLinkContext } from "@/features/docs/mdx/remark-doc-links";
-import { isParent, textOf, walk, type TreeNode } from "@/features/docs/mdx/syntax-tree";
-import { HARNESSES, PROVIDER_PRESETS } from "@/features/demos/data";
+import { isParent, walk, type TreeNode } from "@/features/docs/mdx/syntax-tree";
+import { HARNESS_FACTS, HARNESSES, PROVIDER_PRESETS } from "@/features/demos/data";
 import { canonicalUrl } from "@/features/seo/metadata";
 import { site } from "@/shared/brand/site";
 import type { HarnessData, PresetData } from "@/shared/contract";
-import { absoluteUrl, docPath, routes, type DocSlug } from "@/shared/lib/routes";
+import { absoluteUrl, docPath, entryPath, routes, type DocSlug } from "@/shared/lib/routes";
 
 export type LlmsLink = {
   readonly title: string;
@@ -42,7 +46,7 @@ export type LlmsFullInput = {
 };
 
 export type MarkdownTwin = {
-  readonly slug: DocSlug;
+  readonly path: string;
   readonly markdown: string;
 };
 
@@ -69,9 +73,7 @@ export const HARNESS_TABLE_ANCHOR = "supported-harnesses";
 
 export const PRESET_TABLE_ANCHOR = "presets";
 
-const HARNESS_ID_COLUMN = "Id";
-
-const HARNESS_CONFIG_COLUMN = "Config yoink writes";
+const LLMS_FULL_ORDER: readonly CollectionId[] = ["docs", "guides", "harnesses", "providers", "compare", "faq"];
 
 const MARKDOWN_TWIN_FILE = "index.md";
 
@@ -136,7 +138,7 @@ const urlReplacement = (source: string, node: TreeNode, context: DocLinkContext,
   const rewritten = rewriteNodeUrl(node, url, context, pageUrl);
   if (rewritten === url) return null;
   const index = source.slice(span.start, span.end).lastIndexOf(url);
-  if (index === -1) throw new LlmsBuildError(`docs/${context.source}.md: cannot locate "${url}" in its source`);
+  if (index === -1) throw new LlmsBuildError(`${context.sourceRepoPath}: cannot locate "${url}" in its source`);
   const start = span.start + index;
   return { start, end: start + url.length, text: rewritten };
 };
@@ -162,90 +164,62 @@ export const absolutizeDocMarkdown = (body: string, context: DocLinkContext, pag
   return applyReplacements(body, replacements).trim();
 };
 
-const cellMarkdown = (cell: TreeNode): string =>
-  (cell.children ?? [])
-    .map((child) => (child.type === "inlineCode" ? `\`${child.value ?? ""}\`` : textOf(child)))
-    .join("")
-    .trim();
-
-const rowCells = (row: TreeNode): readonly TreeNode[] => row.children ?? [];
-
-const findHarnessTable = (tree: TreeNode): TreeNode | null => {
-  let found: TreeNode | null = null;
-  walk(tree, (node) => {
-    if (found !== null || node.type !== "table") return;
-    const header = rowCells(node.children?.[0] ?? { type: "tableRow" }).map(textOf);
-    if (header.includes(HARNESS_ID_COLUMN) && header.includes(HARNESS_CONFIG_COLUMN)) found = node;
-  });
-  return found;
-};
-
-export const harnessConfigPaths = (markdown: string): ReadonlyMap<string, string> => {
-  const table = findHarnessTable(parseMarkdown(markdown));
-  if (table === null) throw new LlmsBuildError(`no table with "${HARNESS_ID_COLUMN}" and "${HARNESS_CONFIG_COLUMN}" columns`);
-  const [header, ...rows] = table.children ?? [];
-  const columns = rowCells(header ?? { type: "tableRow" }).map(textOf);
-  const idColumn = columns.indexOf(HARNESS_ID_COLUMN);
-  const configColumn = columns.indexOf(HARNESS_CONFIG_COLUMN);
-  return new Map(
-    rows.flatMap((row) => {
-      const cells = rowCells(row);
-      const id = cells[idColumn];
-      const config = cells[configColumn];
-      return id === undefined || config === undefined ? [] : [[textOf(id).trim(), cellMarkdown(config)] as const];
-    }),
-  );
-};
-
 export const reachableHarnesses = (preset: PresetData, harnesses: readonly HarnessData[]): readonly HarnessData[] => {
   const spoken = new Set(preset.endpoints.map((endpoint) => endpoint.protocol));
   return harnesses.filter((harness) => harness.protocols.some((protocol) => spoken.has(protocol)));
 };
 
-export const harnessLinks = (
-  harnesses: readonly HarnessData[],
-  configPaths: ReadonlyMap<string, string>,
-  url: string,
-): readonly LlmsLink[] =>
+export type LlmsPageTarget = Pick<LlmsLink, "url" | "markdownUrl">;
+
+export type LlmsPageResolver = (id: string) => LlmsPageTarget;
+
+export const harnessLinks = (harnesses: readonly HarnessFactsData[], pageFor: LlmsPageResolver): readonly LlmsLink[] =>
   harnesses.map((harness) => {
-    const config = configPaths.get(harness.id);
-    if (config === undefined) throw new LlmsBuildError(`docs/harnesses.md has no config path for "${harness.id}"`);
     const status = harness.experimental ? " (experimental)" : "";
     return {
       title: harness.label,
-      url,
-      description: `id \`${harness.id}\`${status}, writes ${config}; speaks ${harness.protocols.join(", ")}.`,
+      ...pageFor(harness.id),
+      description: `id \`${harness.id}\`${status}, writes ${harness.configPath}; speaks ${harness.protocols.join(", ")}.`,
     };
   });
 
 export const presetLinks = (
   presets: readonly PresetData[],
   harnesses: readonly HarnessData[],
-  url: string,
+  pageFor: LlmsPageResolver,
 ): readonly LlmsLink[] =>
   presets.map((preset) => {
     const endpoints = preset.endpoints.map(({ protocol, baseUrl }) => `${protocol} at ${baseUrl}`).join(", ");
     const reach = reachableHarnesses(preset, harnesses).length;
     return {
       title: preset.label,
-      url,
+      ...pageFor(preset.id),
       description: `preset \`${preset.id}\`, ${endpoints}; connects to ${reach} of ${harnesses.length} harnesses.`,
     };
   });
 
-export const markdownTwinPath = (slug: DocSlug): string => `${docPath(slug)}${MARKDOWN_TWIN_FILE}`;
+export const markdownTwinPath = (path: string): string => `${path}${MARKDOWN_TWIN_FILE}`;
 
-export const markdownTwinUrl = (slug: DocSlug): string => absoluteUrl(site.url, markdownTwinPath(slug));
+export const markdownTwinUrl = (path: string): string => absoluteUrl(site.url, markdownTwinPath(path));
 
 const docUrl = (slug: DocSlug): string => canonicalUrl(docPath(slug));
 
-const docLinks = (): readonly LlmsLink[] =>
-  getDocs().map((doc) => ({
-    title: doc.title,
-    url: docUrl(doc.slug),
-    description: doc.description,
-    markdownUrl: markdownTwinUrl(doc.slug),
-  }));
+const entryLink = (meta: EntryMeta): LlmsLink => ({
+  title: meta.title,
+  url: canonicalUrl(meta.path),
+  description: meta.description,
+  markdownUrl: markdownTwinUrl(meta.path),
+});
+
+const collectionLinks = (collection: CollectionId): readonly LlmsLink[] => getEntries(collection).map(entryLink);
+
+const entryPageOr =
+  (collection: CollectionId, fallbackUrl: string): LlmsPageResolver =>
+  (id) => {
+    if (!hasEntry({ collection, slug: id })) return { url: fallbackUrl };
+    const path = entryPath(collection, id);
+    return { url: canonicalUrl(path), markdownUrl: markdownTwinUrl(path) };
+  };
 
 const optionalLinks = (): readonly LlmsLink[] => [
   {
@@ -253,6 +227,7 @@ const optionalLinks = (): readonly LlmsLink[] => [
     url: canonicalUrl(routes.reference),
     description: "every yoink command, alias and flag, with the harness, tool and preset ids.",
   },
+  ...getEntries("faq").map((meta) => ({ title: meta.title, url: canonicalUrl(meta.path), description: meta.description })),
   {
     title: "Full text",
     url: absoluteUrl(site.url, LLMS_FULL_PATH),
@@ -261,35 +236,36 @@ const optionalLinks = (): readonly LlmsLink[] => [
 ];
 
 const llmsSections = (): readonly LlmsSection[] => [
-  { title: "Docs", links: docLinks() },
+  { title: "Docs", links: collectionLinks("docs") },
+  { title: "Guides", links: collectionLinks("guides") },
   {
     title: "Harnesses",
-    links: harnessLinks(
-      HARNESSES,
-      harnessConfigPaths(getDoc("harnesses").body),
-      `${docUrl("harnesses")}#${HARNESS_TABLE_ANCHOR}`,
-    ),
+    links: harnessLinks(HARNESS_FACTS, entryPageOr("harnesses", `${docUrl("harnesses")}#${HARNESS_TABLE_ANCHOR}`)),
   },
   {
     title: "Providers",
-    links: presetLinks(PROVIDER_PRESETS, HARNESSES, `${docUrl("providers")}#${PRESET_TABLE_ANCHOR}`),
+    links: presetLinks(PROVIDER_PRESETS, HARNESSES, entryPageOr("providers", `${docUrl("providers")}#${PRESET_TABLE_ANCHOR}`)),
   },
+  { title: "Compare", links: collectionLinks("compare") },
   { title: "Optional", links: optionalLinks() },
 ];
 
 export const llmsIndex = (): string =>
   renderLlmsIndex({ name: site.name, summary: LLMS_SUMMARY, details: [installLine()], sections: llmsSections() });
 
-const docDocument = (slug: DocSlug): LlmsDocument => {
-  const { meta, body } = getDoc(slug);
-  const url = docUrl(slug);
-  return { title: meta.title, url, markdown: absolutizeDocMarkdown(body, docLinkContext(slug), url) };
+const entryLlmsDocument = (ref: EntryRef): LlmsDocument => {
+  const { meta, markdown } = entryDocument(ref);
+  const url = canonicalUrl(meta.path);
+  return { title: meta.title, url, markdown: absolutizeDocMarkdown(markdown, docLinkContext(ref), url) };
 };
 
-export const llmsDocuments = (): readonly LlmsDocument[] => getDocs().map((doc) => docDocument(doc.slug));
+export const llmsDocuments = (): readonly LlmsDocument[] =>
+  LLMS_FULL_ORDER.flatMap((collection) => getEntries(collection).map((meta) => entryLlmsDocument(meta.ref)));
 
 export const llmsFull = (): string =>
   renderLlmsFull({ name: site.name, summary: LLMS_SUMMARY, documents: llmsDocuments() });
 
 export const markdownTwins = (): readonly MarkdownTwin[] =>
-  getDocs().map((doc) => ({ slug: doc.slug, markdown: renderLlmsDocument(docDocument(doc.slug)) }));
+  LLMS_FULL_ORDER.flatMap((collection) =>
+    getEntries(collection).map((meta) => ({ path: meta.path, markdown: renderLlmsDocument(entryLlmsDocument(meta.ref)) })),
+  );

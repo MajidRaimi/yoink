@@ -36,7 +36,7 @@ export const generateMetadata = async ({ params }: DocPageProps): Promise<Metada
   const image = { url: `${docPath(doc.slug)}opengraph-image`, alt: ogImageAlt(doc.title), type: ogContentType, ...ogSize };
   return {
     ...base,
-    alternates: { ...base.alternates, types: { "text/markdown": markdownTwinUrl(doc.slug) } },
+    alternates: { ...base.alternates, types: { "text/markdown": markdownTwinUrl(docPath(doc.slug)) } },
     openGraph: { ...base.openGraph, images: [image] },
     twitter: { ...base.twitter, images: [image] },
   };

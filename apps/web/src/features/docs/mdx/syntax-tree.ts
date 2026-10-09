@@ -1,4 +1,5 @@
 export type TreeData = {
+  hName?: string;
   hProperties?: Record<string, unknown>;
 };
 

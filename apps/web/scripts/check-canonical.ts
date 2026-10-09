@@ -1,6 +1,6 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { extname, join, relative, resolve } from "node:path";
-import { auditJsonLdHtml, extractJsonLdBlocks } from "../src/features/seo/json-ld-audit";
+import { auditFaqVisibility, auditJsonLdHtml, extractJsonLdBlocks } from "../src/features/seo/json-ld-audit";
 import { site } from "../src/shared/brand/site";
 import { pagePathFor, parseSitemap } from "./check-links";
 
@@ -130,7 +130,9 @@ export const checkCanonical = async (outDir: string): Promise<CheckCanonicalResu
       const problem = urlProblem(url, false);
       if (problem !== null) report(source, "json-ld", url, problem);
     }
-    for (const { block, reason } of auditJsonLdHtml(html)) report(source, "json-ld", `block ${block}`, reason);
+    for (const { block, reason } of [...auditJsonLdHtml(html), ...auditFaqVisibility(html)]) {
+      report(source, "json-ld", `block ${block}`, reason);
+    }
 
     if (head.noIndex) {
       if (inSitemap.has(pageUrl)) report(source, "sitemap", pageUrl, "noindex page is listed in the sitemap");

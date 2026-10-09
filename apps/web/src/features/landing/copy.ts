@@ -1,4 +1,5 @@
 import { site } from "@/shared/brand/site";
+import { docHref, guideHref } from "@/shared/lib/routes";
 
 export const HERO_COPY = {
   eyebrow: "Yoink for AI coding",
@@ -11,7 +12,11 @@ export const SWITCH_COPY = {
   eyebrow: "Switch",
   title: "Hit the cap? Be on another account.",
   body: "Save each Claude, Codex, Kimi, Gemini or Copilot login once. A switch re-snapshots the active login first, so a refreshed token is never lost.",
-  links: [{ label: "Switch Codex, Kimi, Gemini and Copilot logins", slug: "subscriptions" }],
+  links: [
+    { label: "Switch Claude Code accounts", href: guideHref("switch-claude-code-accounts") },
+    { label: "Switch Codex (ChatGPT) accounts", href: guideHref("switch-codex-accounts") },
+    { label: "Switch Codex, Kimi, Gemini and Copilot logins", href: docHref("subscriptions") },
+  ],
 } as const;
 
 export const PROVIDERS_COPY = {
@@ -24,15 +29,17 @@ export const PROVIDERS_COPY = {
     { title: "Harnesses", detail: "Tick the installed tools to connect and pick their default model." },
   ],
   links: [
-    { label: "Provider presets and custom endpoints", slug: "providers" },
-    { label: "What yoink writes into each of the 13 harnesses", slug: "harnesses" },
+    { label: "Use one API key in every coding agent", href: guideHref("one-api-key-every-coding-agent") },
+    { label: "Use OpenRouter, Kimi, DeepSeek or z.ai in Claude Code", href: guideHref("claude-code-with-openrouter-kimi-deepseek-zai") },
+    { label: "Provider presets and custom endpoints", href: docHref("providers") },
+    { label: "What yoink writes into each of the 13 harnesses", href: docHref("harnesses") },
   ],
 } as const;
 
 export const SURFACES_COPY = {
   title: "Same profiles. Terminal or menu bar.",
   body: "The yoink CLI runs on macOS, Linux and Windows. The macOS menu bar app switches Claude accounts and adds providers from the same profiles.",
-  links: [{ label: "The macOS menu bar app", slug: "desktop" }],
+  links: [{ label: "The macOS menu bar app", href: docHref("desktop") }],
 } as const;
 
 export const SAFETY_COPY = {

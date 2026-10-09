@@ -1,5 +1,5 @@
 import { desktopRelease, site } from "@/shared/brand/site";
-import { docHref, routes } from "@/shared/lib/routes";
+import { docHref, GUIDES_HUB_HREF, routes } from "@/shared/lib/routes";
 import { Container } from "@/shared/ui/container";
 import type { Href } from "@/shared/ui/href";
 import { TextLink } from "@/shared/ui/link";
@@ -23,12 +23,15 @@ const columns: readonly FooterColumn[] = [
     title: "Docs",
     links: [
       { label: "Getting started", href: docHref("getting-started") },
-      { label: "Providers", href: docHref("providers") },
+      { label: "Guides", href: GUIDES_HUB_HREF },
       { label: "Harnesses", href: docHref("harnesses") },
+      { label: "Providers", href: docHref("providers") },
       { label: "Subscriptions", href: docHref("subscriptions") },
       { label: "Desktop app", href: docHref("desktop") },
       { label: "Security", href: docHref("security") },
       { label: "CLI reference", href: routes.reference },
+      { label: "Compare", href: routes.compare },
+      { label: "FAQ", href: routes.faq },
     ],
   },
   {

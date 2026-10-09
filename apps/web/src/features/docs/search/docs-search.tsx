@@ -5,7 +5,6 @@ import type { Route } from "next";
 import { useRouter } from "next/navigation";
 import { useId, useState, type KeyboardEvent, type MouseEvent } from "react";
 import { cx } from "@/shared/lib/cx";
-import { docPath } from "@/shared/lib/routes";
 import { useDisclosure } from "@/shared/lib/use-disclosure";
 import { Icon } from "@/shared/ui/icon";
 import { Kbd } from "@/shared/ui/kbd";
@@ -17,7 +16,7 @@ import { useSearchHotkey } from "./use-search-hotkey";
 import { useSearchIndex, type SearchIndexState } from "./use-search-index";
 
 const hitHref = (hit: SearchHit): Route =>
-  (hit.anchor.length === 0 ? docPath(hit.slug) : `${docPath(hit.slug)}#${hit.anchor}`) as Route;
+  (hit.anchor.length === 0 ? hit.path : `${hit.path}#${hit.anchor}`) as Route;
 
 const statusMessage = (state: SearchIndexState, query: string, count: number): string => {
   if (state.status === "error") return "Search is unavailable right now.";
@@ -27,7 +26,7 @@ const statusMessage = (state: SearchIndexState, query: string, count: number): s
   return count === 1 ? "1 result" : `${count} results`;
 };
 
-const hitContext = (hit: SearchHit): string => (hit.anchor.length === 0 ? hit.section : `${hit.title} · ${hit.section}`);
+const hitContext = (hit: SearchHit): string => (hit.anchor.length === 0 ? hit.group : `${hit.title} · ${hit.group}`);
 
 export const DocsSearch = (): React.JSX.Element => {
   const { open, show, hide } = useDisclosure();

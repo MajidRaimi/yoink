@@ -51,11 +51,11 @@ for (const width of VIEWPORT_WIDTHS) {
       test(`alias ${alias.path}`, async ({ page, request }) => {
         const html = await (await request.get(alias.path)).text();
         expect(html).toContain(`url=${alias.target}`);
-        expect(html).toContain(`<link rel="canonical" href="${absoluteUrl(site.url, alias.target)}"`);
+        expect(html).toContain(`<link rel="canonical" href="${absoluteUrl(site.url, alias.canonical)}"`);
         expect(html).toMatch(/<meta name="robots" content="[^"]*noindex/);
         const tracker = trackConsoleErrors(page);
         await page.goto(alias.path, { waitUntil: "commit" });
-        await page.waitForURL((url) => url.pathname === alias.target);
+        await page.waitForURL((url) => url.pathname === alias.canonical);
         await page.waitForLoadState("load");
         await assertHealthyPage(page, tracker.errors);
       });

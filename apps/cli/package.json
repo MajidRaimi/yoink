@@ -1,6 +1,6 @@
 {
   "name": "yoink-cli",
-  "version": "0.6.4",
+  "version": "0.6.5",
   "description": "Switch between Claude Code accounts from your terminal, fast.",
   "type": "module",
   "license": "MIT",

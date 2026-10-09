@@ -73,3 +73,10 @@ test("grouped lines put a heading before each tool", () => {
   expect(lines).toContain("Kimi Code");
   expect(lines.indexOf("ChatGPT (Codex)")).toBeLessThan(lines.findIndex((line) => line.includes("cx-work")));
 });
+
+test("menu options tell Enter to connect providers and switch everything else", () => {
+  const labels = Object.fromEntries(toListOptions(overview()).map((option) => [option.name, option.enterLabel]));
+  expect(labels.fuse).toBe("connect");
+  expect(labels.work).toBe("switch");
+  expect(labels["cx-personal"]).toBe("switch");
+});

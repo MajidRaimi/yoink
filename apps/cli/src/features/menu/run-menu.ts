@@ -1,9 +1,10 @@
 import { cancel, log, outro, spinner } from "@clack/prompts";
+import pc from "picocolors";
 import { assertNever } from "../../shared/assert-never";
 import { switchTo } from "../switch/service";
 import { confirmIfClaudeRunning } from "../switch/confirm-running";
 import { captureLiveLogin, defaultNameFromEmail } from "../login/service";
-import { PROFILE_GROUP_TITLES, switchedLine } from "../profiles/format";
+import { PROFILE_GROUP_TITLES, restartHint, switchedLine } from "../profiles/format";
 import { loadProfileOverview, type ProfileOverview } from "../profiles/overview";
 import { isSubscriptionProfile } from "../profiles/subscription-profile";
 import type { SubscriptionProfile } from "../profiles/types";
@@ -31,7 +32,7 @@ const runSwitch = async (name: string, current: string | null): Promise<void> =>
   loader.start(`Switching to ${name}`);
   const { profile } = await switchTo(name);
   loader.stop(switchedLine(profile));
-  outro("Done.");
+  outro(pc.dim(restartHint(profile)));
 };
 
 const runSubscriptionSwitch = async (target: SubscriptionProfile, overview: ProfileOverview): Promise<void> => {
@@ -40,7 +41,8 @@ const runSubscriptionSwitch = async (target: SubscriptionProfile, overview: Prof
   try {
     const { profile, notice } = await switchSubscription(target.name);
     if (notice !== null) log.warn(notice);
-    outro(switchedLine(profile));
+    log.message(switchedLine(profile));
+    outro(pc.dim(restartHint(profile)));
   } catch (error) {
     if (!(error instanceof SubscriptionSwitchRefusedError)) throw error;
     cancel("Switch cancelled.");
@@ -101,10 +103,7 @@ export const runMenu = async (): Promise<void> => {
     return;
   }
 
-  if (!(await wasImportOffered())) {
-    introBanner("import providers");
-    await offerImport();
-  }
+  if (!(await wasImportOffered())) await offerImport();
 
   for (;;) {
     const overview = await loadProfileOverview();

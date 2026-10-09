@@ -13,6 +13,7 @@ export const toListOptions = (overview: ProfileOverview): ListOption[] => {
       hint: accountLabel(profile),
       isCurrent,
       group: labelGroups ? PROFILE_GROUP_TITLES[group.key] : undefined,
+      enterLabel: profile.type === "external" ? "connect" : "switch",
     })),
   );
 };

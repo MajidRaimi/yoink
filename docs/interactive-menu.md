@@ -1,6 +1,7 @@
 ---
 title: Interactive menu
-description: "The keymap and behavior of the yoink menu: move with j and k, switch with Enter, and add, edit, save or delete profiles."
+seoTitle: "Yoink interactive menu: switch AI coding logins with Enter"
+description: "Run yoink with no arguments to open a keyboard menu: move with j and k, switch with Enter, and add, edit, save or delete Claude, Codex or provider profiles."
 nav: Interactive menu
 order: 3
 section: Switch

@@ -14,7 +14,7 @@ const columns: readonly FooterColumn[] = [
   {
     title: "Product",
     links: [
-      { label: "Download", href: routes.download },
+      { label: "Download for Mac", href: routes.download },
       { label: "Install the CLI", href: routes.install },
       { label: "Releases", href: site.releasesUrl },
     ],
@@ -24,6 +24,9 @@ const columns: readonly FooterColumn[] = [
     links: [
       { label: "Getting started", href: docHref("getting-started") },
       { label: "Providers", href: docHref("providers") },
+      { label: "Harnesses", href: docHref("harnesses") },
+      { label: "Subscriptions", href: docHref("subscriptions") },
+      { label: "Desktop app", href: docHref("desktop") },
       { label: "Security", href: docHref("security") },
       { label: "CLI reference", href: routes.reference },
     ],

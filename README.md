@@ -6,11 +6,15 @@
 
 <p><strong>Every AI coding login and provider, in one place.</strong></p>
 
+<p>Yoink for AI coding is an open source (MIT) CLI for macOS, Linux and Windows, plus a macOS menu bar app, that switches AI coding logins and connects API-key providers to 13 coding harnesses.</p>
+
+<p><sub>Not the Yoink drag-and-drop app for Mac, and not the PyPI <code>yoink-cli</code> media downloader.</sub></p>
+
 <p>
 Switch Claude Code, ChatGPT (Codex), Kimi Code, Gemini and GitHub Copilot logins without signing out. Add an API key once
-(OpenAI, Kimi, OpenRouter, Ollama, or any compatible API) and yoink writes it into 13 coding harnesses: pi, omp, opencode,
-codex, Claude Code, Qwen Code, Kilo Code, Droid, Crush, Goose, Zed, Continue and Claude Desktop. Drive it from the terminal
-on macOS, Linux and Windows, or from the macOS menu bar.
+(OpenAI, Kimi, OpenRouter, Ollama, or any compatible API) and yoink connects it to the coding harnesses that speak
+its API, up to 13: pi, omp, opencode, codex, Claude Code, Qwen Code, Kilo Code, Droid, Crush, Goose, Zed, Continue and
+Claude Desktop. Drive it from the terminal on macOS, Linux and Windows, or from the macOS menu bar.
 </p>
 
 <p>
@@ -130,7 +134,7 @@ Actions loop back to the list, so you can switch, add, and prune in one sitting,
 - **Instant Claude Code switching.** Each profile stores the credential blob (macOS Keychain on macOS, `~/.claude/.credentials.json` on Linux/Windows) plus the `oauthAccount` identity, so a swap is a keystroke, not a browser round-trip.
 - **Never loses a token.** Every switch re-snapshots the active profile from the live credential store first, so a background token refresh is never dropped.
 - **Subscription logins beyond Claude.** Save and switch ChatGPT (Codex), Kimi Code, Gemini and GitHub Copilot logins too. Each tool switches inside itself only, so a subscription token never leaks into another tool, and yoink asks before switching a tool that is running. See [subscriptions](./docs/subscriptions.md).
-- **One key, 13 harnesses.** Add a provider once and connect it to pi, omp, opencode, codex, Claude Code, Qwen Code, Kilo Code, Droid, Crush, Goose, Zed, Continue and Claude Desktop. Rotate the key or change the model list and yoink re-syncs every harness it is connected to.
+- **One provider, up to 13 harnesses.** Add a provider once and connect it to every harness its endpoints support (pi, omp, opencode, codex, Claude Code, Qwen Code, Kilo Code, Droid, Crush, Goose, Zed, Continue and Claude Desktop). Rotate the key or change the model list and yoink re-syncs every harness it is connected to.
 - **Presets and custom providers.** OpenAI, Kimi Code, Moonshot, OpenRouter, DeepSeek, Z.ai and Ollama are built in. For anything else, yoink probes the base URL to find which of OpenAI Chat, OpenAI Responses and Anthropic Messages it speaks.
 - **Real model metadata.** Pick as many models as you like from the provider's live list; context windows, output limits, reasoning and image support come from [models.dev](https://models.dev).
 - **Import what you already have.** `yoink import` finds providers you set up by hand in your harness configs and brings them under management.

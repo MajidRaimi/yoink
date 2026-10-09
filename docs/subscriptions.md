@@ -1,6 +1,7 @@
 ---
 title: Subscriptions
-description: "Save and switch ChatGPT (Codex), Kimi Code, Gemini and GitHub Copilot logins, each inside its own tool."
+seoTitle: "Switch Codex, Kimi, Gemini and Copilot logins · Yoink CLI"
+description: "Save and switch ChatGPT (Codex), Kimi Code, Gemini and GitHub Copilot logins with yoink, each inside its own tool, with the live login re-saved first."
 nav: Subscriptions
 order: 4
 section: Switch

@@ -1,6 +1,7 @@
 ---
 title: Usage
-description: "Every yoink command, its aliases and flags, the non-interactive forms for scripts, and worked examples."
+seoTitle: "Yoink commands with examples: add, use, connect · Yoink CLI"
+description: "Every yoink command with worked examples: switch Claude Code accounts, save Codex logins, connect a provider to opencode, and script it all with --json."
 nav: Usage
 order: 9
 section: Reference

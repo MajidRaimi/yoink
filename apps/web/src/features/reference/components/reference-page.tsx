@@ -6,10 +6,7 @@ import { CommandBrowser } from "./command-browser";
 import { HarnessIdsSection, KeymapSection, PresetIdsSection, ToolIdsSection } from "./id-sections";
 import { OnThisPage } from "./on-this-page";
 
-export const REFERENCE_TITLE = "CLI reference";
-
-export const REFERENCE_DESCRIPTION =
-  "Every yoink command, alias and flag with an example, plus the menu keymap and the tool, harness and preset ids.";
+export const REFERENCE_TITLE = "Yoink CLI reference";
 
 export const ReferencePage = (): React.JSX.Element => (
   <Container size="wide" className="py-14 sm:py-20">

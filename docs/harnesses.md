@@ -1,6 +1,7 @@
 ---
 title: Harnesses
-description: "What yoink writes into each of the 13 supported coding tools, their config paths, backups, import, and the connect commands."
+seoTitle: "What yoink writes into 13 coding agents · Yoink CLI"
+description: "What yoink writes into pi, omp, opencode, codex, Claude Code, Qwen Code, Kilo, Droid, Crush, Continue, Goose, Zed and Claude Desktop: paths and keys."
 nav: Harnesses
 order: 6
 section: Connect
@@ -8,7 +9,7 @@ section: Connect
 
 # Harnesses
 
-A harness is a coding agent (or an editor or desktop app with an agent) that reads providers from its own config file. yoink writes your [providers](./providers.md) into each one, so a key you add once works in all of them.
+A harness is a coding agent (or an editor or desktop app with an agent) that reads providers from its own config file. yoink writes your [providers](./providers.md) into each one, so a key you add once works in every harness its endpoints support.
 
 ## Supported harnesses
 

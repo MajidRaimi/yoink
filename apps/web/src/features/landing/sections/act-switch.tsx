@@ -1,4 +1,5 @@
 import { DemoSlot } from "@/features/demos/demo-slot";
+import { DocLinks } from "@/features/landing/components/doc-links";
 import { SWITCH_COPY } from "@/features/landing/copy";
 import { SectionHeader } from "@/features/landing/components/section-header";
 import { Container } from "@/shared/ui/container";
@@ -14,6 +15,7 @@ export const ActSwitch = (): React.JSX.Element => (
         align="center"
       />
       <DemoSlot id="subscription-switch" className="w-full" />
+      <DocLinks links={SWITCH_COPY.links} className="items-center text-center" />
     </Container>
   </section>
 );

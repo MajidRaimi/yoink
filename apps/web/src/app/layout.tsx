@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { fontVariables } from "@/shared/brand/fonts";
 import { site } from "@/shared/brand/site";
-import { pageMetadata } from "@/features/seo/metadata";
+import { pageMetadata, TITLE_TEMPLATE, verificationMetadata } from "@/features/seo/metadata";
 import { routes } from "@/shared/lib/routes";
 import { PlatformHeadScript } from "@/features/download/platform-head-script";
 import { Footer } from "@/shared/ui/footer";
@@ -16,15 +16,15 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-const siteDefaults = pageMetadata({ title: site.title, description: site.description, path: routes.home });
+const siteDefaults = pageMetadata({ title: site.name, seoTitle: site.title, description: site.metaDescription, path: routes.home });
 
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
   title: {
     default: site.title,
-    template: `%s · ${site.name}`,
+    template: TITLE_TEMPLATE,
   },
-  description: site.description,
+  description: site.metaDescription,
   applicationName: site.name,
   authors: [{ name: site.author, url: site.authorUrl }],
   creator: site.author,
@@ -33,6 +33,7 @@ export const metadata: Metadata = {
     icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
     apple: "/apple-icon.png",
   },
+  verification: verificationMetadata(site.verification),
   openGraph: siteDefaults.openGraph,
   twitter: siteDefaults.twitter,
   robots: {

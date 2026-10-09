@@ -10,6 +10,7 @@ const nextConfig: NextConfig = {
   images: { unoptimized: true },
   turbopack: { root: repoRoot },
   outputFileTracingRoot: repoRoot,
+  experimental: { inlineCss: true },
 };
 
 export default nextConfig;

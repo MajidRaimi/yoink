@@ -3,6 +3,8 @@ import Link from "next/link";
 import { docHref, routes } from "@/shared/lib/routes";
 import { getDocGroups } from "../content";
 
+export const DOCS_INDEX_TITLE = "Yoink documentation";
+
 type IndexItem = {
   href: Route;
   label: string;
@@ -18,7 +20,7 @@ const REFERENCE_ITEM: IndexItem = {
 export const DocsIndexView = (): React.JSX.Element => (
   <div className="flex max-w-[72ch] flex-col gap-12">
     <header className="flex flex-col gap-4">
-      <h1 className="display text-4xl">Docs</h1>
+      <h1 className="display text-4xl">{DOCS_INDEX_TITLE}</h1>
       <p className="text-lg text-muted">
         Switch accounts, connect providers and see exactly what yoink writes. Guides are rendered from the Markdown in
         the repo&apos;s <code className="font-mono text-[0.9em]">docs/</code> folder.

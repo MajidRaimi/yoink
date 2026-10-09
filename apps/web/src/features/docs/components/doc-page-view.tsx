@@ -9,11 +9,17 @@ import { DocPager } from "./doc-pager";
 import { DocToc } from "./doc-toc";
 import { DocTocCollapsible } from "./doc-toc-collapsible";
 
-export type DocPageViewProps = {
-  slug: DocSlug;
+export type DocUpdatedDate = {
+  iso: string;
+  label: string;
 };
 
-export const DocPageView = ({ slug }: DocPageViewProps): React.JSX.Element => {
+export type DocPageViewProps = {
+  slug: DocSlug;
+  updated: DocUpdatedDate;
+};
+
+export const DocPageView = ({ slug, updated }: DocPageViewProps): React.JSX.Element => {
   const doc = docMeta(slug);
   const headings = docHeadings(slug);
   const hasToc = headings.length > 0;
@@ -24,6 +30,12 @@ export const DocPageView = ({ slug }: DocPageViewProps): React.JSX.Element => {
           <DocBreadcrumb doc={doc} />
           <h1 className="display text-4xl">{doc.title}</h1>
           <p className="text-lg text-muted">{doc.description}</p>
+          <p className="text-sm text-muted">
+            Updated{" "}
+            <bdi>
+              <time dateTime={updated.iso}>{updated.label}</time>
+            </bdi>
+          </p>
         </header>
         {hasToc ? <DocTocCollapsible headings={headings} className="xl:hidden" /> : null}
         {doc.demo === undefined ? null : <DemoSlot id={doc.demo} />}

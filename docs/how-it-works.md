@@ -1,6 +1,7 @@
 ---
 title: How it works
-description: "Where each login lives, what a profile holds, the switch sequence step by step, and every file yoink reads or writes."
+seoTitle: "How Claude Code account switching works · Yoink CLI"
+description: "How yoink switches Claude Code accounts: the Keychain entry or .credentials.json, the oauthAccount block in ~/.claude.json, and the re-snapshot step first."
 nav: How it works
 order: 7
 section: Understand

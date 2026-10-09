@@ -42,6 +42,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: bun run check:links
       - run: bun run check:slop
+      - run: bun run check:canonical
 
   verify-windows:
     runs-on: windows-latest

@@ -42,11 +42,24 @@ const optionalDemo = (slug: DocSlug, data: RawFrontmatter): DemoId | undefined =
   return data.demo;
 };
 
+export const MAX_SEO_TITLE_LENGTH = 62;
+
+const optionalSeoTitle = (slug: DocSlug, data: RawFrontmatter): string | undefined => {
+  if (data.seoTitle === undefined) return undefined;
+  const seoTitle = requireText(slug, data, "seoTitle");
+  if (seoTitle.length > MAX_SEO_TITLE_LENGTH) {
+    throw new DocFrontmatterError(slug, `"seoTitle" must be at most ${MAX_SEO_TITLE_LENGTH} characters, got ${seoTitle.length}`);
+  }
+  return seoTitle;
+};
+
 export const parseDocMeta = (slug: DocSlug, data: RawFrontmatter): DocMeta => {
   const demo = optionalDemo(slug, data);
+  const seoTitle = optionalSeoTitle(slug, data);
   return {
     slug,
     title: requireText(slug, data, "title"),
+    ...(seoTitle === undefined ? {} : { seoTitle }),
     description: requireText(slug, data, "description"),
     nav: requireText(slug, data, "nav"),
     order: requireOrder(slug, data),

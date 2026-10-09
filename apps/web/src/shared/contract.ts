@@ -46,6 +46,7 @@ export const isDocSection = (value: unknown): value is DocSection =>
 export type DocMeta = {
   slug: DocSlug;
   title: string;
+  seoTitle?: string;
   description: string;
   nav: string;
   order: number;

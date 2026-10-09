@@ -1,7 +1,9 @@
-import { DemoFrame } from "@/features/demos/engine/demo-frame";
+import { computeFinal } from "@/features/demos/engine/frames";
+import { menubarPanelDemo } from "@/features/demos/menubar-panel/definition";
+import { MenubarPanelView } from "@/features/demos/menubar-panel/view";
+
+const finalState = computeFinal(menubarPanelDemo);
 
 export const MenubarPanelStatic = (): React.JSX.Element => (
-  <DemoFrame label="menubar-panel demo" title="yoink" status="">
-    <div />
-  </DemoFrame>
+  <MenubarPanelView state={finalState} idPrefix="menubar-panel-static" />
 );

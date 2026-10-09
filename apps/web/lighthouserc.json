@@ -1,0 +1,73 @@
+{
+  "ci": {
+    "collect": {
+      "staticDistDir": "./out",
+      "url": [
+        "http://localhost/",
+        "http://localhost/download/",
+        "http://localhost/docs/",
+        "http://localhost/reference/",
+        "http://localhost/docs/getting-started/",
+        "http://localhost/docs/desktop/",
+        "http://localhost/docs/interactive-menu/",
+        "http://localhost/docs/subscriptions/",
+        "http://localhost/docs/providers/",
+        "http://localhost/docs/harnesses/",
+        "http://localhost/docs/how-it-works/",
+        "http://localhost/docs/security/",
+        "http://localhost/docs/usage/"
+      ],
+      "numberOfRuns": 1,
+      "settings": {
+        "formFactor": "mobile",
+        "screenEmulation": {
+          "mobile": true,
+          "width": 412,
+          "height": 823,
+          "deviceScaleFactor": 1.75,
+          "disabled": false
+        },
+        "throttlingMethod": "simulate",
+        "chromeFlags": "--headless=new --no-sandbox"
+      }
+    },
+    "assert": {
+      "assertions": {
+        "categories:performance": [
+          "error",
+          {
+            "minScore": 0.9
+          }
+        ],
+        "categories:accessibility": [
+          "error",
+          {
+            "minScore": 0.95
+          }
+        ],
+        "categories:seo": [
+          "error",
+          {
+            "minScore": 0.95
+          }
+        ],
+        "categories:best-practices": [
+          "error",
+          {
+            "minScore": 0.9
+          }
+        ],
+        "cumulative-layout-shift": [
+          "error",
+          {
+            "maxNumericValue": 0.05
+          }
+        ]
+      }
+    },
+    "upload": {
+      "target": "filesystem",
+      "outputDir": "./.lighthouseci/reports"
+    }
+  }
+}

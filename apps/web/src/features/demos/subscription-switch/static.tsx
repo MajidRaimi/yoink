@@ -1,7 +1,7 @@
-import { DemoFrame } from "@/features/demos/engine/demo-frame";
+import { computeFinal } from "@/features/demos/engine/frames";
+import { subscriptionSwitchDemo } from "@/features/demos/subscription-switch/definition";
+import { SubscriptionSwitchView } from "@/features/demos/subscription-switch/view";
 
-export const SubscriptionSwitchStatic = (): React.JSX.Element => (
-  <DemoFrame label="subscription-switch demo" title="yoink" status="">
-    <div />
-  </DemoFrame>
-);
+const FINAL_STATE = computeFinal(subscriptionSwitchDemo);
+
+export const SubscriptionSwitchStatic = (): React.JSX.Element => <SubscriptionSwitchView state={FINAL_STATE} />;

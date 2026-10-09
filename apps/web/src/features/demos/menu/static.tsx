@@ -1,7 +1,7 @@
-import { DemoFrame } from "@/features/demos/engine/demo-frame";
+import { computeFinal } from "@/features/demos/engine/frames";
+import { menuDefinition } from "@/features/demos/menu/definition";
+import { MenuView } from "@/features/demos/menu/view";
 
-export const MenuStatic = (): React.JSX.Element => (
-  <DemoFrame label="menu demo" title="yoink" status="">
-    <div />
-  </DemoFrame>
-);
+const FINAL_STATE = computeFinal(menuDefinition);
+
+export const MenuStatic = (): React.JSX.Element => <MenuView state={FINAL_STATE} />;

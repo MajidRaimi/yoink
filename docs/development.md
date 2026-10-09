@@ -4,20 +4,27 @@ This page covers the yoink monorepo: how it is laid out, how to run and build it
 
 ## Monorepo layout
 
-yoink is a Bun + Turborepo monorepo. There are two apps.
+yoink is a Bun + Turborepo monorepo. There are three apps.
 
 - `apps/cli`: the yoink CLI, compiled to a single binary per platform (macOS, Linux, Windows) with `bun build --compile`.
-- `apps/web`: the [yoink.codes](https://yoink.codes) site, a Next.js static export deployed to GitHub Pages on push to `main`.
+- `apps/desktop`: the macOS menu bar app (Tauri), which bundles the CLI as a sidecar binary. See [Desktop app](./desktop.md).
+- `apps/web`: the [yoink.codes](https://yoink.codes) site, a Next.js static export deployed to GitHub Pages on push to `main`. Its docs pages are rendered from the Markdown files in `docs/`.
 
 ```
 .
 ├── apps/
-│   ├── cli/          # the CLI
+│   ├── cli/
 │   │   └── scripts/
 │   │       └── release.ts
-│   └── web/          # the yoink.codes Next.js static site
-│       └── lib/
-│           └── site.ts
+│   ├── desktop/
+│   └── web/
+│       └── src/
+│           └── shared/
+│               └── brand/
+│                   └── site.ts
+├── docs/
+├── packages/
+│   └── tokens/
 ├── .github/
 │   └── workflows/
 │       ├── ci.yml
@@ -37,13 +44,13 @@ bun install
 Root scripts:
 
 ```bash
-bun run dev        # mprocs: the web dev server + the CLI test watcher
-bun run build      # turbo: build every app
-bun run test       # turbo: run tests
-bun run typecheck  # turbo: typecheck every app
+bun run dev
+bun run build
+bun run test
+bun run typecheck
 ```
 
-- `dev` runs both apps side by side through mprocs: the `apps/web` dev server and the `apps/cli` test watcher.
+- `dev` runs the processes in `mprocs.yaml` side by side.
 - `build`, `test`, and `typecheck` fan out across the workspaces through Turborepo.
 
 ## Build the CLI from source
@@ -71,7 +78,7 @@ bun run apps/cli/scripts/release.ts <major.minor.patch>
 
 The script:
 
-1. Bumps the version in `apps/cli/package.json` and `apps/web/lib/site.ts`.
+1. Bumps the version in `apps/cli/package.json` and `apps/web/src/shared/brand/site.ts`.
 2. Commits the change.
 3. Tags the commit `vX.Y.Z`.
 4. Pushes the commit and tag.

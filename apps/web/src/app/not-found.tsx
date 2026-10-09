@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { PlaceholderPage } from "@/shared/ui/placeholder-page";
+import { NotFoundView } from "@/features/seo/components/not-found-view";
 
 export const metadata: Metadata = {
   title: "Page not found",
-  robots: null,
+  robots: { index: false, follow: true },
 };
 
-const NotFound = (): React.JSX.Element => <PlaceholderPage title="Page not found" />;
+const NotFound = (): React.JSX.Element => <NotFoundView />;
 
 export default NotFound;

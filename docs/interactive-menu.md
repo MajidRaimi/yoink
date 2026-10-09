@@ -1,3 +1,12 @@
+---
+title: Interactive menu
+description: "The keymap and behavior of the yoink menu: move with j and k, switch with Enter, and add, edit, save or delete profiles."
+nav: Interactive menu
+order: 3
+section: Switch
+demo: menu
+---
+
 # Interactive menu
 
 Running `yoink` with no arguments opens a keyboard-driven list of your saved profiles. It is the default surface for switching accounts and managing profiles without remembering command names.

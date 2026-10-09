@@ -1,11 +1,9 @@
 import type { Metadata } from "next";
-import { site } from "@/shared/brand/site";
-import { PlaceholderPage } from "@/shared/ui/placeholder-page";
+import { LandingPage } from "@/features/landing/landing-page";
+import { landingMetadata } from "@/features/landing/metadata";
 
-export const metadata: Metadata = {
-  alternates: { canonical: "/" },
-};
+export const metadata: Metadata = landingMetadata;
 
-const HomePage = (): React.JSX.Element => <PlaceholderPage title={site.headline} description={site.description} />;
+const HomePage = (): React.JSX.Element => <LandingPage />;
 
 export default HomePage;

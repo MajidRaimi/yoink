@@ -6,9 +6,16 @@
     "dev": "next dev",
     "gen:data": "bun run scripts/gen-data.ts",
     "resolve:release": "bun run scripts/resolve-release.ts",
-    "prebuild": "bun run resolve:release",
+    "build:search": "bun run scripts/build-search.ts",
+    "prebuild": "bun run resolve:release && bun run build:search",
     "build": "next build && bun run scripts/finalize-og.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit && tsc -p e2e/tsconfig.json --noEmit",
+    "typecheck:e2e": "tsc -p e2e/tsconfig.json --noEmit",
+    "test": "bun test src scripts",
+    "check:links": "bun run scripts/check-links.ts",
+    "check:slop": "bun run scripts/check-slop.ts",
+    "test:e2e": "playwright test",
+    "lhci": "bunx lhci autorun --config=./lighthouserc.json"
   },
   "dependencies": {
     "@mdx-js/mdx": "^3.1.1",

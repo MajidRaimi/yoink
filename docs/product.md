@@ -23,7 +23,7 @@ Precise, terminal-native, quietly confident. The site should feel like a well-cr
 
 ## Anti-references
 
-- Generic SaaS landing pages: gradient text, glassmorphism cards everywhere, hero metrics, "supercharge your workflow" copy.
+- Generic SaaS landing pages: gradient text, glassmorphism cards everywhere, hero metrics, hype-verb copy promising to transform your workflow.
 - Crypto/AI hype sites: particle backgrounds, purple-cyan gradients, animated blobs.
 - Sparse minimal one-liner pages that hide the mechanism; this audience wants to see how it works.
 - Anything that would look wrong next to lazygit, fzf, or the Bun docs.

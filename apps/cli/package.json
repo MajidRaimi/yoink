@@ -1,7 +1,7 @@
 {
   "name": "yoink-cli",
   "version": "0.6.5",
-  "description": "Switch between Claude Code accounts from your terminal, fast.",
+  "description": "Switch Claude Code, Codex, Kimi, Gemini and Copilot logins, and connect API-key providers to 13 coding harnesses.",
   "type": "module",
   "license": "MIT",
   "author": "Majid Raimi",
@@ -12,15 +12,15 @@
   },
   "keywords": [
     "claude-code",
-    "claude",
-    "cli",
     "account-switcher",
+    "codex",
+    "opencode",
+    "gemini-cli",
+    "github-copilot",
     "openrouter",
     "ollama",
-    "anthropic",
-    "macos",
-    "linux",
-    "windows"
+    "llm-providers",
+    "cli"
   ],
   "bin": {
     "yoink": "bin/yoink.js"

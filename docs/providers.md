@@ -1,3 +1,12 @@
+---
+title: Providers
+description: "Add an API-key provider once, from a preset or any OpenAI- or Anthropic-compatible URL, and choose the models it exposes."
+nav: Providers
+order: 5
+section: Connect
+demo: provider-add
+---
+
 # Providers
 
 A provider is an API-key backend (OpenAI, Kimi, OpenRouter, a local Ollama, or any OpenAI- or Anthropic-compatible API) that yoink stores once and writes into every coding harness you connect it to: pi, omp, opencode, codex, Claude Code, Qwen Code, Kilo Code, Droid, Crush, Goose, Zed, Continue, and Claude Desktop. You keep one key and one model list in yoink, and yoink keeps each harness config in sync. See [Harnesses](./harnesses.md) for what gets written where.
@@ -44,10 +53,10 @@ If every probe fails with 401 or 403, yoink says the key was rejected. If nothin
 
 Harnesses need more than a model id: pi, omp, and opencode want a context window, an output limit, whether the model reasons, and whether it takes images. yoink looks each selected model up on [models.dev](https://models.dev), preferring the entry from the same provider, and stores the result with the provider. The catalog is cached at `~/.config/yoink/cache/models-dev.json` and refreshed at most once a day. A model models.dev does not know gets safe defaults: a 128,000 token context window, 32,000 output tokens, text input, no reasoning.
 
-Change the selection any time:
+Change the selection any time. Without `--set`, yoink opens the picker with the current models already checked:
 
 ```bash
-yoink models fuse                          # interactive picker, pre-checked with the current models
+yoink models fuse
 yoink models fuse --set gpt-5.2,claude-sonnet-4-5
 ```
 
@@ -115,6 +124,7 @@ echo "$FUSE_API_KEY" | yoink add --external --name fuse --provider Fuse \
 | `--connect <h,...>` | Harnesses to connect right away, by [harness id](harnesses.md#supported-harnesses): `pi`, `omp`, `opencode`, `codex`, `claude-code`, `qwen`, `kilo`, `droid`, `crush`, `goose`, `zed`, `continue`, `claude-desktop`. |
 | `--default <m>` | Default model to set in the connected harnesses. |
 | `--token-stdin` | Read the API key from stdin. Required. |
+| `--allow-tracked` | Write the key even into a harness config that git tracks. Without it, yoink refuses those harnesses and names the tracked files. |
 
 Without `--protocol` or `--endpoint`, a custom `--base-url` is probed exactly like the interactive flow. A preset is never probed, and neither are `--endpoint` URLs.
 

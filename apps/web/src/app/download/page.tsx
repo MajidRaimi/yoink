@@ -1,11 +1,28 @@
 import type { Metadata } from "next";
-import { PlaceholderPage } from "@/shared/ui/placeholder-page";
+import { JsonLd, breadcrumbLd, softwareApplicationLd } from "@/features/seo/json-ld";
+import { pageMetadata } from "@/features/seo/metadata";
+import { DOWNLOAD_DESCRIPTION, DOWNLOAD_TITLE, DownloadPage } from "@/features/download/components/download-page";
+import { canonicalPath, routes } from "@/shared/lib/routes";
 
-export const metadata: Metadata = {
-  title: "Download",
-  alternates: { canonical: "/download/" },
-};
+const path = canonicalPath(routes.download);
 
-const DownloadPage = (): React.JSX.Element => <PlaceholderPage title="Download" />;
+export const metadata: Metadata = pageMetadata({
+  title: DOWNLOAD_TITLE,
+  description: DOWNLOAD_DESCRIPTION,
+  path,
+});
 
-export default DownloadPage;
+const DownloadRoute = (): React.JSX.Element => (
+  <>
+    <JsonLd data={softwareApplicationLd()} />
+    <JsonLd
+      data={breadcrumbLd([
+        { name: "Home", path: canonicalPath(routes.home) },
+        { name: DOWNLOAD_TITLE, path },
+      ])}
+    />
+    <DownloadPage />
+  </>
+);
+
+export default DownloadRoute;

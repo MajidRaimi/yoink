@@ -1,0 +1,54 @@
+.viewport {
+  overflow: hidden;
+  mask-image: linear-gradient(to right, transparent, #000 6%, #000 94%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 6%, #000 94%, transparent);
+}
+
+.track {
+  display: flex;
+  width: max-content;
+  animation: marquee 60s linear infinite;
+}
+
+.viewport:hover .track,
+.viewport[data-paused="true"] .track {
+  animation-play-state: paused;
+}
+
+.list {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 2.5rem;
+  padding-inline-end: 2.5rem;
+}
+
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .viewport {
+    mask-image: none;
+    -webkit-mask-image: none;
+  }
+
+  .track {
+    width: auto;
+    animation: none;
+  }
+
+  .list {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1.25rem 2rem;
+    padding-inline-end: 0;
+  }
+
+  .duplicate,
+  .control {
+    display: none;
+  }
+}

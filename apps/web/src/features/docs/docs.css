@@ -1,0 +1,233 @@
+.doc-prose {
+  color: var(--foreground);
+  font-size: var(--type-base);
+  line-height: var(--line-relaxed);
+  overflow-wrap: break-word;
+}
+
+.doc-prose > * + * {
+  margin-top: 1.15em;
+}
+
+.doc-prose h2,
+.doc-prose h3,
+.doc-prose h4 {
+  font-weight: 620;
+  letter-spacing: var(--letter-tight);
+  line-height: var(--line-snug);
+  scroll-margin-top: 88px;
+  text-wrap: balance;
+}
+
+.doc-prose h2 {
+  margin-top: 2.4em;
+  padding-top: 1.4em;
+  border-top: 1px solid var(--hairline);
+  font-size: var(--type-2xl);
+}
+
+.doc-prose > h2:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+
+.doc-prose h3 {
+  margin-top: 2em;
+  font-size: var(--type-xl);
+}
+
+.doc-prose h4 {
+  margin-top: 1.6em;
+  font-size: var(--type-lg);
+}
+
+.doc-prose h2 + *,
+.doc-prose h3 + *,
+.doc-prose h4 + * {
+  margin-top: 0.75em;
+}
+
+.doc-prose .heading-anchor {
+  color: inherit;
+  text-decoration: none;
+  border-radius: var(--corner-xs);
+}
+
+.doc-prose .heading-anchor:hover {
+  text-decoration: underline;
+  text-decoration-color: var(--hairline-strong);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 6px;
+}
+
+.doc-prose a:not(.heading-anchor) {
+  color: var(--foreground);
+  text-decoration: underline;
+  text-decoration-color: var(--brand);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+  border-radius: var(--corner-xs);
+  transition: color var(--dur-1) var(--motion-ease-out);
+}
+
+.doc-prose a:not(.heading-anchor):hover {
+  color: var(--brand-text);
+}
+
+.doc-prose strong {
+  font-weight: 620;
+}
+
+.doc-prose ul,
+.doc-prose ol {
+  padding-left: 1.4em;
+}
+
+.doc-prose ul {
+  list-style: disc;
+}
+
+.doc-prose ol {
+  list-style: decimal;
+}
+
+.doc-prose li + li {
+  margin-top: 0.4em;
+}
+
+.doc-prose li > ul,
+.doc-prose li > ol {
+  margin-top: 0.4em;
+}
+
+.doc-prose li::marker {
+  color: var(--faint);
+}
+
+.doc-prose hr {
+  border: 0;
+  border-top: 1px solid var(--hairline);
+  margin: 2.4em 0;
+}
+
+.doc-prose :not(pre) > code {
+  padding: 0.12em 0.36em;
+  border: 1px solid var(--hairline);
+  border-radius: var(--corner-xs);
+  background: var(--surface-2);
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+  letter-spacing: var(--letter-mono);
+}
+
+.doc-prose blockquote {
+  padding-left: 1em;
+  color: var(--muted);
+}
+
+.doc-prose blockquote > * + * {
+  margin-top: 0.75em;
+}
+
+.doc-callout {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+  padding: 0.9em 1.1em;
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--corner-md);
+  background: var(--surface);
+}
+
+.doc-callout-label {
+  display: flex;
+  align-items: center;
+  gap: 0.45em;
+  font-size: var(--type-sm);
+  font-weight: 620;
+}
+
+.doc-callout-body > * + * {
+  margin-top: 0.75em;
+}
+
+.doc-table {
+  max-width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--hairline);
+  border-radius: var(--corner-md);
+}
+
+.doc-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--type-sm);
+  line-height: var(--line-normal);
+}
+
+.doc-table th,
+.doc-table td {
+  padding: 0.6em 0.9em;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.doc-table th {
+  background: var(--surface);
+  font-weight: 620;
+  white-space: nowrap;
+}
+
+.doc-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.doc-table td code {
+  white-space: nowrap;
+}
+
+.doc-code pre {
+  overflow-x: auto;
+  padding: 0.95em 3.25em 0.95em 1.1em;
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--corner-md);
+  background: var(--surface);
+  font-family: var(--font-mono);
+  font-size: var(--type-sm);
+  line-height: 1.7;
+  letter-spacing: var(--letter-mono);
+}
+
+.doc-code code {
+  display: grid;
+  min-width: max-content;
+}
+
+.doc-prose [data-rehype-pretty-code-figure] {
+  margin: 0;
+}
+
+code[data-theme],
+code[data-theme] span {
+  color: var(--shiki-light);
+}
+
+.dark code[data-theme],
+.dark code[data-theme] span {
+  color: var(--shiki-dark);
+}
+
+.docs-search-dialog::backdrop {
+  background: rgb(10 9 8 / 0.55);
+}
+
+.docs-search-input:focus,
+.docs-search-input:focus-visible {
+  outline: none;
+}
+
+.docs-search-dialog div:has(> .docs-search-input:focus-visible) {
+  box-shadow: inset 0 -2px 0 var(--ring);
+}

@@ -1,3 +1,11 @@
+---
+title: Harnesses
+description: "What yoink writes into each of the 13 supported coding tools, their config paths, backups, import, and the connect commands."
+nav: Harnesses
+order: 6
+section: Connect
+---
+
 # Harnesses
 
 A harness is a coding agent (or an editor or desktop app with an agent) that reads providers from its own config file. yoink writes your [providers](./providers.md) into each one, so a key you add once works in all of them.

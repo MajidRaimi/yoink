@@ -1,11 +1,29 @@
 import type { Metadata } from "next";
-import { PlaceholderPage } from "@/shared/ui/placeholder-page";
+import { JsonLd, breadcrumbLd, techArticleLd } from "@/features/seo/json-ld";
+import { pageMetadata } from "@/features/seo/metadata";
+import { REFERENCE_DESCRIPTION, REFERENCE_TITLE, ReferencePage } from "@/features/reference/components/reference-page";
+import { canonicalPath, routes } from "@/shared/lib/routes";
 
-export const metadata: Metadata = {
-  title: "CLI reference",
-  alternates: { canonical: "/reference/" },
-};
+const path = canonicalPath(routes.reference);
 
-const ReferencePage = (): React.JSX.Element => <PlaceholderPage title="CLI reference" />;
+export const metadata: Metadata = pageMetadata({
+  title: REFERENCE_TITLE,
+  description: REFERENCE_DESCRIPTION,
+  path,
+  type: "article",
+});
 
-export default ReferencePage;
+const ReferenceRoute = (): React.JSX.Element => (
+  <>
+    <JsonLd data={techArticleLd({ title: REFERENCE_TITLE, description: REFERENCE_DESCRIPTION, path })} />
+    <JsonLd
+      data={breadcrumbLd([
+        { name: "Home", path: "/" },
+        { name: REFERENCE_TITLE, path },
+      ])}
+    />
+    <ReferencePage />
+  </>
+);
+
+export default ReferenceRoute;

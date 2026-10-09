@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import type { DocMeta } from "@/shared/contract";
-import { assertSectionsFollowOrder, assertUniqueOrder, DocFrontmatterError, parseDocMeta } from "./frontmatter";
+import { assertSectionsFollowOrder, assertUniqueOrder, DocFrontmatterError, MAX_SEO_TITLE_LENGTH, parseDocMeta } from "./frontmatter";
 
 const valid = {
   title: "Providers",
@@ -35,6 +35,15 @@ describe("parseDocMeta", () => {
     const data: Record<string, unknown> = { ...valid };
     delete data[field];
     expect(() => parseDocMeta("providers", data)).toThrow(DocFrontmatterError);
+  });
+
+  test("seoTitle is optional, trimmed and capped at the title length limit", () => {
+    expect(parseDocMeta("providers", valid).seoTitle).toBeUndefined();
+    expect(parseDocMeta("providers", { ...valid, seoTitle: "  Connect providers · Yoink CLI " }).seoTitle).toBe(
+      "Connect providers · Yoink CLI",
+    );
+    expect(() => parseDocMeta("providers", { ...valid, seoTitle: "" })).toThrow(/seoTitle/);
+    expect(() => parseDocMeta("providers", { ...valid, seoTitle: "x".repeat(MAX_SEO_TITLE_LENGTH + 1) })).toThrow(/at most/);
   });
 
   test("rejects an unknown section, demo, or a non-integer order", () => {

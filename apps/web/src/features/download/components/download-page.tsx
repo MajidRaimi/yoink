@@ -5,13 +5,12 @@ import { PlatformOrder } from "@/features/download/components/platform-order";
 
 export const DOWNLOAD_TITLE = "Download";
 
-export const DOWNLOAD_DESCRIPTION =
-  "Download the Yoink menu bar app for macOS, or install the CLI on macOS, Linux and Windows to switch AI coding logins and providers.";
+export const DOWNLOAD_HEADING = "Download Yoink";
 
 export const DownloadPage = (): React.JSX.Element => (
   <Container className="py-16 sm:py-24">
     <header className="flex max-w-3xl flex-col gap-4">
-      <h1 className="display text-4xl sm:text-5xl">Download Yoink</h1>
+      <h1 className="display text-4xl sm:text-5xl">{DOWNLOAD_HEADING}</h1>
       <p className="text-lg text-muted">
         The menu bar app runs on macOS. The CLI runs on macOS, Linux and Windows.
       </p>

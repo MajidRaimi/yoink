@@ -1,6 +1,7 @@
 ---
 title: Desktop app
-description: "The Yoink menu bar app for macOS: switch Claude Code accounts, save the current login, add providers, and tick the harnesses they connect to."
+seoTitle: "Yoink menu bar app for macOS: switch Claude Code accounts"
+description: "The Yoink menu bar app for macOS switches Claude Code accounts, saves the current login, adds API-key providers and ticks the coding agents they connect to."
 nav: Desktop app
 order: 2
 section: Start

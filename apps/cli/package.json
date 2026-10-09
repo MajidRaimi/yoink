@@ -20,7 +20,15 @@
     "openrouter",
     "ollama",
     "llm-providers",
-    "cli"
+    "cli",
+    "pi-coding-agent",
+    "claude-code-account-switcher",
+    "multiple-accounts",
+    "api-keys",
+    "kimi",
+    "deepseek",
+    "qwen-code",
+    "coding-agents"
   ],
   "bin": {
     "yoink": "bin/yoink.js"

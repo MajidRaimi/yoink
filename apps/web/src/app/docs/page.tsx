@@ -1,23 +1,33 @@
 import type { Metadata } from "next";
-import { DocsIndexView } from "@/features/docs/components/docs-index-view";
-import { JsonLd, breadcrumbLd } from "@/features/seo/json-ld";
+import { DOCS_INDEX_TITLE, DocsIndexView } from "@/features/docs/components/docs-index-view";
+import { JsonLd, webPageGraph } from "@/features/seo/json-ld";
 import { pageMetadata } from "@/features/seo/metadata";
+import { pageDates } from "@/features/seo/page-dates";
 import { canonicalPath, routes } from "@/shared/lib/routes";
 
 const path = canonicalPath(routes.docs);
 
-const DOCS_DESCRIPTION =
-  "Guides for yoink: install the CLI or the menu bar app, switch accounts and subscription logins, connect providers to 13 harnesses, and see every file it writes.";
+const DOCS_SEO_TITLE = "Yoink docs: switch AI coding accounts and connect providers";
 
-export const metadata: Metadata = pageMetadata({ title: "Docs", description: DOCS_DESCRIPTION, path });
+const DOCS_DESCRIPTION =
+  "Yoink documentation: install the CLI or Mac app, switch Claude Code and subscription logins, connect API keys to 13 harnesses, and see every file it writes.";
+
+export const metadata: Metadata = pageMetadata({ title: DOCS_INDEX_TITLE, seoTitle: DOCS_SEO_TITLE, description: DOCS_DESCRIPTION, path });
 
 const DocsIndexPage = (): React.JSX.Element => (
   <>
     <JsonLd
-      data={breadcrumbLd([
-        { name: "Home", path: "/" },
-        { name: "Docs", path },
-      ])}
+      data={webPageGraph({
+        title: DOCS_INDEX_TITLE,
+        description: DOCS_DESCRIPTION,
+        path,
+        dates: pageDates(path),
+        pageType: "CollectionPage",
+        breadcrumbs: [
+          { name: "Home", path: "/" },
+          { name: "Docs", path },
+        ],
+      })}
     />
     <DocsIndexView />
   </>

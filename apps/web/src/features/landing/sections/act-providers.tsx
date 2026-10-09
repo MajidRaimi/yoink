@@ -1,4 +1,5 @@
 import { DemoSlot } from "@/features/demos/demo-slot";
+import { DocLinks } from "@/features/landing/components/doc-links";
 import { PROVIDERS_COPY } from "@/features/landing/copy";
 import { SectionHeader } from "@/features/landing/components/section-header";
 import { Container } from "@/shared/ui/container";
@@ -16,6 +17,7 @@ export const ActProviders = (): React.JSX.Element => (
             </li>
           ))}
         </ol>
+        <DocLinks links={PROVIDERS_COPY.links} />
       </div>
       <DemoSlot id="provider-add" className="lg:sticky lg:top-24 lg:col-span-7 lg:col-start-1 lg:row-start-1 lg:self-start" />
     </Container>

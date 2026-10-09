@@ -1,6 +1,7 @@
 ---
 title: Providers
-description: "Add an API-key provider once, from a preset or any OpenAI- or Anthropic-compatible URL, and choose the models it exposes."
+seoTitle: "Connect OpenRouter, DeepSeek or Ollama keys · Yoink CLI"
+description: "Add an API key once with yoink, from a preset (OpenAI, Kimi, OpenRouter, DeepSeek, z.ai, Ollama) or any compatible URL it probes, and pick its models."
 nav: Providers
 order: 5
 section: Connect

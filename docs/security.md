@@ -1,6 +1,7 @@
 ---
 title: Security
-description: "How yoink handles credentials and config files: atomic owner-only writes, kept symlinks, one-time backups, seven managed keys, and secrets kept off argv and out of JSON."
+seoTitle: "How Yoink keeps API keys and logins safe · Yoink CLI"
+description: "Atomic owner-only writes, kept symlinks, one-time backups, seven managed Claude Code keys, a git-tracked config guard, and keys passed on stdin, never argv."
 nav: Security
 order: 8
 section: Understand

@@ -1,6 +1,7 @@
 ---
 title: Getting started
-description: "Install yoink on macOS, Linux or Windows, save your first Claude Code login as a profile, and switch between accounts."
+seoTitle: "Install Yoink and switch your first Claude Code account"
+description: "Install yoink on macOS, Linux or Windows with one command or npm i -g yoink-cli, save your work and personal Claude Code logins, and switch with yoink work."
 nav: Getting started
 order: 1
 section: Start

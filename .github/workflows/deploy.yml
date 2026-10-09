@@ -35,6 +35,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Save the live sitemap for IndexNow
+        continue-on-error: true
+        run: |
+          mkdir -p "$RUNNER_TEMP/indexnow"
+          curl -fsSL --max-time 30 https://yoink.codes/sitemap.xml -o "$RUNNER_TEMP/indexnow/previous-sitemap.xml" || rm -f "$RUNNER_TEMP/indexnow/previous-sitemap.xml"
       - uses: oven-sh/setup-bun@v2
       - uses: actions/setup-node@v4
         with:
@@ -48,6 +55,15 @@ jobs:
       - uses: actions/upload-pages-artifact@v3
         with:
           path: apps/web/out
+      - name: Stage sitemaps for IndexNow
+        continue-on-error: true
+        run: cp apps/web/out/sitemap.xml "$RUNNER_TEMP/indexnow/sitemap.xml"
+      - uses: actions/upload-artifact@v4
+        continue-on-error: true
+        with:
+          name: indexnow-sitemaps
+          path: ${{ runner.temp }}/indexnow
+          retention-days: 7
 
   deploy:
     needs: build
@@ -62,3 +78,25 @@ jobs:
       - name: Retry deployment if it flaked
         if: steps.deployment.outcome == 'failure'
         uses: actions/deploy-pages@v4
+      - uses: actions/checkout@v4
+        continue-on-error: true
+        with:
+          sparse-checkout: apps/web
+      - uses: oven-sh/setup-bun@v2
+        continue-on-error: true
+      - uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: indexnow-sitemaps
+          path: ${{ runner.temp }}/indexnow
+      - name: Ping IndexNow
+        continue-on-error: true
+        timeout-minutes: 10
+        working-directory: apps/web
+        run: |
+          previous="$RUNNER_TEMP/indexnow/previous-sitemap.xml"
+          if [ -f "$previous" ]; then
+            bun run scripts/indexnow.ts --sitemap "$RUNNER_TEMP/indexnow/sitemap.xml" --previous "$previous"
+          else
+            bun run scripts/indexnow.ts --sitemap "$RUNNER_TEMP/indexnow/sitemap.xml"
+          fi

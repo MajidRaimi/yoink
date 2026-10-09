@@ -1,6 +1,16 @@
+---
+title: Getting started
+description: "Install yoink on macOS, Linux or Windows, save your first Claude Code login as a profile, and switch between accounts."
+nav: Getting started
+order: 1
+section: Start
+---
+
 # Getting started
 
-yoink switches between Claude Code accounts from your terminal, and manages API-key providers across your coding harnesses. It reads and writes the login that Claude Code keeps on your machine (the macOS Keychain, or `~/.claude/.credentials.json` on Linux and Windows), so you can keep a work account and a personal account side by side and move between them in one command.
+yoink keeps every AI coding login and provider in one place. It switches Claude Code accounts, switches ChatGPT (Codex), Kimi Code, Gemini, and GitHub Copilot logins inside their own tools, and writes API-key providers into 13 coding tools. For Claude Code it reads and writes the login that Claude Code keeps on your machine (the macOS Keychain, or `~/.claude/.credentials.json` on Linux and Windows), so you can keep a work account and a personal account side by side and move between them in one command.
+
+On a Mac, the menu bar app also switches Claude Code accounts and manages providers. See [Desktop app](./desktop.md).
 
 ## Supported platforms
 
@@ -48,14 +58,17 @@ yoink version
 
 ### From source
 
-You need [Bun](https://bun.sh) to build from source. From the repo:
+You need [Bun](https://bun.sh) and git to build from source. Clone the repo, install dependencies, and compile the CLI:
 
 ```bash
+git clone https://github.com/MajidRaimi/yoink.git
+cd yoink
+bun install
 cd apps/cli && bun run build
 ln -sf "$PWD/dist/yoink" ~/.local/bin/yoink
 ```
 
-Make sure `~/.local/bin` is on your `PATH`, then run `yoink version` to confirm.
+Make sure `~/.local/bin` is on your `PATH`, then run `yoink version` to confirm. [Development](./development.md) covers the monorepo layout and the release flow.
 
 ## Add your accounts
 
@@ -74,7 +87,7 @@ A common setup is one profile for work and one for personal use:
 yoink add
 ```
 
-Sign in to your work account, name the profile `work`, then when yoink asks, add another and sign in to your personal account as `personal`. You can also add an API-key provider (OpenAI, Kimi Code, Moonshot, OpenRouter, DeepSeek, Z.ai, Ollama, or any OpenAI- or Anthropic-compatible API) from the same menu and connect it to any of the 13 supported harnesses. See [Providers](./providers.md) and [Harnesses](./harnesses.md).
+Sign in to your work account, name the profile `work`, then when yoink asks, add another and sign in to your personal account as `personal`. The same menu adds a ChatGPT (Codex), Kimi Code, Gemini, or GitHub Copilot login (see [Subscriptions](./subscriptions.md)). You can also add an API-key provider (OpenAI, Kimi Code, Moonshot, OpenRouter, DeepSeek, Z.ai, Ollama, or any OpenAI- or Anthropic-compatible API) from the same menu and connect it to any of the 13 supported harnesses. See [Providers](./providers.md) and [Harnesses](./harnesses.md).
 
 List what you have saved at any time:
 
@@ -108,4 +121,4 @@ Check that yoink is installed and see the current version:
 yoink version
 ```
 
-For the full command reference and the interactive menu keymap, see [Usage](./usage.md). For what yoink reads and writes under the hood, see [How it works](./how-it-works.md).
+For the full command reference, see [Usage](./usage.md), and for the menu keymap, see [Interactive menu](./interactive-menu.md). For what yoink reads and writes under the hood, see [How it works](./how-it-works.md) and [Security](./security.md).

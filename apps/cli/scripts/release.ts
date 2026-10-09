@@ -22,9 +22,9 @@ const cliPkg = JSON.parse(readFileSync(cliPkgPath, "utf8"));
 cliPkg.version = version;
 writeFileSync(cliPkgPath, `${JSON.stringify(cliPkg, null, 2)}\n`);
 
-const sitePath = join(repoRoot, "apps", "web", "lib", "site.ts");
+const sitePath = join(repoRoot, "apps", "web", "src", "shared", "brand", "site.ts");
 const site = readFileSync(sitePath, "utf8");
-const nextSite = site.replace(/version:\s*"\d+\.\d+\.\d+"/, `version: "${version}"`);
+const nextSite = site.replace(/^(\s*)version:\s*"[\d.]+"/m, `$1version: "${version}"`);
 if (nextSite === site) {
   throw new Error(`could not find a version field to bump in ${sitePath}`);
 }

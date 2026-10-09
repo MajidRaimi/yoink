@@ -1,3 +1,11 @@
+---
+title: Usage
+description: "Every yoink command, its aliases and flags, the non-interactive forms for scripts, and worked examples."
+nav: Usage
+order: 9
+section: Reference
+---
+
 # Usage
 
 `yoink` switches between Claude Code accounts, switches [subscription logins](./subscriptions.md) for ChatGPT (Codex), Kimi Code, Gemini, and GitHub Copilot, and manages API-key providers across your coding harnesses (pi, omp, opencode, codex, Claude Code, Qwen Code, Kilo Code, Droid, Crush, Goose, Zed, Continue, and Claude Desktop). This page covers every command, the shorthand for switching, and a few common examples.
@@ -35,10 +43,10 @@ Adding a Claude account always needs an interactive terminal, because it runs th
 
 | Command | Non-interactive form |
 | --- | --- |
-| `yoink add` | `yoink add --external --name <id> (--preset <p> \| --base-url <u> [--protocol <p,...>] \| --endpoint <p>=<url>,...) --models <m,...> [--connect <h,...>] [--default <m>] --token-stdin` |
+| `yoink add` | `yoink add --external --name <id> (--preset <p> \| --base-url <u> [--protocol <p,...>] \| --endpoint <p>=<url>,...) --models <m,...> [--connect <h,...>] [--default <m>] [--allow-tracked] --token-stdin` |
 | `yoink add` (legacy Claude Code provider) | `yoink add --external --name <n> --provider <p> --base-url <u> --model <m> --token-stdin` |
 | `yoink edit <name>` | `yoink edit <name> [--name <n>] [--provider <p>] [--base-url <u>] [--model <m>] [--token-stdin]` |
-| `yoink connect <name>` | `yoink connect <name> --to <h,...> [--default <m>]` |
+| `yoink connect <name>` | `yoink connect <name> --to <h,...> [--default <m>] [--allow-tracked]` |
 | `yoink disconnect <name>` | `yoink disconnect <name> [--from <h,...>]` |
 | `yoink models <name>` | `yoink models <name> --set <m,...>` |
 | `yoink import` | `yoink import --yes` |
@@ -50,7 +58,7 @@ Adding a Claude account always needs an interactive terminal, because it runs th
 | `yoink presets` | `yoink presets --json` |
 | `yoink probe` | `yoink probe (--base-url <u> \| --preset <p>) --token-stdin --json` |
 
-`--token-stdin` reads the API key from stdin, so it never lands in your shell history. Harness ids are `pi`, `omp`, `opencode`, `codex`, `claude-code`, `qwen`, `kilo`, `droid`, `crush`, `goose`, `zed`, `continue`, and `claude-desktop` (`goose`, `zed`, and `claude-desktop` are experimental). Every flag is described in [Providers](./providers.md#non-interactive-add) and [Harnesses](./harnesses.md#commands).
+`--token-stdin` reads the API key from stdin, so it never lands in your shell history. `--allow-tracked` writes a key into a harness config even when git tracks that file (see [Security](./security.md#git-tracked-configs)). Harness ids are `pi`, `omp`, `opencode`, `codex`, `claude-code`, `qwen`, `kilo`, `droid`, `crush`, `goose`, `zed`, `continue`, and `claude-desktop` (`goose`, `zed`, and `claude-desktop` are experimental). Every flag is described in [Providers](./providers.md#non-interactive-add) and [Harnesses](./harnesses.md#commands).
 
 ## Examples
 

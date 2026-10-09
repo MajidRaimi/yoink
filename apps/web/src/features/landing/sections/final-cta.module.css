@@ -1,0 +1,20 @@
+.band {
+  --band-ink: var(--on-brand);
+  --band-paper: var(--brand);
+}
+
+.scope {
+  --foreground: var(--band-ink);
+  --muted: color-mix(in srgb, var(--band-ink) 78%, transparent);
+  --faint: color-mix(in srgb, var(--band-ink) 70%, transparent);
+  --surface: color-mix(in srgb, var(--band-ink) 5%, transparent);
+  --surface-2: color-mix(in srgb, var(--band-ink) 8%, transparent);
+  --surface-3: color-mix(in srgb, var(--band-ink) 14%, transparent);
+  --hairline: color-mix(in srgb, var(--band-ink) 14%, transparent);
+  --hairline-strong: color-mix(in srgb, var(--band-ink) 28%, transparent);
+  --brand: var(--band-ink);
+  --brand-soft: color-mix(in srgb, var(--band-ink) 86%, var(--band-paper));
+  --brand-text: var(--band-ink);
+  --on-brand: var(--band-paper);
+  --ring: var(--band-ink);
+}

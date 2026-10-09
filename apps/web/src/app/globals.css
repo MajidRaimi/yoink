@@ -1,0 +1,175 @@
+@import "tailwindcss";
+@import "@yoink/tokens/tokens.css";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme inline {
+  --font-sans: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-hairline: var(--hairline);
+  --color-hairline-strong: var(--hairline-strong);
+  --color-brand: var(--brand);
+  --color-brand-soft: var(--brand-soft);
+  --color-brand-text: var(--brand-text);
+  --color-on-brand: var(--on-brand);
+  --color-ring: var(--ring);
+  --color-success: var(--success-ink);
+  --color-danger: var(--danger);
+
+  --radius-xs: var(--corner-xs);
+  --radius-sm: var(--corner-sm);
+  --radius-md: var(--corner-md);
+  --radius-lg: var(--corner-lg);
+  --radius-xl: var(--corner-xl);
+  --radius-pill: var(--corner-pill);
+  --radius-button: var(--corner-button);
+  --radius-inset: var(--corner-inset);
+
+  --shadow-1: var(--elevation-1);
+  --shadow-2: var(--elevation-2);
+  --shadow-3: var(--elevation-3);
+
+  --text-xs: var(--type-xs);
+  --text-xs--line-height: var(--line-normal);
+  --text-sm: var(--type-sm);
+  --text-sm--line-height: var(--line-normal);
+  --text-base: var(--type-base);
+  --text-base--line-height: var(--line-relaxed);
+  --text-lg: var(--type-lg);
+  --text-lg--line-height: var(--line-relaxed);
+  --text-xl: var(--type-xl);
+  --text-xl--line-height: var(--line-snug);
+  --text-2xl: var(--type-2xl);
+  --text-2xl--line-height: var(--line-snug);
+  --text-3xl: var(--type-3xl);
+  --text-3xl--line-height: var(--line-snug);
+  --text-4xl: var(--type-4xl);
+  --text-4xl--line-height: var(--line-tight);
+  --text-5xl: var(--type-5xl);
+  --text-5xl--line-height: var(--line-tight);
+
+  --leading-tight: var(--line-tight);
+  --leading-snug: var(--line-snug);
+  --leading-normal: var(--line-normal);
+  --leading-relaxed: var(--line-relaxed);
+
+  --tracking-display: var(--letter-display);
+  --tracking-tight: var(--letter-tight);
+  --tracking-normal: var(--letter-normal);
+  --tracking-mono: var(--letter-mono);
+  --tracking-caps: var(--letter-caps);
+
+  --ease-out: var(--motion-ease-out);
+  --ease-in-out: var(--motion-ease-in-out);
+}
+
+@utility dur-1 {
+  transition-duration: var(--dur-1);
+}
+
+@utility dur-2 {
+  transition-duration: var(--dur-2);
+}
+
+@utility dur-3 {
+  transition-duration: var(--dur-3);
+}
+
+@utility display {
+  font-stretch: 112%;
+  font-weight: 620;
+  letter-spacing: var(--letter-display);
+  line-height: var(--line-tight);
+  text-wrap: balance;
+}
+
+@utility focus-ring {
+  outline: var(--ring-width) solid var(--ring);
+  outline-offset: 2px;
+}
+
+:root {
+  --success-ink: #166534;
+}
+
+.dark {
+  --success-ink: var(--success);
+}
+
+html {
+  color-scheme: light;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--brand) 40%, transparent) transparent;
+  -webkit-text-size-adjust: 100%;
+  scroll-padding-top: 5rem;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--brand) 40%, transparent);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--brand) 65%, transparent);
+}
+
+body {
+  min-height: 100dvh;
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  font-size: var(--type-base);
+  line-height: var(--line-relaxed);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: geometricPrecision;
+}
+
+::selection {
+  background-color: color-mix(in srgb, var(--brand) 36%, transparent);
+  color: var(--foreground);
+}
+
+:focus-visible {
+  outline: var(--ring-width) solid var(--ring);
+  outline-offset: 2px;
+}
+
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

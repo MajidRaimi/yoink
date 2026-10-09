@@ -1,3 +1,12 @@
+---
+title: Subscriptions
+description: "Save and switch ChatGPT (Codex), Kimi Code, Gemini and GitHub Copilot logins, each inside its own tool."
+nav: Subscriptions
+order: 4
+section: Switch
+demo: subscription-switch
+---
+
 # Subscriptions
 
 Besides Claude Code accounts, yoink can save and switch the subscription logins of four other coding tools: ChatGPT (Codex), Kimi Code, Gemini, and GitHub Copilot. Each tool's logins switch inside that tool only. yoink never copies a subscription token from one tool into another, or into a harness config.

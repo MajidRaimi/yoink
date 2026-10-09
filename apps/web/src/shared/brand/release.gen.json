@@ -1,0 +1,10 @@
+{
+  "cli": "0.6.6",
+  "desktop": {
+    "version": "0.1.6",
+    "dmg": {
+      "arm64": "https://github.com/MajidRaimi/yoink/releases/download/desktop-v0.1.6/Yoink_0.1.6_aarch64.dmg",
+      "x64": "https://github.com/MajidRaimi/yoink/releases/download/desktop-v0.1.6/Yoink_0.1.6_x64.dmg"
+    }
+  }
+}

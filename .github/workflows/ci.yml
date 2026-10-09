@@ -19,6 +19,30 @@ jobs:
       - run: bun run test
       - run: bun run build
 
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: bun install --frozen-lockfile
+      - name: Generated demo data matches the CLI
+        run: |
+          bun run gen:data
+          git diff --exit-code -- src/features/demos/data
+      - run: bun run typecheck
+      - run: bun test src scripts
+      - run: bun run build
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: bun run check:links
+      - run: bun run check:slop
+
   verify-windows:
     runs-on: windows-latest
     steps:

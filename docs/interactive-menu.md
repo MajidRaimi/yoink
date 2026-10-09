@@ -1,3 +1,12 @@
+---
+title: Interactive menu
+description: "The keymap and behavior of the yoink menu: move with j and k, switch with Enter, and add, edit, save or delete profiles."
+nav: Interactive menu
+order: 3
+section: Switch
+demo: menu
+---
+
 # Interactive menu
 
 Running `yoink` with no arguments opens a keyboard-driven list of your saved profiles. It is the default surface for switching accounts and managing profiles without remembering command names.
@@ -19,7 +28,7 @@ The active profile is marked with a green dot. Highlighting a row and pressing `
 | Key | Action |
 | --- | --- |
 | `↑` / `↓` or `j` / `k` | Move the highlight (wraps at the top and bottom) |
-| `Enter` | Switch to the highlighted profile |
+| `Enter` | Switch to the highlighted login within its own tool. On a provider row, open its harness picker. |
 | `n` | Add a new account (Claude sign-in, a Codex, Kimi, Gemini, or Copilot login, or an API-key provider) |
 | `e` | Edit the highlighted profile |
 | `s` | Save the current live login as a new profile |

@@ -8,7 +8,7 @@ export const site = {
   installCommand: "curl -fsSL https://yoink.codes/install.sh | bash",
   installCommandWindows: 'powershell -c "irm https://yoink.codes/install.ps1 | iex"',
   npmPackage: "yoink-cli",
-  desktopVersion: "0.1.5",
+  desktopVersion: "0.1.6",
   releasesUrl: "https://github.com/MajidRaimi/yoink/releases",
 } as const;
 

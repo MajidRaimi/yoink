@@ -1,6 +1,6 @@
 {
   "name": "yoink-cli",
-  "version": "0.6.5",
+  "version": "0.6.6",
   "description": "Switch Claude Code, Codex, Kimi, Gemini and Copilot logins, and connect API-key providers to 13 coding harnesses.",
   "type": "module",
   "license": "MIT",

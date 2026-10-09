@@ -3,7 +3,7 @@ import release from "./release.gen.json";
 
 export const site = {
   name: "Yoink",
-  version: "0.6.5",
+  version: "0.6.6",
   url: "https://yoink.codes",
   title: "Yoink: switch AI coding accounts and providers",
   headline: "Every AI coding login and provider, in one place.",
